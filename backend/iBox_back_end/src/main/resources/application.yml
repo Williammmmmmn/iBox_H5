@@ -1,0 +1,23 @@
+server:
+  port: 8086
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ibox?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
+    username: root
+    password: wzj123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    database: 0 # Redis ???????????? 0?
+    host: localhost # Redis ?????
+    port: 6379 # Redis ?????
+    password:
+    timeout: 2000ms # ??????????
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml  # Mapper XML ????
+  type-aliases-package: com.vue.vuetest216.Entity    # ??????
+  configuration:
+    map-underscore-to-camel-case: true      # ????????
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # ?? SQL ??
