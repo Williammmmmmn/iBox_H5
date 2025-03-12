@@ -3,7 +3,7 @@ import axios from 'axios';
 // 创建 axios 实例
 const request = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // 从环境变量中读取 API 基础地址
-  timeout: 10000, // 请求超时时间
+  timeout: 5000, // 请求超时时间
 });
 
 // 请求拦截器
@@ -15,19 +15,27 @@ request.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // 确保 responseType 被正确传递
     return config;
+
   },
   (error) => {
     // 对请求错误做些什么
+    console.error('请求错误111', error);
     return Promise.reject(error);
   }
 );
 
+
 //响应拦截器
 request.interceptors.response.use(
   (response) => {
-    // 对响应数据做些什么
-    // 例如：统一处理响应格式
+    // 如果是二进制数据（如图片、文件），直接返回 response
+    if (response.config.responseType === 'blob') {
+      return response;
+    }
+
+    // 对 JSON 数据统一处理响应格式
     if (response.data.code === 200) {
       return response.data; // 返回实际数据
     } else {
@@ -35,8 +43,8 @@ request.interceptors.response.use(
     }
   },
   (error) => {
-    // 对响应错误做些什么
-    // 例如：统一处理错误状态码
+    // 对响应错误
+    // 统一处理错误状态码
     if (error.response) {
       switch (error.response.status) {
         case 401:
