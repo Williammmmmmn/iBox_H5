@@ -77,7 +77,7 @@
       </div>
       <div class="content-container">
         <!-- 市场 -->
-        <div class="content-item">
+        <div class="content-item" @click="goToMarket">
           <div class="text">
             <p class="title">市场</p>
             <p class="description">板块涨幅一览无余</p>
@@ -208,25 +208,7 @@ const communityImages = ref([
   require('@/assets/images/community.jpg'),
   require('@/assets/images/peopleCount.jpg'),
 ]);
-// const records = ref([
-//   {
-//     title: '沉香救母',
-//     issued: '50000',
-//     circulation: '10539',
-//     status: '暂停售卖',
-//     price: '￥9.9',
-//     imageUrl: require('@/assets/images/community.jpg') // 使用 require
-//   },
-//   {
-//     title: '盛世华夏',
-//     issued: '50000',
-//     circulation: '12190',
-//     status: '已售罄',
-//     price: '￥1.99',
-//     imageUrl: require('@/assets/images/community.jpg') // 使用 require
 
-//   },
-// ]);
 const showCategoryPicker = ref(false);
 const showStatusPicker = ref(false);
 const selectedCategory = ref('');
@@ -260,7 +242,9 @@ const handleSearchClick = () => {
 const goToNoticeDetail = () => {
   router.push('/notice');
 };
-
+const goToMarket = () => {
+  router.push('/market');
+};
 const startNoticeCarousel = () => {
   setInterval(() => {
     noticeIndex.value = (noticeIndex.value + 1) % notices.value.length;

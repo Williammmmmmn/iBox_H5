@@ -6,13 +6,13 @@
                 <h2>欢迎注册/登录iBox</h2>
                 <p>未注册号码将自动创建账号</p>
             </div>
-            <van-popup v-model:show="showCaptchaDialog" round position="center" :style="{ width: '80%', padding: '20px' }">
+            <van-popup v-model:show="showCaptchaDialog" round position="center"
+                :style="{ width: '80%', padding: '20px' }">
                 <div class="captcha-container">
                     <span style="margin-bottom: 30px;color: gray;">请完成安全验证</span>
                     <div class="captcha-input-group">
                         <input type="text" v-model="captchaInput" placeholder="请输入验证码" class="captcha-input" />
                         <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" class="captcha-image" />
-
                     </div>
                     <div class="button-container">
                         <van-button type="primary" @click="handleCaptchaConfirm">确认</van-button>
@@ -30,7 +30,8 @@
                             <input type="text" id="verification-code" maxlength="6" v-model="verificationCode"
                                 placeholder="验证码" required @focus="isVerificationCodeFocused = true"
                                 @blur="isVerificationCodeFocused = false" />
-                            <span v-if="!isCodeSent" class="get-code-text" @click="handleGetVerificationCode">获取验证码</span>
+                            <span v-if="!isCodeSent" class="get-code-text"
+                                @click="handleGetVerificationCode">获取验证码</span>
                             <span v-else class="get-code-text disabled">{{ countdown }}秒后重新获取</span>
                         </div>
                     </div>
@@ -61,10 +62,10 @@ export default {
 
 <script setup>
 import { ref, computed } from 'vue';
-import { showConfirmDialog, showToast } from 'vant';
+import { showConfirmDialog, showToast, showLoadingToast, closeToast } from 'vant';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { login,sendCode,fetchCaptcha,validateCaptcha } from '@/api/user';
+import { login, sendCode, fetchCaptcha, validateCaptcha } from '@/api/user';
 const router = useRouter(); // 获取路由实例
 const store = useStore(); // 获取 Vuex Store 实例
 
@@ -100,79 +101,91 @@ const isLoginButtonActive = computed(() => {
 });
 // 发送图片验证码
 const refreshCaptcha = async () => {
-  try {
-    const { captchaKey: key, imageUrl } = await fetchCaptcha(); // 调用 API 获取验证码图片
-    if (captchaImage.value) {
-      URL.revokeObjectURL(captchaImage.value); // 释放旧的 Blob URL
-    }
+    let toast = null;
+    try {
+        // 显示 loading
+        toast = showLoadingToast({
+            message: '加载中...',
+            forbidClick: true, // 禁止点击背景
+            duration: 0, // 持续显示，直到手动关闭
+        });
+        const { captchaKey: key, imageUrl } = await fetchCaptcha(); // 调用 API 获取验证码图片
+        if (captchaImage.value) {
+            URL.revokeObjectURL(captchaImage.value); // 释放旧的 Blob URL
+        }
 
-    captchaImage.value = imageUrl; // 更新验证码图片
-    captchaKey.value = key; // 保存验证码标识
-  } catch (error) {
-    showToast('获取图片验证码失败，请重试');
-  }
+        captchaImage.value = imageUrl; // 更新验证码图片
+        captchaKey.value = key; // 保存验证码标识
+    } catch (error) {
+        showToast('获取图片验证码失败，请重试');
+    } finally {
+        // 无论成功还是失败，都关闭 loading
+        if (toast) {
+            closeToast();
+        }
+    }
 };
 
 // 处理验证码确认
 const handleCaptchaConfirm = async () => {
-  if (!captchaInput.value) {
-    showToast('请输入验证码');
-    return;
-  }
-  try {
-    const response = await validateCaptcha(captchaKey.value, captchaInput.value); // 调用 API 验证图片验证码
-    if (response.code === 200) {
-      showCaptchaDialog.value = false; // 关闭验证码弹窗
-      await sendVerificationCode(); // 验证通过后发送短信验证码
-    } else {
-      showToast('验证码错误，请重试');
-      refreshCaptcha(); // 刷新图片验证码
+    if (!captchaInput.value) {
+        showToast('请输入验证码');
+        return;
     }
-  } catch (error) {
-    showToast('验证码验证失败，请重试');
-  }
+    try {
+        const response = await validateCaptcha(captchaKey.value, captchaInput.value); // 调用 API 验证图片验证码
+        if (response.code === 200) {
+            showCaptchaDialog.value = false; // 关闭验证码弹窗
+            await sendVerificationCode(); // 验证通过后发送短信验证码
+        } else {
+            showToast('验证码错误，请重试');
+            refreshCaptcha(); // 刷新图片验证码
+        }
+    } catch (error) {
+        showToast('验证码验证失败，请重试');
+    }
 };
 
 // 发送短信验证码
 const sendVerificationCode = async () => {
-  if (!isPhoneValid.value) {
-    showToast('请输入有效的手机号');
-    return;
-  }
-
-  try {
-    const response = await sendCode(phone.value); // 调用 API 发送短信验证码
-    if (response.code === 200) {
-      showToast('验证码已发送');
-      isCodeSent.value = true;
-      countdown.value = 60;
-
-      // 启动倒计时
-      timer = setInterval(() => {
-        if (countdown.value > 0) {
-          countdown.value--;
-        } else {
-          clearInterval(timer);
-          isCodeSent.value = false;
-        }
-      }, 1000);
-    } else {
-      showToast(response.data.message || '验证码发送失败');
+    if (!isPhoneValid.value) {
+        showToast('请输入有效的手机号');
+        return;
     }
-  } catch (error) {
-    showToast('验证码发送失败，请重试');
-  }
+
+    try {
+        const response = await sendCode(phone.value); // 调用 API 发送短信验证码
+        if (response.code === 200) {
+            showToast('验证码已发送');
+            isCodeSent.value = true;
+            countdown.value = 60;
+
+            // 启动倒计时
+            timer = setInterval(() => {
+                if (countdown.value > 0) {
+                    countdown.value--;
+                } else {
+                    clearInterval(timer);
+                    isCodeSent.value = false;
+                }
+            }, 1000);
+        } else {
+            showToast(response.data.message || '验证码发送失败');
+        }
+    } catch (error) {
+        showToast('验证码发送失败，请重试');
+    }
 };
 
 // 点击“获取验证码”按钮
 const handleGetVerificationCode = () => {
-  if (!isPhoneValid.value) {
-    showToast('请输入有效的手机号');
-    return;
-  }
+    if (!isPhoneValid.value) {
+        showToast('请输入有效的手机号');
+        return;
+    }
 
-  showCaptchaDialog.value = true; // 弹出图片验证码弹窗
-  refreshCaptcha(); // 加载图片验证码
+    showCaptchaDialog.value = true; // 弹出图片验证码弹窗
+    refreshCaptcha(); // 加载图片验证码
 };
 
 // 登录逻辑
@@ -197,8 +210,15 @@ const handleLogin = async () => {
                 console.log('用户取消');
             });
     } else {
+        let toast = null;
         // 登录逻辑
         try {
+            // 显示 loading
+            toast = showLoadingToast({
+                message: '登录中...',
+                forbidClick: true, // 禁止点击背景
+                duration: 0, // 持续显示，直到手动关闭
+            });
             // 调用登录 API
             const response = await login(phone.value, verificationCode.value, invitationCode.value);
             // 处理登录成功的情况
@@ -208,7 +228,6 @@ const handleLogin = async () => {
                     token: response.data.token,
                     userInfo: response.data.user
                 })
-
                 // 跳转到首页或其他受保护的页面
                 router.push('/home');
                 // 弹出登录成功提示
@@ -222,6 +241,12 @@ const handleLogin = async () => {
             // 处理网络错误或其他异常
             showToast(error);
         }
+        finally {
+        // 无论成功还是失败，都关闭 loading
+        if (toast) {
+            closeToast();
+        }
+    }
     }
 };
 
@@ -405,8 +430,10 @@ input[type="checkbox"]:checked::after {
     flex-direction: column;
     align-items: center;
     padding: 0px;
-    border-radius: 12px; /* 添加圆角 */
-    background-color: #ffffff; /* 背景颜色 */
+    border-radius: 12px;
+    /* 添加圆角 */
+    background-color: #ffffff;
+    /* 背景颜色 */
 }
 
 .captcha-image {
@@ -415,13 +442,15 @@ input[type="checkbox"]:checked::after {
     cursor: pointer;
     margin-right: 8px;
 }
+
 .captcha-input-group {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
 }
+
 .captcha-input {
-    flex:1;
+    flex: 1;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -432,15 +461,21 @@ input[type="checkbox"]:checked::after {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    align-items: center; /* 垂直居中 */
-    margin-top: 10px; /* 添加一些间距 */
+    align-items: center;
+    /* 垂直居中 */
+    margin-top: 10px;
+    /* 添加一些间距 */
 }
 
 /* 为按钮设置统一的样式 */
 .button-container .van-button {
-    height: 36px; /* 减小按钮高度 */
-    line-height: 36px; /* 调整文字垂直居中 */
-    padding: 0 12px; /* 调整按钮的水平内边距 */
-    font-size: 14px; /* 调整字体大小 */
+    height: 36px;
+    /* 减小按钮高度 */
+    line-height: 36px;
+    /* 调整文字垂直居中 */
+    padding: 0 12px;
+    /* 调整按钮的水平内边距 */
+    font-size: 14px;
+    /* 调整字体大小 */
 }
 </style>

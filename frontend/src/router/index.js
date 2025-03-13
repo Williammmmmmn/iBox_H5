@@ -1,8 +1,11 @@
 import {createRouter, createWebHashHistory} from "vue-router";
+import store from '@/store';
+import { showConfirmDialog } from 'vant';
 import LayOut from "@/pages/Layout";
 import Notice from "@/pages/Notice/MyNotice.vue";
 import Search from "@/pages/Search/SearchPage.vue";
 import Login from "@/pages/Login/index.vue";
+import Market from '@/pages/Market/index.vue'
 
 import User from "@/pages/Layout/user.vue";
 import Community from "@/pages/Layout/community.vue";
@@ -26,6 +29,10 @@ const routes = [
                 path: "/user",
                 component: User
             },
+            {
+                path: "/market",
+                component: Market
+            }
 
         ]
     },
@@ -50,4 +57,25 @@ const router = createRouter({
     routes
 });
 
+router.beforeEach((to, from, next) => {
+    const token = store.getters.getToken;
+    const protectedRoutes = ['/search', '/notice', '/market'];
+  
+    if (protectedRoutes.includes(to.path) && !token) {
+      showConfirmDialog({
+        title: '提示',
+        message: '您尚未登录，是否前往登录页面？',
+        confirmButtonText: '去登录',
+        cancelButtonText: '再逛逛',
+      })
+        .then(() => {
+          next('/login');
+        })
+        .catch(() => {
+          next(false);
+        });
+    } else {
+      next();
+    }
+  });
 export default router;
