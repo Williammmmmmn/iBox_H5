@@ -1,6 +1,6 @@
 import { createStore } from "vuex";
 // 创建 Vuex Store
-const store = createStore({
+  const store = createStore({
     state: {
       token: localStorage.getItem('token') || null, // 从 localStorage 读取 token
       userInfo: JSON.parse(localStorage.getItem('userInfo')) || null, // 从 localStorage 读取用户信息

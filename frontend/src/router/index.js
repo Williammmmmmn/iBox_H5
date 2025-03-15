@@ -1,4 +1,4 @@
-import {createRouter, createWebHashHistory} from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import store from '@/store';
 import { showConfirmDialog } from 'vant';
 import LayOut from "@/pages/Layout";
@@ -12,70 +12,69 @@ import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
 
 const routes = [
-    {
-        path: "/",
-        component: LayOut,
-        redirect: "/home",
-        children: [
-            {
-                path: "/home", // 默认子路由，路径为 /home
-                component: Home
-            },
-            {
-                path: "/community",
-                component: Community
-            },
-            {
-                path: "/user",
-                component: User
-            },
-            {
-                path: "/market",
-                component: Market
-            }
-
-        ]
-    },
-    {
-        path: "/login",
-        component: Login,
-    },
-    {
-        path: "/search",
-        component: Search,
-    },
-    {
-        path: "/notice",
-        component: Notice,
-    },
+  {
+    path: "/",
+    component: LayOut,
+    redirect: "/home",
+    children: [
+      {
+        path: "/home", // 默认子路由，路径为 /home
+        component: Home
+      },
+      {
+        path: "/community",
+        component: Community
+      },
+      {
+        path: "/user",
+        component: User
+      },
+    ]
+  },
+  {
+    path: "/login",
+    component: Login,
+  },
+  {
+    path: "/search",
+    component: Search,
+  },
+  {
+    path: "/notice",
+    component: Notice,
+  },
+  {
+    path: "/market",
+    component: Market
+  }
 
 
 ];
 
 const router = createRouter({
-    history: createWebHashHistory(),
-    routes
+  history: createWebHashHistory(),
+  routes
 });
 
 router.beforeEach((to, from, next) => {
-    const token = store.getters.getToken;
-    const protectedRoutes = ['/search', '/notice', '/market'];
-  
-    if (protectedRoutes.includes(to.path) && !token) {
-      showConfirmDialog({
-        title: '提示',
-        message: '您尚未登录，是否前往登录页面？',
-        confirmButtonText: '去登录',
-        cancelButtonText: '再逛逛',
+  const token = store.getters.getToken;
+  const protectedRoutes = ['/search', '/notice', '/market'];
+
+  if (protectedRoutes.includes(to.path) && !token) {
+    showConfirmDialog({
+      title: '提示',
+      message: '您尚未登录，是否前往登录页面？',
+      confirmButtonText: '去登录',
+      cancelButtonText: '再逛逛',
+    })
+      .then(() => {
+        next('/login');
       })
-        .then(() => {
-          next('/login');
-        })
-        .catch(() => {
-          next(false);
-        });
-    } else {
-      next();
-    }
-  });
+      .catch(() => {
+        next(false);
+      });
+  } else {
+    next();
+  }
+});
 export default router;

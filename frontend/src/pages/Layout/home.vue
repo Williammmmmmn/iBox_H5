@@ -7,7 +7,6 @@
       </template>
       <template #right>
         <van-search v-model="searchValue" placeholder="搜索商品" class="nav-search" shape="round"
-                    background="transparent"
                     @click-input="handleSearchClick">
           <template #left-icon>
           </template>
