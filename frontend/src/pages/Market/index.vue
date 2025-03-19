@@ -17,7 +17,7 @@
     <!-- 内容区域 -->
     <div v-if="currentView === 'market'" class="market-content">
       <!-- 滑动选项卡 -->
-      <van-tabs v-model:active="activeTab" swipeable class="custom-tabs">
+      <van-tabs v-model:active="activeTab" swipeable class="custom-tabs" @change="handleTabChange">
         <van-tab v-for="tab in tabs" :key="tab.name" :title="tab.title" :name="tab.name"></van-tab>
       </van-tabs>
 
@@ -72,16 +72,16 @@
         </div>
         <!-- 示例藏品 -->
         <div v-if="filteredCollections.length > 0">
-          <div v-for="item in filteredCollections" :key="item.name" class="collection-item">
+          <div v-for="item in filteredCollections" :key="item.id" class="collection-item">
             <!-- 图片 -->
             <div class="collection-image">
-              <img :src="item.img" alt="藏品图片" />
+              <img :src="`@/${item.image_url}`" alt="藏品图片" />
             </div>
 
             <!-- 名称和发行/流通 -->
             <div class="collection-info">
               <div class="collection-name">{{ item.name }}</div>
-              <div class="collection-stats">发行{{ item.issued }}/流通{{ item.circulation }}</div>
+              <div class="collection-stats">发行{{ item.score  }}/流通{{ item.transaction_count  }}</div>
             </div>
 
             <!-- 五角星（收藏按钮） -->
@@ -92,11 +92,11 @@
               <van-icon v-else name="star-o" size="20" color="#ccc" />
             </div>
 
-            <!-- 价格 -->
-            <div class="collection-price">{{ item.price }}</div>
+            <!-- 地板价 -->
+            <div class="collection-price">{{ item.lowest_price  }}</div>
 
             <!-- 成交量 -->
-            <div class="collection-volume">{{ item.volume }}</div>
+            <div class="collection-volume">{{ item.trading_count  }}</div>
           </div>
         </div>
         <div v-else class="no-data">
@@ -112,19 +112,20 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue';
+import { ref, onMounted} from 'vue';
+import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const activeTab = ref('all'); // 默认选中第一个 tab
 const currentView = ref('market');
 const tabs = [
-  { name: 'all', title: '全部' },
-  { name: 'classic', title: '经典文化' },
-  { name: 'newYear', title: '新春系列' },
-  { name: 'tenYears', title: '十年甄选' },
-  { name: 'cyber', title: '赛博系列' },
-  { name: 'threeKingdoms', title: '三国系列' },
+  { name: '全部', title: '全部' },
+  { name: '经典文化', title: '经典文化' },
+  { name: '新春系列', title: '新春系列' },
+  { name: '十年甄选', title: '十年甄选' },
+  { name: '赛博系列', title: '赛博系列' },
+  { name: '三国系列', title: '三国系列' },
 ];
 
 const keyword = ref('');
@@ -134,6 +135,7 @@ const selectedCategory = ref('');
 const selectedStatus = ref('');
 const isPriceAsc = ref(false);
 const isVolumeAsc = ref(false);
+const filteredCollections = ref([]);
 
 const categoryOptions = [
   { text: '全部类别', value: '全部类别' },
@@ -146,52 +148,32 @@ const statusOptions = [
   { text: '已结束', value: '已结束' },
 ];
 
-const collections = reactive({
-  all: [
-    { name: '2025纵酒', issued: 1000, circulation: 713, price: 11888, volume: 2, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '2025日进斗金', issued: 3000, circulation: 2215, price: 12999, volume: 9, img: require('@/assets/images/saveMom.jpg'), isFavorite: true },
-    { name: '2025于禁', issued: 6666, circulation: 6219, price: 3000, volume: 68, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '2025太史慈', issued: 2278, circulation: 2278, price: 18000, volume: 1, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '至臻-潇湘咖啡', issued: 581, circulation: 258, price: 8444, volume: 2, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '2025张郃', issued: 5000, circulation: 4994, price: 3499, volume: 42, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '2025纵酒', issued: 1000, circulation: 713, price: 11888, volume: 2, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    { name: '2025日进斗金', issued: 3000, circulation: 2215, price: 12999, volume: 9, img: require('@/assets/images/saveMom.jpg'), isFavorite: true },
-    { name: '2025于禁', issued: 6666, circulation: 6219, price: 3000, volume: 68, img: require('@/assets/images/saveMom.jpg'), isFavorite: false },
-    
-  ],
-  classic: [
-    { name: '经典文化1', issued: 1000, circulation: 713, price: 11888, volume: 2, isFavorite: false, },
-    { name: '经典文化2', issued: 3000, circulation: 2215, price: 12999, volume: 9, isFavorite: false, },
-  ],
-  newYear: [
-    { name: '新春系列1', issued: 1000, circulation: 713, price: 11888, volume: 2, isFavorite: false, },
-    { name: '新春系列2', issued: 3000, circulation: 2215, price: 12999, volume: 9, isFavorite: false, },
-  ],
-  tenYears: [
-    { name: '十年甄选1', issued: 1000, circulation: 713, price: 11888, volume: 2, isFavorite: false, },
-    { name: '十年甄选2', issued: 3000, circulation: 2215, price: 12999, volume: 9, isFavorite: false, },
-  ],
-  cyber: [
-    { name: '赛博系列1', issued: 1000, circulation: 713, price: 11888, volume: 2, isFavorite: false, },
-    { name: '赛博系列2', issued: 3000, circulation: 2215, price: 12999, volume: 9, isFavorite: false, },
-  ],
-  threeKingdoms: [
-    { name: '三国系列1', issued: 1000, circulation: 713, price: 11888, volume: 2, isFavorite: false, },
-    { name: '三国系列2', issued: 3000, circulation: 2215, price: 12999, volume: 9, isFavorite: false, },
-  ],
-}
-)
-
-const filteredCollections = computed(() => {
-  let items = collections[activeTab.value] || []; // 确保 items 是一个数组
-
-  // 根据关键词过滤
-  if (keyword.value) {
-    items = items.filter(item => item.name.includes(keyword.value));
-  }
-
-  return items;
-});
+// 加载 NFT 数据
+const loadNFTData = async (tag = null) => {
+      try {
+        const data = await getNFTList(tag);
+        filteredCollections.value = data.map(item => ({
+          ...item,
+          isFavorite: false, // 默认未收藏
+        }));
+      } catch (error) {
+        console.error('Failed to load NFT data:', error);
+      }
+    };
+ // 监听选项卡变化
+ const handleTabChange = (name) => {
+      const selectedTab = tabs.find(tab => tab.name === name);
+      if (selectedTab) {
+        console.log(name);
+        const tag = selectedTab.name === 'all' ? null : selectedTab.name;
+        loadNFTData(tag); // 根据选择的 tab 加载数据
+        
+      }
+    };
+     // 初始化加载数据
+     onMounted(() => {
+      loadNFTData(); // 默认加载全部数据
+    });
 
 const onCategoryConfirm = () => {
   showCategoryPicker.value = false;
@@ -210,7 +192,6 @@ const toggleSort = (type) => {
 };
 const toggleFavorite = (item) => {
   item.isFavorite = !item.isFavorite; // 切换收藏状态
-  console.log('收藏状态已切换:', item.name, item.isFavorite);
 };
 // 返回首页
 const goBack = () => {
@@ -250,6 +231,7 @@ const goBack = () => {
 /* 内容区域样式 */
 .market-content {
   overflow: visible;
+  user-select: none;
   /* 确保父元素不会干扰子元素 */
 }
 
@@ -413,7 +395,13 @@ const goBack = () => {
 .triangle-down {
   border-top: 4px solid #817f7f;
 }
+.triangle-up.active {
+  border-bottom: 4px solid blue; /* 升序时，上面三角形变为黑色 */
+}
 
+.triangle-down.active {
+  border-top: 4px solid blue; /* 降序时，下面三角形变为黑色 */
+}
 /* 示例藏品样式 */
 .collection-item {
   display: flex;

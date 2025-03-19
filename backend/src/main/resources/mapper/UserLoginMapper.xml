@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.login.mapper.UserLoginMapper">
-
-
     <!-- 新增用户 -->
     <insert id="saveNewUser" parameterType="com.joon.ibox_back_end.login.entity.UserDto">
         INSERT INTO users (
-            username, password, phone_number, full_name, identity_id, status, role, avatar, referrer_id, referral_code, referral_count
+            username, password, phone_number, full_name, identity_id, status, role, avatar, referrer_id, referral_code, referral_count,wallet_address,transaction_password
         ) VALUES (
-                     #{username}, #{password}, #{phoneNumber}, #{fullName}, #{identityId}, #{status}, #{role}, #{avatar}, #{referrerId}, #{referralCode}, #{referralCount}
+                     #{username}, #{password}, #{phoneNumber}, #{fullName}, #{identityId}, #{status}, #{role}, #{avatar}, #{referrerId}, #{referralCode}, #{referralCount},#{walletAddress},#{transactionPassword}
                  )
     </insert>
 </mapper>

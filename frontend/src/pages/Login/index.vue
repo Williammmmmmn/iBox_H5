@@ -103,6 +103,8 @@ const isLoginButtonActive = computed(() => {
 const refreshCaptcha = async () => {
     let toast = null;
     try {
+        // 关闭弹窗
+        showCaptchaDialog.value = false;
         // 显示 loading
         toast = showLoadingToast({
             message: '加载中...',
@@ -116,6 +118,8 @@ const refreshCaptcha = async () => {
 
         captchaImage.value = imageUrl; // 更新验证码图片
         captchaKey.value = key; // 保存验证码标识
+        // 请求成功后打开弹窗
+        showCaptchaDialog.value = true;
     } catch (error) {
         showToast('获取图片验证码失败，请重试');
     } finally {
@@ -142,7 +146,7 @@ const handleCaptchaConfirm = async () => {
             refreshCaptcha(); // 刷新图片验证码
         }
     } catch (error) {
-        showToast('验证码验证失败，请重试');
+        showToast('验证码错误，请重试');
     }
 };
 

@@ -9,8 +9,8 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   (config) => {
-    // 在发送请求之前做些什么
-    // 例如：添加 token 到请求头
+    // 在发送请求之前
+    // 添加 token 到请求头
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -20,7 +20,7 @@ request.interceptors.request.use(
 
   },
   (error) => {
-    // 对请求错误做些什么
+    // 对请求错误
     console.error('请求错误111', error);
     return Promise.reject(error);
   }

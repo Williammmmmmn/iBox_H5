@@ -125,7 +125,7 @@
           <van-picker :columns="statusOptions" @cancel="showStatusPicker = false" @confirm="onStatusConfirm"/>
         </van-popup>
 
-        <div class="price-content-container">
+        <div class="price-content-container" @click="handlePriceSortClick">
           <div class="text-container">
             <span class="text">价格排序</span>
             <div class="triangle-container">
@@ -134,7 +134,7 @@
             </div>
           </div>
         </div>
-        <div class="time-content-container">
+        <div class="time-content-container" @click="handleTimeSortClick">
           <div class="text-container">
             <span class="text">时间倒序</span>
             <div class="triangle-container">
@@ -249,7 +249,12 @@ const startNoticeCarousel = () => {
     noticeIndex.value = (noticeIndex.value + 1) % notices.value.length;
   }, 3000);
 };
-
+const handlePriceSortClick = () => {
+  isAsc.value = !isAsc.value; // 切换升序/降序状态
+};
+const handleTimeSortClick = () => {
+  isDesc.value = !isDesc.value; // 切换升序/降序状态
+};
 const onCategoryConfirm = (value) => {
   selectedCategory.value = value;
   showCategoryPicker.value = false;
@@ -658,7 +663,13 @@ const gridItems = [
 .triangle-down {
   border-top: 4px solid #817f7f;
 }
+.triangle-up.active {
+  border-bottom: 4px solid blue; /* 升序时，上面三角形变为黑色 */
+}
 
+.triangle-down.active {
+  border-top: 4px solid blue; /* 降序时，下面三角形变为黑色 */
+}
 .record-container {
   margin-top: 5%;
   display: flex;

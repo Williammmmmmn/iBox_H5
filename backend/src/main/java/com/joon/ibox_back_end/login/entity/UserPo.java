@@ -25,4 +25,6 @@ public class UserPo {
     private Integer referrerId; // 用户推荐人ID，外键，关联推荐人
     private String referralCode; // 用户推荐码，唯一
     private Integer referralCount; // 已推荐人数
+    private String walletAddress;//用户的钱包地址
+    private String transactionPassword;//用户的交易密码
 }
