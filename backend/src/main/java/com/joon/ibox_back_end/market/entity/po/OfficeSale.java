@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.eneity;
+package com.joon.ibox_back_end.market.entity.po;
 
 import lombok.Data;
 
@@ -54,7 +54,11 @@ public class OfficeSale {
     private LocalDateTime updatedAt;
 
     /**
-     * 发行份数，也就是官方卖出去的份数。
+     * 流通份数，也就是官方卖出去的份数。
      */
-    private Integer transactionCount;
+    private Integer circulateCount;
+    /**
+     * 发行份数。
+     */
+    private Integer issueCount;
 }

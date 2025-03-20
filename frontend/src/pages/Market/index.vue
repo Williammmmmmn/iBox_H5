@@ -75,13 +75,13 @@
           <div v-for="item in filteredCollections" :key="item.id" class="collection-item">
             <!-- 图片 -->
             <div class="collection-image">
-              <img :src="`@/${item.image_url}`" alt="藏品图片" />
+              <img :src="require(`@/${item.imageUrl}`)" alt="藏品图片" />
             </div>
 
             <!-- 名称和发行/流通 -->
             <div class="collection-info">
               <div class="collection-name">{{ item.name }}</div>
-              <div class="collection-stats">发行{{ item.score  }}/流通{{ item.transaction_count  }}</div>
+              <div class="collection-stats">发行{{ item.totalIssueCount   }}/流通{{ item.totalCirculateCount   }}</div>
             </div>
 
             <!-- 五角星（收藏按钮） -->
@@ -93,10 +93,10 @@
             </div>
 
             <!-- 地板价 -->
-            <div class="collection-price">{{ item.lowest_price  }}</div>
+            <div class="collection-price">{{ item.lowestPrice  }}</div>
 
             <!-- 成交量 -->
-            <div class="collection-volume">{{ item.trading_count  }}</div>
+            <div class="collection-volume">{{ item.dailyTransactionCount   }}</div>
           </div>
         </div>
         <div v-else class="no-data">

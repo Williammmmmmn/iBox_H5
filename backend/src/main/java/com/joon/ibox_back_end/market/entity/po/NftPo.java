@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.eneity;
+package com.joon.ibox_back_end.market.entity.po;
 
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @create: 2025-03-2001:23
  **/
 @Data
-public class NftsDto {
+public class NftPo {
     /**
      * 主键，唯一标识每个 NFT。
      */
@@ -63,8 +63,4 @@ public class NftsDto {
      */
     private Integer levelId;
 
-    /**
-     * 外键，指向 NFT 发行分数。
-     */
-    private Integer scoreId;
 }
