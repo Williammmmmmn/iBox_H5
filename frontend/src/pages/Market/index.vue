@@ -54,7 +54,7 @@
                 <span class="text">地板价</span>
                 <div class="triangle-container">
                   <span class="triangle triangle-up" :class="{ active: isPriceAsc }"></span>
-                  <span class="triangle triangle-down" :class="{ active: !isPriceAsc }"></span>
+                  <span class="triangle triangle-down" :class="{ active: isPriceAsc2 }"></span>
                 </div>
               </div>
             </div>
@@ -65,7 +65,7 @@
                 <span class="text">成交量</span>
                 <div class="triangle-container">
                   <span class="triangle triangle-up" :class="{ active: isVolumeAsc }"></span>
-                  <span class="triangle triangle-down" :class="{ active: !isVolumeAsc }"></span>
+                  <span class="triangle triangle-down" :class="{ active: isVolumeAsc2 }"></span>
                 </div>
               </div>
             </div>
@@ -73,7 +73,8 @@
         </div>
         <!-- 示例藏品 -->
         <div v-if="filteredCollections.length > 0">
-          <div v-for="item in filteredCollections" :key="item.id" class="collection-item">
+          <div v-for="item in filteredCollections" :key="item.id" class="collection-item" 
+          @click="goToConsignmentPage(item.nftId)">
             <!-- 图片 -->
             <div class="collection-image">
               <img :src="require(`@/${item.imageUrl}`)" alt="藏品图片" />
@@ -82,11 +83,11 @@
             <!-- 名称和发行/流通 -->
             <div class="collection-info">
               <div class="collection-name">{{ item.name }}</div>
-              <div class="collection-stats">发行{{ item.totalIssueCount   }}/流通{{ item.totalCirculateCount   }}</div>
+              <div class="collection-stats">发行{{ item.totalIssueCount }}/流通{{ item.totalCirculateCount }}</div>
             </div>
 
             <!-- 五角星（收藏按钮） -->
-            <div class="collection-favorite" @click="toggleFavorite(item)">
+            <div class="collection-favorite" @click.stop="toggleFavorite(item)">
               <!-- 亮的状态（isFavorite 为 true） -->
               <van-icon v-if="item.isFavorite" name="star" size="20" color="#ffd21e" />
               <!-- 灭的状态（isFavorite 为 false） -->
@@ -94,10 +95,10 @@
             </div>
 
             <!-- 地板价 -->
-            <div class="collection-price">{{ item.lowestPrice  }}</div>
+            <div class="collection-price">{{ item.lowestPrice }}</div>
 
             <!-- 成交量 -->
-            <div class="collection-volume">{{ item.dailyTransactionCount   }}</div>
+            <div class="collection-volume">{{ item.dailyTransactionCount }}</div>
           </div>
         </div>
         <div v-else class="no-data">
@@ -113,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted,computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
 
@@ -135,67 +136,142 @@ const showReleasePicker = ref(false);
 const selectedCategory = ref('');
 const selectedStatus = ref('');
 const isPriceAsc = ref(false);
+const isPriceAsc2 = ref(false);
 const isVolumeAsc = ref(false);
-const originalCollections  = ref([]);
-const filteredCollections  = computed(() => {
-  if (!keyword.value) {
-    return originalCollections .value; // 如果没有输入关键词，显示全部数据
+const isVolumeAsc2 = ref(false);
+const originalCollections = ref([]);
+const filteredCollections = computed(() => {
+  let filtered = originalCollections.value;
+
+  // 关键词搜索
+  if (keyword.value) {
+    filtered = filtered.filter(item =>
+      item.name.toLowerCase().includes(keyword.value.toLowerCase())
+    );
   }
-  return originalCollections.value.filter(item =>
-    item.name.toLowerCase().includes(keyword.value.toLowerCase()) // 模糊匹配名称
-  );
+
+  // 类别筛选（如果未选择“全部”）
+  if (selectedCategory.value && selectedCategory.value !== '全部') {
+    filtered = filtered.filter(item => item.levelName === selectedCategory.value);
+  }
+
+  // 发行份数筛选（如果未选择“全部”）
+  if (selectedStatus.value && selectedStatus.value !== '全部') {
+    const range = selectedStatus.value;
+    if (range === '100以上') {
+      filtered = filtered.filter(item => item.totalIssueCount > 100);
+    } else if (range === '2000以上') {
+      filtered = filtered.filter(item => item.totalIssueCount > 2000);
+    } else if (range === '5000以上') {
+      filtered = filtered.filter(item => item.totalIssueCount > 5000);
+    } else if (range === '9000以上') {
+      filtered = filtered.filter(item => item.totalIssueCount > 9000);
+    }
+  }
+  return filtered;
 });
 const categoryOptions = [
-  { text: '全部类别', value: '全部类别' },
-  { text: '类别1', value: '类别1' },
-  { text: '类别2', value: '类别2' },
+  { text: '全部', value: '全部' },
+  { text: '普通', value: '普通' },
+  { text: '稀有', value: '稀有' },
+  { text: '史诗', value: '史诗' },
 ];
 const statusOptions = [
   { text: '全部', value: '全部' },
-  { text: '进行中', value: '进行中' },
-  { text: '已结束', value: '已结束' },
+  { text: '100以上', value: '100以上' },
+  { text: '2000以上', value: '2000以上' },
+  { text: '5000以上', value: '5000以上' },
+  { text: '9000以上', value: '9000以上' },
 ];
 
 // 加载 NFT 数据
 const loadNFTData = async (tag = null) => {
-      try {
-        const data = await getNFTList(tag);
-        originalCollections.value = data.map(item => ({
-          ...item,
-          isFavorite: false, // 默认未收藏
-        }));
-      } catch (error) {
-        console.error('Failed to load NFT data:', error);
-      }
-    };
- // 监听选项卡变化
- const handleTabChange = (name) => {
-      const selectedTab = tabs.find(tab => tab.name === name);
-      if (selectedTab) {
-        console.log(name);
-        const tag = selectedTab.name === 'all' ? null : selectedTab.name;
-        loadNFTData(tag); // 根据选择的 tab 加载数据
-        
-      }
-    };
-     // 初始化加载数据
-     onMounted(() => {
-      loadNFTData(); // 默认加载全部数据
-    });
-
-const onCategoryConfirm = () => {
-  showCategoryPicker.value = false;
+  try {
+    const data = await getNFTList(tag);
+    originalCollections.value = data.map(item => ({
+      ...item,
+      isFavorite: false, // 默认未收藏
+    }));
+  } catch (error) {
+    console.error('加载藏品数据失败', error);
+  }
 };
+// 监听选项卡变化
+const handleTabChange = (name) => {
+  const selectedTab = tabs.find(tab => tab.name === name);
+  if (selectedTab) {
+    const tag = selectedTab.name === 'all' ? null : selectedTab.name;
+    loadNFTData(tag); // 根据选择的 tab 加载数据
+  }
+};
+// 初始化加载数据
+onMounted(() => {
+  loadNFTData(); // 默认加载全部数据
+});
 
-const onStatusConfirm = () => {
+const onCategoryConfirm = (event) => {
+  const selectedValue = event.selectedValues[0];
+  selectedCategory.value = selectedValue; // 更新选择的类别
+  showCategoryPicker.value = false;
+
+};
+const onStatusConfirm = (event) => {
+  const selectedValue = event.selectedValues[0]; // 提取选中的值
+  selectedStatus.value = selectedValue; // 更新选择的发行份数
   showReleasePicker.value = false;
 };
 
 const toggleSort = (type) => {
   if (type === 'price') {
-    isPriceAsc.value = !isPriceAsc.value;
-  } else if (type === 'volume') {
-    isVolumeAsc.value = !isVolumeAsc.value;
+    // 切换排序状态
+    if (!isPriceAsc.value && !isPriceAsc2.value) {
+      // 如果当前两个图标都未激活，第一次点击激活升序图标
+      isPriceAsc.value = true;
+    } else if (isPriceAsc.value) {
+      // 如果当前是升序图标激活，点击后切换到降序图标
+      isPriceAsc.value = false;
+      isPriceAsc2.value = true;
+    } else if (isPriceAsc2.value) {
+      // 如果当前是降序图标激活，点击后切换到升序图标
+      isPriceAsc2.value = false;
+      isPriceAsc.value = true;
+    }
+
+    // 根据当前排序状态对数据进行排序
+    filteredCollections.value.sort((a, b) => {
+      if (isPriceAsc.value) {
+        // 升序
+        return a.lowestPrice - b.lowestPrice;
+      } else {
+        // 降序
+        return b.lowestPrice - a.lowestPrice;
+      }
+    });
+  }
+  else if (type === 'volume') {
+    // 切换排序状态
+    if (!isVolumeAsc.value && !isVolumeAsc2.value) {
+      // 如果当前两个图标都未激活，第一次点击激活升序图标
+      isVolumeAsc.value = true;
+    } else if (isVolumeAsc.value) {
+      // 如果当前是升序图标激活，点击后切换到降序图标
+      isVolumeAsc.value = false;
+      isVolumeAsc2.value = true;
+    } else if (isVolumeAsc2.value) {
+      // 如果当前是降序图标激活，点击后切换到升序图标
+      isVolumeAsc2.value = false;
+      isVolumeAsc.value = true;
+    }
+    // 根据成交量排序
+    filteredCollections.value.sort((a, b) => {
+      if (isVolumeAsc.value) {
+        // 升序
+        return a.dailyTransactionCount - b.dailyTransactionCount;
+      } else {
+        // 降序
+        return b.dailyTransactionCount - a.dailyTransactionCount;
+      }
+    });
   }
 };
 const toggleFavorite = (item) => {
@@ -204,6 +280,14 @@ const toggleFavorite = (item) => {
 // 返回首页
 const goBack = () => {
   router.push('/home');
+};
+//点击藏品调到对应寄售页
+const goToConsignmentPage = (nftId) => {
+  console.log('点击藏品调到对应寄售页', nftId);
+  router.push({
+    path: `/consignment`, // 使用路径格式
+    query: { id: nftId }, // 使用 query 传递参数
+  });
 };
 </script>
 
@@ -403,13 +487,17 @@ const goBack = () => {
 .triangle-down {
   border-top: 4px solid #817f7f;
 }
+
 .triangle-up.active {
-  border-bottom: 4px solid blue; /* 升序时，上面三角形变为黑色 */
+  border-bottom: 4px solid blue;
+  /* 升序时，上面三角形变为黑色 */
 }
 
 .triangle-down.active {
-  border-top: 4px solid blue; /* 降序时，下面三角形变为黑色 */
+  border-top: 4px solid blue;
+  /* 降序时，下面三角形变为黑色 */
 }
+
 /* 示例藏品样式 */
 .collection-item {
   display: flex;
@@ -470,16 +558,20 @@ const goBack = () => {
 
 /* 五角星（收藏按钮） */
 .collection-favorite {
-  position: absolute; /* 绝对定位 */
-  left: 61%; /* 距离屏幕左侧 55% 的位置 */
+  position: absolute;
+  /* 绝对定位 */
+  left: 61%;
+  /* 距离屏幕左侧 55% 的位置 */
   cursor: pointer;
   user-select: none;
 }
 
 /* 价格 */
 .collection-price {
-  position: absolute; /* 绝对定位 */
-  left: 71%; /* 距离屏幕左侧 55% 的位置 */
+  position: absolute;
+  /* 绝对定位 */
+  left: 71%;
+  /* 距离屏幕左侧 55% 的位置 */
 
   font-size: 12px;
   font-weight: bold;
@@ -488,8 +580,10 @@ const goBack = () => {
 
 /* 成交量 */
 .collection-volume {
-  position: absolute; /* 绝对定位 */
-  left: 89%; /* 距离屏幕左侧 55% 的位置 */
+  position: absolute;
+  /* 绝对定位 */
+  left: 89%;
+  /* 距离屏幕左侧 55% 的位置 */
   font-size: 12px;
   color: #000000;
 }

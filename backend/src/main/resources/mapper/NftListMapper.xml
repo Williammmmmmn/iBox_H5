@@ -4,10 +4,12 @@
     <!-- 新增用户 -->
     <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.entity.NftListDto">
             SELECT
+            nfts.id AS nftId,
             nfts.name,
             nfts.image_url AS imageUrl,
-            SUM(official_sales.circulate_count) AS totalCirculateCount,
-            SUM(official_sales.issue_count) AS totalIssueCount,
+            nft_levels.name AS levelName,
+            SUM(DISTINCT official_sales.circulate_count) AS totalCirculateCount,
+            SUM(DISTINCT official_sales.issue_count) AS totalIssueCount,
             COALESCE(MIN(nft_instances.price), 0) AS lowestPrice,
             COUNT(DISTINCT transactions.id) AS dailyTransactionCount
             FROM
@@ -17,6 +19,7 @@
             LEFT JOIN official_sales ON nfts.id = official_sales.nft_id
             LEFT JOIN nft_instances ON nfts.id = nft_instances.nft_id
             LEFT JOIN transactions ON nfts.id = transactions.nft_id
+            LEFT JOIN nft_levels ON nfts.level_id = nft_levels.id
             WHERE
             nfts.is_listed = 0
 

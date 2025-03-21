@@ -6,6 +6,7 @@ import Notice from "@/pages/Notice/MyNotice.vue";
 import Search from "@/pages/Search/SearchPage.vue";
 import Login from "@/pages/Login/index.vue";
 import Market from '@/pages/Market/index.vue'
+import Consignment from '@/pages/Consignment/consignmentPage.vue'
 
 import User from "@/pages/Layout/user.vue";
 import Community from "@/pages/Layout/community.vue";
@@ -46,6 +47,10 @@ const routes = [
   {
     path: "/market",
     component: Market
+  },
+  {
+    path: '/consignment',
+    component: Consignment
   }
 
 

@@ -12,8 +12,10 @@ import java.math.BigDecimal;
  **/
 @Data
 public class NftListDto {
+    private String nftId;
     private String name; // NFT 名称
     private String imageUrl; // NFT 图片 URL
+    private String levelName; //NFT等级
     private Integer totalCirculateCount; // 总流通份数
     private Integer totalIssueCount; // 总发行份数
     private BigDecimal lowestPrice; // 最低寄售价格
