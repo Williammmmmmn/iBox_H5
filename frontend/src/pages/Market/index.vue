@@ -23,7 +23,8 @@
 
       <div class="container-below">
         <!-- 搜索框 -->
-        <van-search v-model="keyword" placeholder="输入藏品关键词" shape="round" />
+        <!-- 搜索框 -->
+        <van-search v-model="keyword" placeholder="输入藏品关键词" shape="round" @input="handleSearch" />
 
         <!-- 功能模块 -->
         <div class="features">
@@ -112,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted} from 'vue';
+import { ref, onMounted,computed } from 'vue';
 import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
 
@@ -135,8 +136,15 @@ const selectedCategory = ref('');
 const selectedStatus = ref('');
 const isPriceAsc = ref(false);
 const isVolumeAsc = ref(false);
-const filteredCollections = ref([]);
-
+const originalCollections  = ref([]);
+const filteredCollections  = computed(() => {
+  if (!keyword.value) {
+    return originalCollections .value; // 如果没有输入关键词，显示全部数据
+  }
+  return originalCollections.value.filter(item =>
+    item.name.toLowerCase().includes(keyword.value.toLowerCase()) // 模糊匹配名称
+  );
+});
 const categoryOptions = [
   { text: '全部类别', value: '全部类别' },
   { text: '类别1', value: '类别1' },
@@ -152,7 +160,7 @@ const statusOptions = [
 const loadNFTData = async (tag = null) => {
       try {
         const data = await getNFTList(tag);
-        filteredCollections.value = data.map(item => ({
+        originalCollections.value = data.map(item => ({
           ...item,
           isFavorite: false, // 默认未收藏
         }));
@@ -426,7 +434,7 @@ const goBack = () => {
 /* 名称和发行/流通 */
 .collection-info {
   flex: 1;
-  margin-right: 12px;
+  margin-right: 10px;
   /* 减小右边距，使文字更靠近图片 */
   white-space: nowrap;
   /* 防止文字换行 */
@@ -462,24 +470,26 @@ const goBack = () => {
 
 /* 五角星（收藏按钮） */
 .collection-favorite {
-  margin-right: 10px;
+  position: absolute; /* 绝对定位 */
+  left: 61%; /* 距离屏幕左侧 55% 的位置 */
   cursor: pointer;
   user-select: none;
-
 }
 
 /* 价格 */
 .collection-price {
+  position: absolute; /* 绝对定位 */
+  left: 71%; /* 距离屏幕左侧 55% 的位置 */
+
   font-size: 12px;
   font-weight: bold;
   color: #000000;
-  margin-right: 32px;
 }
 
 /* 成交量 */
 .collection-volume {
-  margin-right: 18px;
-
+  position: absolute; /* 绝对定位 */
+  left: 89%; /* 距离屏幕左侧 55% 的位置 */
   font-size: 12px;
   color: #000000;
 }

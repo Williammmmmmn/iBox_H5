@@ -19,7 +19,7 @@
             LEFT JOIN transactions ON nfts.id = transactions.nft_id
             WHERE
             nfts.is_listed = 0
-            AND transactions.transaction_date >= CURDATE()
+
             <if test="tag != null and tag != '全部'">
                 AND tags.name = #{tag}
             </if>
