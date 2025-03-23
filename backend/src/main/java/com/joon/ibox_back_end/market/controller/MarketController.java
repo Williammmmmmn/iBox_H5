@@ -2,12 +2,10 @@ package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.NftListDto;
+import com.joon.ibox_back_end.market.entity.NftSaleDto;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,5 +30,15 @@ public class MarketController {
         // 调用 Service 查询数据
         List<NftListDto> nftList = marketService.getNFTListByTag(tag);
         return R.success("查询市场列表成功",nftList);
+    }
+    /**
+     * 查询NFT寄售详情
+     * @param nftId
+     * @return
+     */
+    @GetMapping("/detail/{nftId}")
+    public R getNFTDetail(@PathVariable int nftId) {
+        NftSaleDto nftSaleInfo = marketService.getNFTSaleInfo(nftId);
+        return R.success("查询藏品寄售信息成功",nftSaleInfo);
     }
 }

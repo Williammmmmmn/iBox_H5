@@ -14,16 +14,16 @@
       </div>
     </div>
     <!-- 图片名称 -->
-    <div class="image-name">曹操</div>
+    <div class="image-name">{{ name }}</div>
     <!-- 发行和流通信息 -->
     <div class="info-container">
       <div class="info-item">
         <span class="label">发行</span>
-        <span class="value">80000份</span>
+        <span class="value">{{ issueCount }}份</span>
       </div>
       <div class="info-item">
         <span class="label">流通</span>
-        <span class="value">800份</span>
+        <span class="value">{{ circulationCount }}份</span>
       </div>
     </div>
     <!-- 内容区域 -->
@@ -56,22 +56,22 @@
                 <!-- 价格和编号 -->
                 <div class="price-and-id">
                   <!-- 编号排序 -->
-                  <div class="volume-content-container" @click="handlePriceSortClick">
+                  <div class="volume-content-container" @click="toggleSort('id')">
                     <div class="text-container">
                       <span class="text">编号</span>
                       <div class="triangle-container">
-                        <span class="triangle triangle-up" :class="{ active: isAsc }"></span>
-                        <span class="triangle triangle-down" :class="{ active: !isAsc }"></span>
+                        <span class="triangle triangle-up" :class="{ active: isAscId }"></span>
+                        <span class="triangle triangle-down" :class="{ active: isAscId2 }"></span>
                       </div>
                     </div>
                   </div>
                   <!-- 价格排序 -->
-                  <div class="price-content-container" @click="handleIdSortClick">
+                  <div class="price-content-container" @click="toggleSort('price')">
                     <div class="text-container">
                       <span class="text">价格</span>
                       <div class="triangle-container">
-                        <span class="triangle triangle-up" :class="{ active: isDesc }"></span>
-                        <span class="triangle triangle-down" :class="{ active: !isDesc }"></span>
+                        <span class="triangle triangle-up" :class="{ active: isDescPrice }"></span>
+                        <span class="triangle triangle-down" :class="{ active: isDescPrice2 }"></span>
                       </div>
                     </div>
                   </div>
@@ -80,8 +80,12 @@
 
               <!-- 数据展示区域 -->
               <div class="data-list">
+                <!-- 加载中提示 -->
+                <div v-if="loading" class="loading">
+                  数据加载中...
+                </div>
                 <!-- 无数据时 -->
-                <div v-if="dataList.length === 0" class="no-data">
+                <div v-else-if="dataList.length === 0" class="no-data">
                   --暂无数据--
                 </div>
                 <!-- 有数据时 -->
@@ -125,65 +129,118 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { getNFTDetail } from '@/api/market';
 
-const route = useRoute(); // 获取路由信息
-const router = useRouter(); // 获取路由操作对象
-const nftId = route.query.id; // 获取路由参数中的 NFT ID
-const activeTab = ref(0); // 当前选中的选项卡
-const isSwitchOn = ref('left'); // switch 组件的值
-const isAsc = ref(true);
-const isDesc = ref(false);
-const dataList = ref([]); // 数据列表
-const isReachBottom = ref(false); // 是否划到底部
+const route = useRoute();
+const router = useRouter();
+const nftId = route.query.id;
+const activeTab = ref(0);
+const isSwitchOn = ref('left');
+const isAscId = ref(false); // 编号升序
+const isAscId2 = ref(false); // 编号降序
+const isDescPrice = ref(false); // 价格升序
+const isDescPrice2 = ref(false); // 价格降序
+const issueCount = ref(0);
+const circulationCount = ref(0);
+const dataList = ref([]);
+const isReachBottom = ref(false);
+const imageUrl = ref('');
+const name = ref('');
+const loading = ref(false); // 加载状态
 
-// 静态图片路径
-const imageUrl = require('@/assets/images/cc.jpg'); // 使用 require 引入图片
-
-// 切换 Switch 状态
 const toggleSwitch = (side) => {
   isSwitchOn.value = side;
-  loadData(); // 切换时重新加载数据
+  loadData();
 };
 
-// 加载数据
-const loadData = () => {
-  // 模拟数据
-  dataList.value = [
-    { name: '曹操', id: '23', price: '100.00' },
-    { name: '曹操', id: '18', price: '150.00' },
-    { name: '曹操', id: '123', price: '200.00' },
-    { name: '曹操', id: '456', price: '200.00' },
-
-    { name: '曹操', id: '156', price: '200.00' },
-    { name: '曹操', id: '561', price: '200.00' },
-    { name: '曹操', id: '89', price: '200.00' },
-    { name: '曹操', id: '255', price: '200.00' },
-    { name: '曹操', id: '323', price: '200.00' },
-    { name: '曹操', id: '788', price: '200.00' },
-
-
-  ];
-  isReachBottom.value = true; // 模拟数据加载完毕
+const loadData = async () => {
+  loading.value = true; // 开始加载
+  try {
+    const response = await getNFTDetail(nftId);
+    imageUrl.value = require(`@/${response.imageUrl}`);
+    console.log(imageUrl.value);
+    name.value = response.name;
+    issueCount.value = response.issueCount;
+    circulationCount.value = response.circulationCount;
+    dataList.value = response.instances.map(item => ({
+      name: response.name,
+      id: item.id,
+      price: item.price,
+    })).sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // 默认价格从低到高
+    isReachBottom.value = true;
+  } catch (error) {
+    console.error('加载数据失败:', error);
+    dataList.value = [];
+    isReachBottom.value = false;
+  } finally {
+    loading.value = false; // 结束加载
+  }
 };
 
-// 处理价格排序点击
-const handlePriceSortClick = () => {
-  isAsc.value = !isAsc.value; // 切换升序/降序状态
-  loadData(); // 重新加载数据
+const toggleSort = (type) => {
+  if (type === 'price') {
+    // 重置编号排序状态
+    isAscId.value = false;
+    isAscId2.value = false;
+
+    // 切换价格排序状态
+    if (!isDescPrice.value && !isDescPrice2.value) {
+      // 默认从低到高
+      isDescPrice.value = true;
+    } else if (isDescPrice.value) {
+      // 从低到高切换到从高到低
+      isDescPrice.value = false;
+      isDescPrice2.value = true;
+    } else if (isDescPrice2.value) {
+      // 从高到低切换到从低到高
+      isDescPrice2.value = false;
+      isDescPrice.value = true;
+    }
+
+    // 根据价格排序
+    dataList.value.sort((a, b) => {
+      const priceA = parseFloat(a.price);
+      const priceB = parseFloat(b.price);
+      if (isDescPrice.value) {
+        return priceA - priceB; // 从低到高
+      } else {
+        return priceB - priceA; // 从高到低
+      }
+    });
+  } else if (type === 'id') {
+    // 重置价格排序状态
+    isDescPrice.value = false;
+    isDescPrice2.value = false;
+
+    // 切换编号排序状态
+    if (!isAscId.value && !isAscId2.value) {
+      // 默认从低到高
+      isAscId.value = true;
+    } else if (isAscId.value) {
+      // 从低到高切换到从高到低
+      isAscId.value = false;
+      isAscId2.value = true;
+    } else if (isAscId2.value) {
+      // 从高到低切换到从低到高
+      isAscId2.value = false;
+      isAscId.value = true;
+    }
+
+    // 根据编号排序
+    dataList.value.sort((a, b) => {
+      if (isAscId.value) {
+        return a.id - b.id; // 从低到高
+      } else {
+        return b.id - a.id; // 从高到低
+      }
+    });
+  }
 };
 
-// 处理编号排序点击
-const handleIdSortClick = () => {
-  isDesc.value = !isDesc.value; // 切换升序/降序状态
-  loadData(); // 重新加载数据
-};
-
-// 返回首页
 const goBack = () => {
-  router.push('/market'); // 跳转到首页
+  router.go(-1);
 };
 
-// 初始化加载数据
 onMounted(() => {
   loadData();
 });
@@ -459,7 +516,11 @@ onMounted(() => {
   color: rgb(95, 90, 90);
   /* 字体颜色 */
 }
-
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
 .price-and-id {
   display: flex;
   align-items: center; /* 垂直居中 */

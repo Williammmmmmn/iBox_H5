@@ -23,7 +23,6 @@
 
       <div class="container-below">
         <!-- 搜索框 -->
-        <!-- 搜索框 -->
         <van-search v-model="keyword" placeholder="输入藏品关键词" shape="round" @input="handleSearch" />
 
         <!-- 功能模块 -->
@@ -72,7 +71,10 @@
           </div>
         </div>
         <!-- 示例藏品 -->
-        <div v-if="filteredCollections.length > 0">
+        <div v-if="loading" class="loading">
+          数据加载中...
+        </div>
+        <div v-else-if="filteredCollections.length > 0">
           <div v-for="item in filteredCollections" :key="item.id" class="collection-item" 
           @click="goToConsignmentPage(item.nftId)">
             <!-- 图片 -->
@@ -140,6 +142,8 @@ const isPriceAsc2 = ref(false);
 const isVolumeAsc = ref(false);
 const isVolumeAsc2 = ref(false);
 const originalCollections = ref([]);
+const loading = ref(false); // 加载状态
+
 const filteredCollections = computed(() => {
   let filtered = originalCollections.value;
 
@@ -186,6 +190,7 @@ const statusOptions = [
 
 // 加载 NFT 数据
 const loadNFTData = async (tag = null) => {
+  loading.value = true; // 开始加载
   try {
     const data = await getNFTList(tag);
     originalCollections.value = data.map(item => ({
@@ -194,6 +199,8 @@ const loadNFTData = async (tag = null) => {
     }));
   } catch (error) {
     console.error('加载藏品数据失败', error);
+  } finally {
+    loading.value = false; // 结束加载
   }
 };
 // 监听选项卡变化
@@ -290,8 +297,12 @@ const goToConsignmentPage = (nftId) => {
   });
 };
 </script>
-
 <style>
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
 /* 顶部导航样式 */
 .top-nav {
   background-color: #fff;

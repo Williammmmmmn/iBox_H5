@@ -64,6 +64,11 @@ public class Consignments {
     private LocalDateTime updatedAt;
 
     /**
+     * 是否处于有效寄售状态（1: 是, 0: 否）。
+     */
+    private Boolean isActive;
+
+    /**
      * 寄售状态枚举。
      */
     public enum ConsignmentStatus {

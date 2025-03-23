@@ -15,3 +15,14 @@ export const getNFTList = async (tag = null) => {
       throw error;
     }
   };
+ 
+// 获取 NFT 详情数据
+export const getNFTDetail = async (id) => {
+  try {
+    const response = await request.get(`/nfts/detail/${id}`); // 根据 NFT ID 获取详情
+    return response.data;
+  } catch (error) {
+    console.error('获取 NFT 详情失败:', error);
+    throw error;
+  }
+};

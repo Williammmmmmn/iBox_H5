@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.market.mapper.NftSaleInfoMapper">
+
+    <resultMap id="NFTSaleInfoResultMap" type="com.joon.ibox_back_end.market.entity.NftSaleDto">
+        <result property="nftId" column="nftId" />
+        <result property="name" column="nft_name" />
+        <result property="imageUrl" column="nft_image_url" />
+        <result property="issueCount" column="issue_count" />
+        <result property="circulationCount" column="circulation_count" />
+        <collection property="instances" ofType="com.joon.ibox_back_end.market.entity.NftInstanceDto">
+            <result property="id" column="instance_number" />
+            <result property="price" column="instance_price" />
+        </collection>
+    </resultMap>
+
+    <select id="getNFTSaleInfo" resultMap="NFTSaleInfoResultMap">
+        SELECT
+            nfts.id AS nftId,
+            nfts.name AS nft_name,
+            nfts.image_url AS nft_image_url,
+            official_sales.issue_count AS issue_count,
+            official_sales.circulate_count AS circulation_count,
+            nft_instances.instance_number AS instance_number,
+            nft_instances.price AS instance_price
+        FROM
+            nfts
+                JOIN
+            official_sales ON nfts.id = official_sales.nft_id
+                JOIN
+            nft_instances ON nfts.id = nft_instances.nft_id
+        WHERE
+            nfts.id = #{nftId}
+        ORDER BY
+            nft_instances.instance_number ASC;
+    </select>
+
+</mapper>
