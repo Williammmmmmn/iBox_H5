@@ -1,2 +1,3 @@
 # iBox介绍
-![image](src\assets\images\a2.jpg)
+![image](./a2.jpg)
+![image](a2.jpg)
