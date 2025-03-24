@@ -2,6 +2,7 @@ package com.joon.ibox_back_end.market.service;
 
 import com.joon.ibox_back_end.market.entity.NftListDto;
 import com.joon.ibox_back_end.market.entity.NftSaleDto;
+import com.joon.ibox_back_end.market.entity.PurchaseRequestDto;
 
 import java.util.List;
 
@@ -20,4 +21,9 @@ public interface MarketService {
      */
     NftSaleDto getNFTSaleInfo(int nftId);
 
+    /**
+     * 查询nft求购信息
+     * @param nftId
+     */
+    List<PurchaseRequestDto> getPurchaseRequestsByNftId(Integer nftId);
 }

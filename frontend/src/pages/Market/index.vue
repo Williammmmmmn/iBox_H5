@@ -596,6 +596,7 @@ const goToConsignmentPage = (nftId) => {
   left: 89%;
   /* 距离屏幕左侧 55% 的位置 */
   font-size: 12px;
+  font-weight: bold;
   color: #000000;
 }
 

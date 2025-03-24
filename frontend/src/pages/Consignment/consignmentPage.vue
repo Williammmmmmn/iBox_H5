@@ -38,23 +38,17 @@
                 <!-- 自定义 Switch -->
                 <div class="custom-switch">
                   <div class="switch-background" :class="{ 'move-right': isSwitchOn === 'right' }"></div>
-                  <div
-                    class="switch-item left"
-                    :class="{ active: isSwitchOn === 'left' }"
-                    @click="toggleSwitch('left')"
-                  >
+                  <div class="switch-item left" :class="{ active: isSwitchOn === 'left' }"
+                    @click="toggleSwitch('left')">
                     寄售
                   </div>
-                  <div
-                    class="switch-item right"
-                    :class="{ active: isSwitchOn === 'right' }"
-                    @click="toggleSwitch('right')"
-                  >
+                  <div class="switch-item right" :class="{ active: isSwitchOn === 'right' }"
+                    @click="toggleSwitch('right')">
                     求购
                   </div>
                 </div>
                 <!-- 价格和编号 -->
-                <div class="price-and-id">
+                <div class="price-and-id" v-if="isSwitchOn === 'left'">
                   <!-- 编号排序 -->
                   <div class="volume-content-container" @click="toggleSort('id')">
                     <div class="text-container">
@@ -85,26 +79,41 @@
                   数据加载中...
                 </div>
                 <!-- 无数据时 -->
-                <div v-else-if="dataList.length === 0" class="no-data">
+                <div v-else-if="currentDataList.length === 0" class="no-data">
                   --暂无数据--
                 </div>
                 <!-- 有数据时 -->
                 <template v-else>
-                  <div v-for="(item, index) in dataList" :key="index" class="data-item">
-                    <!-- 左边：名称和编号 -->
-                    <div class="left-info">
-                      <div class="name">{{ item.name }}</div>
-                      <div class="id">
-                        <span class="hash">#</span>
-                        <span class="number">{{ item.id }}</span>
+                  <!-- 寄售模式的数据项 -->
+                  <template v-if="isSwitchOn === 'left'">
+                    <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)" class="sale-item">
+                      <!-- 左边：名称和编号 -->
+                      <div class="left-info">
+                        <div class="name">{{ item.name }}</div>
+                        <div class="id">
+                          <span class="hash">#</span>
+                          <span class="number">{{ item.id }}</span>
+                        </div>
+                      </div>
+                      <!-- 右边：价格 -->
+                      <div class="right-info">
+                        <span class="price-symbol">￥</span>
+                        <span class="price">{{ item.price }}</span>
                       </div>
                     </div>
-                    <!-- 右边：价格 -->
-                    <div class="right-info">
-                      <span class="price-symbol">￥</span>
-                      <span class="price">{{ item.price }}</span>
+                    
+                  </template>
+                  <!-- 求购模式的数据项 -->
+                  <template v-else>
+                    <div v-for="(item, index) in currentDataList" :key="'purchase-' + index" class="purchase-item">
+                      <div class="purchase-price">
+                        <span class="price-symbol">￥</span>
+                        <span class="price">{{ item.price }}</span>
+                      </div>
+                      <!-- 新增的 chevron 图标 -->
+                      <van-icon name="arrow" class="chevron-icon" />
                     </div>
-                  </div>
+                  </template>
                   <!-- 划到底部时 -->
                   <div v-if="isReachBottom" class="no-more">
                     --没有更多--
@@ -127,42 +136,53 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getNFTDetail } from '@/api/market';
+import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
 
 const route = useRoute();
 const router = useRouter();
 const nftId = route.query.id;
 const activeTab = ref(0);
-const isSwitchOn = ref('left');
+const isSwitchOn = ref('left')//left代表寄售，right代表求购;
 const isAscId = ref(false); // 编号升序
 const isAscId2 = ref(false); // 编号降序
 const isDescPrice = ref(false); // 价格升序
 const isDescPrice2 = ref(false); // 价格降序
 const issueCount = ref(0);
 const circulationCount = ref(0);
-const dataList = ref([]);
+const saleList = ref([]);
+const purchaseList = ref([]); // 求购列表
 const isReachBottom = ref(false);
 const imageUrl = ref('');
 const name = ref('');
 const loading = ref(false); // 加载状态
 
-const toggleSwitch = (side) => {
+// 计算当前显示的数据列表
+const currentDataList = computed(() => {
+  return isSwitchOn.value === 'left' ? saleList.value : purchaseList.value;
+});
+// 切换寄售/求购
+const toggleSwitch = async (side) => {
   isSwitchOn.value = side;
-  loadData();
+
+  // 切换到求购且求购数据为空时，加载求购数据
+  if (side === 'right' && purchaseList.value.length === 0) {
+    await loadPurchaseData();
+  }
+  // 切换到寄售且寄售数据为空时，加载寄售数据（初始化时已加载，此处可省略）
 };
 
 const loadData = async () => {
   loading.value = true; // 开始加载
   try {
     const response = await getNFTDetail(nftId);
+    console.log(response);
     imageUrl.value = require(`@/${response.imageUrl}`);
-    console.log(imageUrl.value);
     name.value = response.name;
     issueCount.value = response.issueCount;
     circulationCount.value = response.circulationCount;
-    dataList.value = response.instances.map(item => ({
+    saleList.value = response.instances.map(item => ({
       name: response.name,
       id: item.id,
       price: item.price,
@@ -170,10 +190,34 @@ const loadData = async () => {
     isReachBottom.value = true;
   } catch (error) {
     console.error('加载数据失败:', error);
-    dataList.value = [];
-    isReachBottom.value = false;
+    saleList.value = [];
   } finally {
-    loading.value = false; // 结束加载
+    loading.value = false;
+  }
+};
+const loadPurchaseData = async () => {
+  loading.value = true;
+  try {
+    const response = await getPurchaseRequestsByNftId(nftId);
+    console.log('完整响应:', JSON.parse(JSON.stringify(response))); // 深度拷贝打印
+
+    // 正确判断方式
+    if (response) {
+      console.log('111:', purchaseList.value); // 验证处理结果
+      purchaseList.value = response.map(item => ({
+        price: item.price
+      })).sort((a, b) => b.price - a.price);
+
+      console.log('处理后的数据:', purchaseList.value); // 验证处理结果
+    } else {
+      console.error('数据格式错误:', response);
+      purchaseList.value = [];
+    }
+  } catch (err) {
+    console.error('请求失败:', err);
+    purchaseList.value = [];
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -198,7 +242,7 @@ const toggleSort = (type) => {
     }
 
     // 根据价格排序
-    dataList.value.sort((a, b) => {
+    saleList.value.sort((a, b) => {
       const priceA = parseFloat(a.price);
       const priceB = parseFloat(b.price);
       if (isDescPrice.value) {
@@ -227,7 +271,7 @@ const toggleSort = (type) => {
     }
 
     // 根据编号排序
-    dataList.value.sort((a, b) => {
+    saleList.value.sort((a, b) => {
       if (isAscId.value) {
         return a.id - b.id; // 从低到高
       } else {
@@ -240,7 +284,11 @@ const toggleSort = (type) => {
 const goBack = () => {
   router.go(-1);
 };
-
+const goToSaleDetail = (instanceId) => {
+  router.push({
+    path: `/saleDetail/${nftId}/${instanceId}`,
+  });
+};
 onMounted(() => {
   loadData();
 });
@@ -253,7 +301,8 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  overflow-y: auto; /* 允许垂直滚动 */
+  overflow-y: auto;
+  /* 允许垂直滚动 */
   user-select: none;
 }
 
@@ -516,16 +565,21 @@ onMounted(() => {
   color: rgb(95, 90, 90);
   /* 字体颜色 */
 }
+
 .loading {
   text-align: center;
   padding: 20px;
   color: #999;
 }
+
 .price-and-id {
   display: flex;
-  align-items: center; /* 垂直居中 */
-  gap: 10px; /* 价格和编号之间的间距 */
+  align-items: center;
+  /* 垂直居中 */
+  gap: 10px;
+  /* 价格和编号之间的间距 */
 }
+
 .price-content-container {
   margin-left: 6px;
   display: flex;
@@ -594,11 +648,11 @@ onMounted(() => {
   color: #999;
   font-size: 14px;
   padding: 20px 0;
-  margin-top:20px;
+  margin-top: 20px;
 }
 
 /* 数据项 */
-.data-item {
+.sale-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -611,7 +665,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  text-align: left; /* 左边对齐 */
+  text-align: left;
+  /* 左边对齐 */
 }
 
 .name {
@@ -621,27 +676,63 @@ onMounted(() => {
 
 .id {
   font-size: 14px;
-  font-weight: bold; /* 编号加粗 */
+  font-weight: bold;
+  /* 编号加粗 */
 }
 
 .hash {
-  font-weight: bold; /* # 加粗 */
+  font-weight: bold;
+  /* # 加粗 */
 }
 
 .number {
-  font-weight: bold; /* 编号加粗 */
+  font-weight: bold;
+  /* 编号加粗 */
 }
 
 /* 右边：价格 */
 .right-info {
   font-size: 16px;
-  font-weight: bold; /* 价格加粗 */
+  font-weight: bold;
+  /* 价格加粗 */
 }
 
 .price-symbol {
-  font-weight: bold; /* ￥ 加粗 */
+  font-weight: bold;
+  /* ￥ 加粗 */
 }
 
+/* 新增求购项的样式 */
+.purchase-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.purchase-price {
+  font-size: 16px;
+  color: #333;
+}
+
+.purchase-price .price-symbol {
+  color: #050505;
+  font-weight: bold;
+}
+
+.purchase-price .price {
+  font-weight: bold;
+  color: #050505;
+}
+/* 新增 chevron 图标的样式 */
+.chevron-icon {
+  margin-left: auto; /* 自动向右对齐 */
+  color: #999;      /* 灰色 */
+  font-size: 14px;   /* 调整大小 */
+}
 /* 没有更多 */
 .no-more {
   text-align: center;

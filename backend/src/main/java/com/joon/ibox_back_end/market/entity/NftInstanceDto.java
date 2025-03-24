@@ -11,5 +11,5 @@ import lombok.Data;
 @Data
 public class NftInstanceDto {
     private int id; // 实例编号
-    private String price; // 实例价格
+    private int price; // 实例价格
 }
