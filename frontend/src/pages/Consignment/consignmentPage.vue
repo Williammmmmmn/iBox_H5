@@ -446,7 +446,7 @@ onMounted(() => {
   /* 字体颜色 */
 }
 
-/* 值样式（800份） */
+/* 值样式 */
 .value {
   background-color: #f0f0f0;
   /* 浅灰色背景 */

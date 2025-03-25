@@ -75,11 +75,11 @@
           数据加载中...
         </div>
         <div v-else-if="filteredCollections.length > 0">
-          <div v-for="item in filteredCollections" :key="item.id" class="collection-item" 
-          @click="goToConsignmentPage(item.nftId)">
+          <div v-for="item in filteredCollections" :key="item.id" class="collection-item"
+            @click="goToConsignmentPage(item.nftId)">
             <!-- 图片 -->
             <div class="collection-image">
-              <img :src="require(`@/${item.imageUrl}`)" alt="藏品图片" />
+              <img :src="require(`@/${item.imageUrl}`)" alt="藏品图片" loading="lazy" />
             </div>
 
             <!-- 名称和发行/流通 -->
@@ -103,6 +103,10 @@
             <div class="collection-volume">{{ item.dailyTransactionCount }}</div>
           </div>
         </div>
+        <!-- 底部提示 -->
+        <div class="bottom-tip" v-if="isReachBottom && !loading && filteredCollections.length > 0">
+          没有更多了
+        </div>
         <div v-else class="no-data">
           暂无藏品数据
         </div>
@@ -116,9 +120,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted,onUnmounted, computed } from 'vue';
 import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
+import { Toast } from 'vant';
 
 const router = useRouter();
 const activeTab = ref('all'); // 默认选中第一个 tab
@@ -143,35 +148,39 @@ const isVolumeAsc = ref(false);
 const isVolumeAsc2 = ref(false);
 const originalCollections = ref([]);
 const loading = ref(false); // 加载状态
+const cachedData = {};//缓存已加载数据
+const isReachBottom = ref(false);//是否到底部
 
 const filteredCollections = computed(() => {
-  let filtered = originalCollections.value;
+  let filtered = [...originalCollections.value];
 
   // 关键词搜索
   if (keyword.value) {
+    const searchTerm = keyword.value.toLowerCase();
     filtered = filtered.filter(item =>
-      item.name.toLowerCase().includes(keyword.value.toLowerCase())
+      item.name.toLowerCase().includes(searchTerm)
     );
   }
 
-  // 类别筛选（如果未选择“全部”）
+  // 类别筛选
   if (selectedCategory.value && selectedCategory.value !== '全部') {
-    filtered = filtered.filter(item => item.levelName === selectedCategory.value);
+    filtered = filtered.filter(item =>
+      item.levelName === selectedCategory.value
+    );
   }
 
-  // 发行份数筛选（如果未选择“全部”）
+  // 发行份数筛选
   if (selectedStatus.value && selectedStatus.value !== '全部') {
-    const range = selectedStatus.value;
-    if (range === '100以上') {
-      filtered = filtered.filter(item => item.totalIssueCount > 100);
-    } else if (range === '2000以上') {
-      filtered = filtered.filter(item => item.totalIssueCount > 2000);
-    } else if (range === '5000以上') {
-      filtered = filtered.filter(item => item.totalIssueCount > 5000);
-    } else if (range === '9000以上') {
-      filtered = filtered.filter(item => item.totalIssueCount > 9000);
-    }
+    const rangeMap = {
+      '100以上': 100,
+      '2000以上': 2000,
+      '5000以上': 5000,
+      '9000以上': 9000
+    };
+    const minCount = rangeMap[selectedStatus.value];
+    filtered = filtered.filter(item => item.totalIssueCount > minCount);
   }
+
   return filtered;
 });
 const categoryOptions = [
@@ -190,15 +199,23 @@ const statusOptions = [
 
 // 加载 NFT 数据
 const loadNFTData = async (tag = null) => {
+  const cacheKey = tag || 'all';
+  if (cachedData[cacheKey]) {
+    originalCollections.value = cachedData[cacheKey];
+    return;
+  }
   loading.value = true; // 开始加载
   try {
     const data = await getNFTList(tag);
     originalCollections.value = data.map(item => ({
       ...item,
       isFavorite: false, // 默认未收藏
+      lowestPrice: item.lowestPrice || 0,
+      dailyTransactionCount: item.dailyTransactionCount || 0
     }));
+    cachedData[cacheKey] = originalCollections.value;
   } catch (error) {
-    console.error('加载藏品数据失败', error);
+    Toast({ type: 'danger', message: '加载数据失败，请稍后重试' });
   } finally {
     loading.value = false; // 结束加载
   }
@@ -211,10 +228,6 @@ const handleTabChange = (name) => {
     loadNFTData(tag); // 根据选择的 tab 加载数据
   }
 };
-// 初始化加载数据
-onMounted(() => {
-  loadNFTData(); // 默认加载全部数据
-});
 
 const onCategoryConfirm = (event) => {
   const selectedValue = event.selectedValues[0];
@@ -284,6 +297,28 @@ const toggleSort = (type) => {
 const toggleFavorite = (item) => {
   item.isFavorite = !item.isFavorite; // 切换收藏状态
 };
+// 在setup中添加
+const checkIfReachBottom = () => {
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+  const windowHeight = window.innerHeight;
+  const scrollHeight = document.documentElement.scrollHeight;
+  
+  // 距离底部50px时触发
+  if (scrollTop + windowHeight >= scrollHeight - 50) {
+    isReachBottom.value = true;
+  } else {
+    isReachBottom.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', checkIfReachBottom);
+  loadNFTData(); // 初始加载数据
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', checkIfReachBottom);
+});
 // 返回首页
 const goBack = () => {
   router.push('/home');
@@ -303,6 +338,7 @@ const goToConsignmentPage = (nftId) => {
   padding: 20px;
   color: #999;
 }
+
 /* 顶部导航样式 */
 .top-nav {
   background-color: #fff;
@@ -599,7 +635,13 @@ const goToConsignmentPage = (nftId) => {
   font-weight: bold;
   color: #000000;
 }
-
+.bottom-tip {
+  padding: 15px 0;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  background: #f7f7f7;
+}
 /* 暂无数据提示 */
 .no-data {
   text-align: center;
