@@ -35,7 +35,14 @@ export const getPurchaseRequestsByNftId = async (id) => {
     console.error('获取 NFT 详情失败:', error);
     throw error;
   }
-
-  //寄售详情
-  
+};
+// 获取 寄售详情
+export const getSaleDetail = async (nftId, instanceId) => {
+  try {
+    const response = await request.get(`/nfts/sale/${nftId}?instanceId=${instanceId}`);
+    return response.data;
+  } catch (error) {
+    console.error('获取 NFT 详情失败:', error);
+    throw error;
+  }
 };

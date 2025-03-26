@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.market.mapper.SaleDetailMapper">
+
+    <select id="selectSaleDetail" resultType="com.joon.ibox_back_end.market.entity.NftSaleDetaiDto">
+        SELECT
+            nft.id AS nftId,
+            nft.name AS nftName,
+            nft.description AS nftDescription,
+            nft.image_url AS nftImage,
+            os.issue_count AS issueCount,
+            os.circulate_count AS circulationCount,
+            ni.instance_number AS instanceNumber,
+            ni.price AS instancePrice
+        FROM
+            nfts nft
+                JOIN
+            official_sales os ON nft.id = os.nft_id
+                JOIN
+            nft_instances ni ON nft.id = ni.nft_id
+        WHERE
+            nft.id = #{nftId}
+          AND ni.instance_id = #{instanceId}
+    </select>
+
+</mapper>

@@ -3,7 +3,7 @@
   <div class="container">
     <div class="scroll-container">
       <!-- 背景图片容器 -->
-      <div class="background-image" :style="{ backgroundImage: `url(${require('@/assets/images/a1.jpg')}` }">
+      <div class="background-image" :style="{ backgroundImage: `url(${imageUrl})` }">
         <!-- 新增的模糊层 -->
         <div class="background-blur"></div>
         <!-- 返回箭头 -->
@@ -17,12 +17,22 @@
         <div class="overlay-image-container">
           <!-- 新增的底座 -->
           <div class="pedestal">
-            <div class="pedestal-base"></div>
+            <div class="pedestal-base">
+              <div class="hexagon-top"></div>
+              <div class="hexagon-decoration">
+                <span class="deco-line top-left"></span>
+                <span class="deco-line top-right"></span>
+                <span class="deco-line right"></span>
+                <span class="deco-line bottom-right"></span>
+                <span class="deco-line bottom-left"></span>
+                <span class="deco-line left"></span>
+              </div>
+            </div>
           </div>
           <!-- 3D相框容器 -->
           <div class="photo-frame">
             <div class="frame-inner">
-              <img :src="require('@/assets/images/a1.jpg')" class="overlay-image" />
+              <img :src="imageUrl" class="overlay-image" />
             </div>
             <!-- 新增的阴影 -->
             <div class="frame-shadow"></div>
@@ -33,17 +43,17 @@
       <!-- 修改后的深色背景区域 -->
       <div class="dark-background">
         <!-- 图片名称 -->
-        <div class="image-name">神王</div>
+        <div class="image-name">{{ name }}#{{ instanceId }}</div>
 
         <!-- 发行和流通信息 -->
         <div class="info-container">
           <div class="info-item">
             <span class="label">发行</span>
-            <span class="value">5000份</span>
+            <span class="value">{{ issueCount }}份</span>
           </div>
           <div class="info-item">
             <span class="label">流通</span>
-            <span class="value">5000份</span>
+            <span class="value">{{ circulationCount }}份</span>
           </div>
         </div>
         <!-- 新增的藏品故事部分 -->
@@ -54,7 +64,7 @@
             <span class="line"></span>
           </div>
           <div class="story-content">
-            这件名为"神王"的藏品源自古老东方文明，传说中是上古时期神王佩戴的圣物。历经千年传承，每一处纹路都记载着不同时代的传奇故事。如今以数字艺术形式重现，将传统文化与现代科技完美融合，成为连接古今的艺术珍品。
+            {{ storyInfo }}
           </div>
         </div>
       </div>
@@ -68,7 +78,7 @@
               <div class="content">
                 <div class="price-section">
                   <div class="left">
-                    <div class="price">￥20000</div>
+                    <div class="price">￥{{ price }}</div>
                     <div class="market-list" @click="goBack">
                       市场列表
                       <van-icon name="arrow" class="chevron" />
@@ -104,17 +114,44 @@ export default {
 </script>
 
 <script setup>
-import { useRouter } from 'vue-router';
-// import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { getSaleDetail } from '@/api/market';
+import { ref, onMounted } from 'vue';
 const router = useRouter();
 
-// const route = useRoute();
-// const nftId = route.params.nftId;
-// const instanceId = route.params.instanceId;
-
+const route = useRoute();
+const nftId = route.params.nftId;
+const instanceId = route.params.instanceId;
+const imageUrl = ref('');
+const name = ref('');
+const issueCount = ref(0);
+const circulationCount = ref(0);
+const storyInfo = ref('');
+const price = ref(0);
+const loading = ref(false); // 加载状态
+const loadData = async () => {
+  loading.value = true; // 开始加载
+  try {
+    const response = await getSaleDetail(nftId, instanceId);
+    console.log(response);
+    imageUrl.value = require(`@/${response.nftImage}`);
+    name.value = response.nftName;
+    issueCount.value = response.issueCount;
+    circulationCount.value = response.circulationCount;
+    storyInfo.value = response.nftDescription;
+    price.value = response.instancePrice;
+  } catch (error) {
+    console.error('加载数据失败:', error);
+  } finally {
+    loading.value = false;
+  }
+};
 const goBack = () => {
   router.go(-1);
 };
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>
@@ -123,14 +160,14 @@ const goBack = () => {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.92);
 }
 
 .scroll-container {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* 固定顶部图片区域 */
@@ -147,6 +184,8 @@ const goBack = () => {
   background-size: cover;
   background-position: center;
   z-index: 1;
+
+
 }
 
 /* 添加深色叠加层 */
@@ -171,7 +210,7 @@ const goBack = () => {
   background: inherit;
   background-size: cover;
   background-position: center;
-  filter: blur(4px);
+  filter: blur(6px);
   z-index: 2;
   pointer-events: none;
 }
@@ -182,8 +221,8 @@ const goBack = () => {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 20%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  height: 30%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
 }
 
 .dark-background {
@@ -219,13 +258,13 @@ const goBack = () => {
 }
 
 .left-arrow {
-  font-size: 20px;
+  font-size: 16px;
   color: white;
 }
 
 .overlay-image-container {
   position: absolute;
-  bottom: 20%;
+  bottom: 25%;
   left: 45%;
   transform: translateX(-50%);
   width: 66%;
@@ -233,84 +272,145 @@ const goBack = () => {
   text-align: center;
   perspective: 1500px;
 }
+
 .pedestal {
   position: absolute;
-  width: 100%;
-  height: 100px;
+  width: 120%;
+  height: 120px;
   bottom: -60px;
-  left: 45%;
+  left: 58%;
   transform: translateX(-50%);
   z-index: 5;
   perspective: 1000px;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.6));
 }
 
-
-
-/* 底座主体 - 深色带金边 */
-.pedestal-base {
+/* 六边形顶部 */
+.hexagon-top {
   position: absolute;
-  width: 112%;
-  height: 60px;
+  width: 120%;
+  height: 50px;
   bottom: 0;
-  left: 5%;
-  background: 
-    linear-gradient(
-      to bottom, 
-      rgba(213, 219, 139, 0.95) 0%, 
-      rgba(86, 84, 67, 0.95) 100%
-    );
-  border-radius: 3px;
-  box-shadow: 
+  left: 50%;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(to bottom,
+      rgba(110, 128, 187, 0.95) 0%,
+      rgba(51, 58, 61, 0.95) 100%);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.5),
-    inset 0 0 15px rgba(212, 175, 55, 0.4);
-  transform: perspective(500px) rotateX(20deg);
-  border: 1px solid rgba(212, 175, 55, 0.6);
+    inset 0 0 15px rgba(40, 40, 40, 0.4);
+  z-index: 6;
+  border: 1px solid rgba(18, 17, 17, 0.6);
 }
 
-/* 底部金色装饰线 */
-.pedestal::after {
+
+
+/* 底部装饰线 */
+.hexagon-top::after {
   content: '';
   position: absolute;
-  width: 112%;
+  width: 100%;
   height: 3px;
   bottom: 8px;
-  left: 4%;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(212, 175, 55, 0.7) 20%,
-    rgba(212, 175, 55, 0.9) 50%,
-    rgba(212, 175, 55, 0.7) 80%,
-    transparent 100%
-  );
+  left: 0;
+  background: linear-gradient(to right,
+      transparent 0%,
+      rgba(244, 248, 16, 0.12) 20%,
+      rgba(79, 9, 243, 0.7) 50%,
+      rgba(244, 248, 16, 0.12) 80%,
+      transparent 100%);
   border-radius: 2px;
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
-  transform: perspective(500px) rotateX(20deg);
-  z-index: 6;
+  box-shadow: 0 0 12px rgba(11, 11, 11, 0.5);
+  z-index: 7;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
-
-/* 侧面金色装饰线 */
-.pedestal-base::before {
-  content: '';
+/* 六边形装饰线容器 */
+.hexagon-decoration {
   position: absolute;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
-  border: 1px solid transparent;
-  border-image: linear-gradient(
-    to bottom,
+  pointer-events: none;
+}
+
+/* 装饰线基础样式 */
+.deco-line {
+  position: absolute;
+  background: linear-gradient(
+    to right,
     transparent 0%,
-    rgba(212, 175, 55, 0.6) 10%,
-    transparent 20%,
-    transparent 80%,
-    rgba(212, 175, 55, 0.4) 90%,
+    rgba(245, 196, 37, 0.6) 50%,
     transparent 100%
   );
-  border-image-slice: 1;
-  border-radius: 3px;
+  height: 1px;
+  width: 100%;
+  box-shadow: 0 0 3px rgba(245, 196, 37, 0.4);
 }
+
+/* 定位每条装饰线 */
+.deco-line.top-left {
+  top: 0;
+  left: 0;
+  width: 50%;
+  transform: rotate(-30deg);
+  transform-origin: left center;
+}
+
+.deco-line.top-right {
+  top: 0;
+  right: 0;
+  width: 50%;
+  transform: rotate(30deg);
+  transform-origin: right center;
+}
+
+.deco-line.right {
+  top: 50%;
+  right: 0;
+  height: 100%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(245, 196, 37, 0.6) 50%,
+    transparent 100%
+  );
+  transform: translateY(-50%);
+}
+
+.deco-line.bottom-right {
+  bottom: 0;
+  right: 0;
+  width: 50%;
+  transform: rotate(-30deg);
+  transform-origin: right center;
+}
+
+.deco-line.bottom-left {
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  transform: rotate(30deg);
+  transform-origin: left center;
+}
+
+.deco-line.left {
+  top: 50%;
+  left: 0;
+  height: 100%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(245, 196, 37, 0.6) 50%,
+    transparent 100%
+  );
+  transform: translateY(-50%);
+}
+
 /* 3D相框 */
 .photo-frame {
   position: relative;
@@ -348,31 +448,38 @@ const goBack = () => {
 .frame-shadow {
   position: absolute;
   width: 90%;
-  height: 20px;
-  bottom: -30px;
+  height: 9px;
+  bottom: -38px;
   left: 5%;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 70%);
   border-radius: 50%;
   filter: blur(5px);
   transform: rotateX(75deg) scale(0.9);
-  opacity: 0.7;
+  opacity: 0.9;
   z-index: -1;
   animation: shadowRotate 8s ease-in-out infinite;
 }
+
 @keyframes shadowRotate {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: rotateX(75deg) scale(0.9) translateX(0);
   }
+
   25% {
     transform: rotateX(75deg) scale(0.9) translateX(10px);
   }
+
   50% {
     transform: rotateX(75deg) scale(0.9) translateX(0);
   }
+
   75% {
     transform: rotateX(75deg) scale(0.9) translateX(-10px);
   }
 }
+
 .overlay-image {
   width: 100%;
   height: auto;
@@ -419,9 +526,9 @@ const goBack = () => {
 }
 
 .label {
-  background-color: rgb(236, 220, 73);
+  background-color: rgb(238, 231, 167);
   padding: 2px 3px;
-  border-radius: 1px;
+  border-radius: 3px;
   font-size: 10px;
   color: #333;
 }

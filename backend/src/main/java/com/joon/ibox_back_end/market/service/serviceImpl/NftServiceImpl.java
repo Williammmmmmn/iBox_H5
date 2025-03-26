@@ -1,11 +1,13 @@
 package com.joon.ibox_back_end.market.service.serviceImpl;
 
 import com.joon.ibox_back_end.market.entity.NftListDto;
+import com.joon.ibox_back_end.market.entity.NftSaleDetaiDto;
 import com.joon.ibox_back_end.market.entity.NftSaleDto;
 import com.joon.ibox_back_end.market.entity.PurchaseRequestDto;
 import com.joon.ibox_back_end.market.mapper.NftListMapper;
 import com.joon.ibox_back_end.market.mapper.NftSaleInfoMapper;
 import com.joon.ibox_back_end.market.mapper.PurchaseRequestMapper;
+import com.joon.ibox_back_end.market.mapper.SaleDetailMapper;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class NftServiceImpl implements MarketService {
     private NftSaleInfoMapper nftSaleInfoMapper;
     @Autowired
     private PurchaseRequestMapper purchaseRequestMapper;
+    @Autowired
+    private SaleDetailMapper saleDetailMapper; ;
     /**
      * 查询市场列表
      * @param tag
@@ -55,5 +59,16 @@ public class NftServiceImpl implements MarketService {
     public List<PurchaseRequestDto> getPurchaseRequestsByNftId(Integer nftId) {
         // 查询求购记录并按价格降序排列
         return purchaseRequestMapper.getPurchaseRequestsByNftId(nftId);
+    }
+    /**
+     * 查询寄售详情信息
+     *
+     * @param nftId
+     * @param instanceId
+     * @return
+     */
+    @Override
+    public NftSaleDetaiDto getSaleDetail(Integer nftId, Integer instanceId) {
+        return  saleDetailMapper.selectSaleDetail(nftId, instanceId);
     }
 }

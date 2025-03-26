@@ -2,6 +2,7 @@ package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.NftListDto;
+import com.joon.ibox_back_end.market.entity.NftSaleDetaiDto;
 import com.joon.ibox_back_end.market.entity.NftSaleDto;
 import com.joon.ibox_back_end.market.entity.PurchaseRequestDto;
 import com.joon.ibox_back_end.market.service.MarketService;
@@ -54,4 +55,17 @@ public class MarketController {
         return R.success("查询藏品求购信息成功",purchaseRequestsByNftId);
     }
 
+    /**
+     * 查询nft寄售详情
+     * @param nftId
+     * @param instanceId
+     * @return
+     */
+    @GetMapping("/sale/{nftId}")
+    public R getSaleDetail(
+            @PathVariable Integer nftId,
+            @RequestParam Integer instanceId) {
+        NftSaleDetaiDto saleDetail = marketService.getSaleDetail(nftId, instanceId);
+        return R.success("查询藏品寄售信息成功",saleDetail);
+    }
 }
