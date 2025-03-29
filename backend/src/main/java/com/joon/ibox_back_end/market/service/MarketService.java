@@ -40,4 +40,11 @@ public interface MarketService {
      * @return
      */
     List<NftAnnounceDto> getSimpleAnnounceList(Integer nftId);
+
+    /**
+     * 查询藏品公告详情
+     * @param announceId
+     * @return
+     */
+    AnnounceDetailDTO selectAnnounceDetailById(Integer announceId);
 }

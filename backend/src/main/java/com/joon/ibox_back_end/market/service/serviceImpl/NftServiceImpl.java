@@ -78,4 +78,13 @@ public class NftServiceImpl implements MarketService {
         List<NftAnnounceDto> simpleAnnounceList = announceMapper.getSimpleAnnounceList(nftId);
         return simpleAnnounceList;
     }
+    /**
+     * 查询藏品公告详情
+     * @param announceId
+     * @return
+     */
+    @Override
+    public AnnounceDetailDTO selectAnnounceDetailById(Integer announceId) {
+        return announceMapper.selectAnnounceDetailById(announceId);
+    }
 }

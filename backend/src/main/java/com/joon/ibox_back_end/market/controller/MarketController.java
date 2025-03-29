@@ -76,4 +76,15 @@ public class MarketController {
         List<NftAnnounceDto> list = marketService.getSimpleAnnounceList(nftId);
         return R.success("查询藏品公告列表成功",list);
     }
+
+    /**
+     * 查询寄售公告列表
+     * @param announceId
+     * @return
+     */
+    @GetMapping("/announceDetail/{announceId}")
+    public R getAnnounceDetail(@PathVariable Integer announceId) {
+        AnnounceDetailDTO announceDetail = marketService.selectAnnounceDetailById(announceId);
+        return R.success("查询藏品公告详情成功",announceDetail);
+    }
 }

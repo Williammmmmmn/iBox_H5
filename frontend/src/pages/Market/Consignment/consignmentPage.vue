@@ -146,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed,watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
 import { getAnnounceList } from '@/api/market';
@@ -178,6 +178,12 @@ const onTabChange = (index) => {
     fetchAnnounceList();
   }
 };
+// 监听路由变化，更新 activeTab
+watch(route, (newRoute) => {
+  if (newRoute.query.activeTab) {
+    activeTab.value = parseInt(newRoute.query.activeTab, 10);
+  }
+}, { immediate: true });
 // 计算当前显示的数据列表
 const currentDataList = computed(() => {
   return isSwitchOn.value === 'left' ? saleList.value : purchaseList.value;
@@ -335,10 +341,16 @@ const goToSaleDetail = (instanceNumber) => {
 };
 const goToAnnounceDetail = (announceId) => {
   router.push({
-    path: `/announceDetail/${announceId}`,
+    path: `/announceDetail/${nftId}/${announceId}`,
   });
 };
 onMounted(() => {
+  // 如果从公告详情页返回，设置 activeTab 为 query 中的值
+  if (route.query.activeTab) {
+    activeTab.value = parseInt(route.query.activeTab, 10);
+    fetchAnnounceList();
+  }
+  // 加载数据
   loadData();
 });
 </script>

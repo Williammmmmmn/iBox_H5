@@ -20,6 +20,7 @@
         <result column="is_pinned" property="isPinned" />
         <result column="start_time" property="startTime" />
         <result column="end_time" property="endTime" />
+        <result column="created_at" property="createdAt" />
         <result column="image_url" property="imageUrl" />
         <result column="nft_image_url" property="nftImageUrl" />
     </resultMap>
@@ -49,6 +50,7 @@
             a.is_pinned,
             a.start_time,
             a.end_time,
+            a.created_at,
             a.image_url,
             n.image_url AS nft_image_url
         FROM

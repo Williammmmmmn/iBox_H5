@@ -13,13 +13,14 @@ import java.time.LocalDateTime;
 
 @Data
 public class AnnounceDetailDTO {
-    private Long id;
+    private Integer id;
     private String title;
     private String content;
     private String publisher;
     private Boolean isPinned;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime createdAt;
     private String imageUrl;
     private String nftImageUrl;
 }

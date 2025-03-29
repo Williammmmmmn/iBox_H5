@@ -1,5 +1,6 @@
 package com.joon.ibox_back_end.market.mapper;
 
+import com.joon.ibox_back_end.market.entity.AnnounceDetailDTO;
 import com.joon.ibox_back_end.market.entity.NftAnnounceDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,4 +16,12 @@ public interface AnnounceMapper {
      * @return 公告简略信息列表
      */
     List<NftAnnounceDto> getSimpleAnnounceList(@Param("nftId") Integer nftId);
+
+
+    /**
+     * 查询藏品公告详情
+     * @param announceId
+     * @return
+     */
+    AnnounceDetailDTO selectAnnounceDetailById(@Param("id")Integer announceId);
 }

@@ -49,7 +49,7 @@ export const getAnnounceList = async (nftId) => {
 // 获取藏品公告详情
 export const getAnnounceDetail  = async (announceId) => {
   try {
-    const response = await request.get(`/nfts/detail/${announceId}`);
+    const response = await request.get(`/nfts/announceDetail/${announceId}`);
     return response.data;
   } catch (error) {
     console.error('获取 公告列表失败:', error);

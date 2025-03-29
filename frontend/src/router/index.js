@@ -65,7 +65,7 @@ const routes = [
     props:true
   },
   {
-    path: '/announceDetail/:announceId',
+    path: '/announceDetail/:nftId/:announceId',
     component:announceDetail,
     props:true
   }
