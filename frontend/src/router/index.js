@@ -6,9 +6,9 @@ import Notice from "@/pages/Notice/MyNotice.vue";
 import Search from "@/pages/Search/SearchPage.vue";
 import Login from "@/pages/Login/index.vue";
 import Market from '@/pages/Market/index.vue'
-import Consignment from '@/pages/Consignment/consignmentPage.vue'
-import SaleDetail from "@/pages/SaleDetail/SaleDetail.vue";
-
+import Consignment from '@/pages/Market/Consignment/consignmentPage.vue'
+import SaleDetail from "@/pages/Market/SaleDetail/SaleDetail.vue";
+import announceDetail from "@/pages/Market/AnnounceDetail/announceDetail.vue";
 import User from "@/pages/Layout/user.vue";
 import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
@@ -47,15 +47,26 @@ const routes = [
   },
   {
     path: "/market",
-    component: Market
+    component: Market,
+    meta:{
+      KeepAlive:true //启用缓存
+    }
   },
   {
     path: '/consignment',
-    component: Consignment
+    component: Consignment,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   },
   {
-    path: '/saleDetail/:nftId/:instanceId',
+    path: '/saleDetail/:nftId/:instanceNumber',
     component:SaleDetail,
+    props:true
+  },
+  {
+    path: '/announceDetail/:announceId',
+    component:announceDetail,
     props:true
   }
 

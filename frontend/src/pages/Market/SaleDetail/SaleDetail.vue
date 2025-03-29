@@ -43,7 +43,7 @@
       <!-- 修改后的深色背景区域 -->
       <div class="dark-background">
         <!-- 图片名称 -->
-        <div class="image-name">{{ name }}#{{ instanceId }}</div>
+        <div class="image-name">{{ name }}#{{ instanceNumber }}</div>
 
         <!-- 发行和流通信息 -->
         <div class="info-container">
@@ -121,7 +121,7 @@ const router = useRouter();
 
 const route = useRoute();
 const nftId = route.params.nftId;
-const instanceId = route.params.instanceId;
+const instanceNumber = route.params.instanceNumber;
 const imageUrl = ref('');
 const name = ref('');
 const issueCount = ref(0);
@@ -132,7 +132,8 @@ const loading = ref(false); // 加载状态
 const loadData = async () => {
   loading.value = true; // 开始加载
   try {
-    const response = await getSaleDetail(nftId, instanceId);
+    console.log(nftId, instanceNumber);
+    const response = await getSaleDetail(nftId, instanceNumber);
     console.log(response);
     imageUrl.value = require(`@/${response.nftImage}`);
     name.value = response.nftName;

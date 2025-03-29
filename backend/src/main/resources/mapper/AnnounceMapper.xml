@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.market.mapper.AnnounceMapper">
+
+    <!-- 基础字段映射 -->
+    <resultMap id="simpleAnnounceMap" type="com.joon.ibox_back_end.market.entity.NftAnnounceDto">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="start_time" property="startTime" />
+    </resultMap>
+
+    <resultMap id="detailAnnounceMap" type="com.joon.ibox_back_end.market.entity.AnnounceDetailDTO">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="publisher" property="publisher" />
+        <result column="is_pinned" property="isPinned" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="image_url" property="imageUrl" />
+        <result column="nft_image_url" property="nftImageUrl" />
+    </resultMap>
+
+    <!-- 获取简略列表 -->
+    <select id="getSimpleAnnounceList" resultMap="simpleAnnounceMap">
+        SELECT
+            id,
+            title,
+            start_time
+        FROM
+            announcements
+        WHERE
+            nft_id = #{nftId}
+        ORDER BY
+            is_pinned DESC,
+            start_time DESC
+    </select>
+
+    <!-- 获取详情 -->
+    <select id="selectAnnounceDetailById" resultMap="detailAnnounceMap">
+        SELECT
+            a.id,
+            a.title,
+            a.content,
+            a.publisher,
+            a.is_pinned,
+            a.start_time,
+            a.end_time,
+            a.image_url,
+            n.image_url AS nft_image_url
+        FROM
+            announcements a
+                LEFT JOIN
+            nfts n ON a.nft_id = n.id
+        WHERE
+            a.id = #{id}
+    </select>
+
+</mapper>

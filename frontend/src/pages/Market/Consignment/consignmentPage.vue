@@ -29,7 +29,7 @@
     <!-- 内容区域 -->
     <div class="content">
       <div class="content">
-        <van-tabs v-model:active="activeTab">
+        <van-tabs v-model:active="activeTab" @change="onTabChange">
           <!-- 市场价格 -->
           <van-tab title="市场价格">
             <div class="tab-content">
@@ -79,14 +79,13 @@
                   数据加载中...
                 </div>
                 <!-- 无数据时 -->
-                <div v-else-if="currentDataList.length === 0" class="no-data">
-                  --暂无数据--
-                </div>
+                <van-empty v-else-if="currentDataList.length === 0" description="暂无数据" />
                 <!-- 有数据时 -->
                 <template v-else>
                   <!-- 寄售模式的数据项 -->
                   <template v-if="isSwitchOn === 'left'">
-                    <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)" class="sale-item">
+                    <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)"
+                      class="sale-item">
                       <!-- 左边：名称和编号 -->
                       <div class="left-info">
                         <div class="name">{{ item.name }}</div>
@@ -101,7 +100,7 @@
                         <span class="price">{{ item.price }}</span>
                       </div>
                     </div>
-                    
+
                   </template>
                   <!-- 求购模式的数据项 -->
                   <template v-else>
@@ -125,8 +124,19 @@
           <!-- 相关公告 -->
           <van-tab title="相关公告">
             <div class="tab-content">
-              <p>NFT ID: {{ nftId }}</p>
-              <p>这里是相关公告的内容。</p>
+              <!-- 加载中提示 -->
+              <van-loading v-if="loading" size="24px" vertical>加载中...</van-loading>
+              <!-- 无数据时 -->
+              <van-empty v-else-if="announceList.length === 0" description="暂无公告" />
+              <!-- 列表内容 -->
+              <template v-else>
+                <div v-for="(item, index) in announceList" :key="index" class="sale-announce-item" @click="goToAnnounceDetail(item.id)">
+                  <div class="announce-info">
+                    <div class="announce-title">{{ item.title }}</div>
+                    <div class="announce-time">{{ item.formattedTime }}</div>
+                  </div>
+                </div>
+              </template>
             </div>
           </van-tab>
         </van-tabs>
@@ -139,6 +149,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
+import { getAnnounceList } from '@/api/market';
+import dayjs from 'dayjs';
+import { Toast } from 'vant';
 
 const route = useRoute();
 const router = useRouter();
@@ -157,11 +170,19 @@ const isReachBottom = ref(false);
 const imageUrl = ref('');
 const name = ref('');
 const loading = ref(false); // 加载状态
-
+const announceList = ref([]);
+// 监听标签切换
+const onTabChange = (index) => {
+  // 0是市场价格，1是相关公告
+  if (index === 1 && announceList.value.length === 0) {
+    fetchAnnounceList();
+  }
+};
 // 计算当前显示的数据列表
 const currentDataList = computed(() => {
   return isSwitchOn.value === 'left' ? saleList.value : purchaseList.value;
 });
+
 // 切换寄售/求购
 const toggleSwitch = async (side) => {
   isSwitchOn.value = side;
@@ -172,12 +193,34 @@ const toggleSwitch = async (side) => {
   }
   // 切换到寄售且寄售数据为空时，加载寄售数据（初始化时已加载，此处可省略）
 };
-
+const fetchAnnounceList = async () => {
+  loading.value = true;
+  try {
+  const response = await getAnnounceList(nftId);
+    if (response) {
+      announceList.value = response.map(item => ({
+        id: item.id,
+        title: item.title,
+        startTime: item.startTime, // 保留原始时间用于排序
+        formattedTime: formatTime(item.startTime) // 添加格式化后的时间
+      }));
+    } else {
+      announceList.value = [];
+    }
+  } catch (error) {
+    Toast.error('获取失败，请稍后再试');
+    console.error('公告数据格式错误:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+const formatTime = (time) => {
+  return dayjs(time).format('YYYY-MM-DD');
+};
 const loadData = async () => {
   loading.value = true; // 开始加载
   try {
     const response = await getNFTDetail(nftId);
-    console.log(response);
     imageUrl.value = require(`@/${response.imageUrl}`);
     name.value = response.name;
     issueCount.value = response.issueCount;
@@ -199,16 +242,13 @@ const loadPurchaseData = async () => {
   loading.value = true;
   try {
     const response = await getPurchaseRequestsByNftId(nftId);
-    console.log('完整响应:', JSON.parse(JSON.stringify(response))); // 深度拷贝打印
 
     // 正确判断方式
     if (response) {
-      console.log('111:', purchaseList.value); // 验证处理结果
       purchaseList.value = response.map(item => ({
         price: item.price
       })).sort((a, b) => b.price - a.price);
 
-      console.log('处理后的数据:', purchaseList.value); // 验证处理结果
     } else {
       console.error('数据格式错误:', response);
       purchaseList.value = [];
@@ -282,11 +322,20 @@ const toggleSort = (type) => {
 };
 
 const goBack = () => {
-  router.go(-1);
-};
-const goToSaleDetail = (instanceId) => {
+  // 从当前路由中获取tab参数
   router.push({
-    path: `/saleDetail/${nftId}/${instanceId}`,
+    path: '/market',
+    query: { tab: route.query.tab || 'all' }
+  });
+};
+const goToSaleDetail = (instanceNumber) => {
+  router.push({
+    path: `/saleDetail/${nftId}/${instanceNumber}`,
+  });
+};
+const goToAnnounceDetail = (announceId) => {
+  router.push({
+    path: `/announceDetail/${announceId}`,
   });
 };
 onMounted(() => {
@@ -669,6 +718,35 @@ onMounted(() => {
   /* 左边对齐 */
 }
 
+.sale-announce-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.announce-info {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  /* 确保宽度填满容器 */
+}
+
+.announce-title {
+  font-size: 16px;
+  font-weight: bold;
+  flex: 1;
+  /* 允许标题占据可用空间 */
+  text-align: left;
+}
+
+.announce-time {
+  font-size: 16px;
+  color: #817f7f;
+  margin-top: 20px;
+  /* 添加左边距分隔 */
+  text-align: right;
+  /* 时间右对齐 */
+}
+
 .name {
   font-size: 16px;
   color: #333;
@@ -727,12 +805,17 @@ onMounted(() => {
   font-weight: bold;
   color: #050505;
 }
+
 /* 新增 chevron 图标的样式 */
 .chevron-icon {
-  margin-left: auto; /* 自动向右对齐 */
-  color: #999;      /* 灰色 */
-  font-size: 14px;   /* 调整大小 */
+  margin-left: auto;
+  /* 自动向右对齐 */
+  color: #999;
+  /* 灰色 */
+  font-size: 14px;
+  /* 调整大小 */
 }
+
 /* 没有更多 */
 .no-more {
   text-align: center;

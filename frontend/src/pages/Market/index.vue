@@ -108,7 +108,7 @@
           没有更多了
         </div>
         <div v-else class="no-data">
-          暂无藏品数据
+          暂无更多藏品数据
         </div>
       </div>
       <!-- 我的关注内容（暂未实现） -->
@@ -120,13 +120,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted,onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, onActivated } from 'vue';
 import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { Toast } from 'vant';
 
 const router = useRouter();
-const activeTab = ref('all'); // 默认选中第一个 tab
+const route = useRoute();
+const activeTab = ref(route.query.tab || 'all');
 const currentView = ref('market');
 const tabs = [
   { name: '全部', title: '全部' },
@@ -222,6 +224,7 @@ const loadNFTData = async (tag = null) => {
 };
 // 监听选项卡变化
 const handleTabChange = (name) => {
+  activeTab.value = name;
   const selectedTab = tabs.find(tab => tab.name === name);
   if (selectedTab) {
     const tag = selectedTab.name === 'all' ? null : selectedTab.name;
@@ -230,12 +233,20 @@ const handleTabChange = (name) => {
 };
 
 const onCategoryConfirm = (event) => {
+  isVolumeAsc.value = false;
+  isVolumeAsc2.value = false;
+  isPriceAsc.value = false;
+  isPriceAsc2.value = false;
   const selectedValue = event.selectedValues[0];
   selectedCategory.value = selectedValue; // 更新选择的类别
   showCategoryPicker.value = false;
 
 };
 const onStatusConfirm = (event) => {
+  isVolumeAsc.value = false;
+  isVolumeAsc2.value = false;
+  isPriceAsc.value = false;
+  isPriceAsc2.value = false;
   const selectedValue = event.selectedValues[0]; // 提取选中的值
   selectedStatus.value = selectedValue; // 更新选择的发行份数
   showReleasePicker.value = false;
@@ -243,6 +254,9 @@ const onStatusConfirm = (event) => {
 
 const toggleSort = (type) => {
   if (type === 'price') {
+    // 重置交易量排序状态
+    isVolumeAsc.value = false;
+    isVolumeAsc2.value = false;
     // 切换排序状态
     if (!isPriceAsc.value && !isPriceAsc2.value) {
       // 如果当前两个图标都未激活，第一次点击激活升序图标
@@ -269,6 +283,9 @@ const toggleSort = (type) => {
     });
   }
   else if (type === 'volume') {
+    //重置价格排序
+    isPriceAsc.value = false;
+    isPriceAsc2.value = false;
     // 切换排序状态
     if (!isVolumeAsc.value && !isVolumeAsc2.value) {
       // 如果当前两个图标都未激活，第一次点击激活升序图标
@@ -302,7 +319,7 @@ const checkIfReachBottom = () => {
   const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   const windowHeight = window.innerHeight;
   const scrollHeight = document.documentElement.scrollHeight;
-  
+
   // 距离底部50px时触发
   if (scrollTop + windowHeight >= scrollHeight - 50) {
     isReachBottom.value = true;
@@ -325,12 +342,21 @@ const goBack = () => {
 };
 //点击藏品调到对应寄售页
 const goToConsignmentPage = (nftId) => {
-  console.log('点击藏品调到对应寄售页', nftId);
   router.push({
     path: `/consignment`, // 使用路径格式
-    query: { id: nftId }, // 使用 query 传递参数
+    query: {
+      id: nftId,
+      tab: activeTab.value
+    }, // 使用 query 传递参数
   });
 };
+// 添加onActivated钩子，当页面从缓存中恢复时检查路由参数
+onActivated(() => {
+  if (route.query.tab) {
+    activeTab.value = route.query.tab;
+    handleTabChange(activeTab.value);
+  }
+});
 </script>
 <style>
 .loading {
@@ -635,6 +661,7 @@ const goToConsignmentPage = (nftId) => {
   font-weight: bold;
   color: #000000;
 }
+
 .bottom-tip {
   padding: 15px 0;
   text-align: center;
@@ -642,6 +669,7 @@ const goToConsignmentPage = (nftId) => {
   font-size: 14px;
   background: #f7f7f7;
 }
+
 /* 暂无数据提示 */
 .no-data {
   text-align: center;

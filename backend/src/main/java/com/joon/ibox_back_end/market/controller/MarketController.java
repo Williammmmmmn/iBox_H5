@@ -1,10 +1,7 @@
 package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.R;
-import com.joon.ibox_back_end.market.entity.NftListDto;
-import com.joon.ibox_back_end.market.entity.NftSaleDetaiDto;
-import com.joon.ibox_back_end.market.entity.NftSaleDto;
-import com.joon.ibox_back_end.market.entity.PurchaseRequestDto;
+import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -58,14 +55,25 @@ public class MarketController {
     /**
      * 查询nft寄售详情
      * @param nftId
-     * @param instanceId
+     * @param instanceNumber
      * @return
      */
     @GetMapping("/sale/{nftId}")
     public R getSaleDetail(
             @PathVariable Integer nftId,
-            @RequestParam Integer instanceId) {
-        NftSaleDetaiDto saleDetail = marketService.getSaleDetail(nftId, instanceId);
+            @RequestParam Integer instanceNumber) {
+        NftSaleDetaiDto saleDetail = marketService.getSaleDetail(nftId, instanceNumber);
         return R.success("查询藏品寄售信息成功",saleDetail);
+    }
+
+    /**
+     * 查询寄售公告列表
+     * @param nftId
+     * @return
+     */
+    @GetMapping("/list/{nftId}")
+    public R getAnnounceList(@PathVariable Integer nftId) {
+        List<NftAnnounceDto> list = marketService.getSimpleAnnounceList(nftId);
+        return R.success("查询藏品公告列表成功",list);
     }
 }

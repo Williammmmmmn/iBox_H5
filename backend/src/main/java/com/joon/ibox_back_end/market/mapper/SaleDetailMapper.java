@@ -8,5 +8,5 @@ import org.apache.ibatis.annotations.Param;
 public interface SaleDetailMapper {
     NftSaleDetaiDto selectSaleDetail(
             @Param("nftId") Integer nftId,
-            @Param("instanceId") Integer instanceId);
+            @Param("instanceNumber") Integer instanceNumber);
 }

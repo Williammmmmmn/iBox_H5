@@ -16,33 +16,54 @@ export const getNFTList = async (tag = null) => {
     }
   };
  
-// 获取 NFT 寄售详情数据
+// 获取 NFT 寄售列表数据
 export const getNFTDetail = async (id) => {
   try {
     const response = await request.get(`/nfts/detail/${id}`); // 根据 NFT ID 获取详情
     return response.data;
   } catch (error) {
-    console.error('获取 NFT 详情失败:', error);
+    console.error('获取 NFT 寄售列表失败:', error);
     throw error;
   }
 };
-// 获取 NFT 求购详情数据
+// 获取 NFT 求购列表数据
 export const getPurchaseRequestsByNftId = async (id) => {
   try {
     const response = await request.get(`/nfts/bid/${id}`); // 根据 NFT ID 获取详情
     return response.data;
   } catch (error) {
-    console.error('获取 NFT 详情失败:', error);
+    console.error('获取 NFT 求购列表失败:', error);
     throw error;
   }
 };
-// 获取 寄售详情
-export const getSaleDetail = async (nftId, instanceId) => {
+// 获取藏品公告列表
+export const getAnnounceList = async (nftId) => {
   try {
-    const response = await request.get(`/nfts/sale/${nftId}?instanceId=${instanceId}`);
+    const response = await request.get(`/nfts/list/${nftId}`);
     return response.data;
   } catch (error) {
-    console.error('获取 NFT 详情失败:', error);
+    console.error('获取 公告列表失败:', error);
     throw error;
   }
 };
+// 获取藏品公告详情
+export const getAnnounceDetail  = async (announceId) => {
+  try {
+    const response = await request.get(`/nfts/detail/${announceId}`);
+    return response.data;
+  } catch (error) {
+    console.error('获取 公告列表失败:', error);
+    throw error;
+  }
+};
+// 获取 藏品寄售详情
+export const getSaleDetail = async (nftId, instanceNumber) => {
+  try {
+    const response = await request.get(`/nfts/sale/${nftId}?instanceNumber=${instanceNumber}`);
+    return response.data;
+  } catch (error) {
+    console.error('获取 藏品寄售信息失败:', error);
+    throw error;
+  }
+};
+

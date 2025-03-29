@@ -20,7 +20,7 @@
             nft_instances ni ON nft.id = ni.nft_id
         WHERE
             nft.id = #{nftId}
-          AND ni.instance_id = #{instanceId}
+          AND ni.instance_number = #{instanceNumber}
     </select>
 
 </mapper>

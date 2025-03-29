@@ -9,15 +9,15 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   redis:
-    database: 0 # Redis ???????????? 0?
-    host: localhost # Redis ?????
-    port: 6379 # Redis ?????
+    database: 0
+    host: localhost
+    port: 6379
     password:
-    timeout: 2000ms # ??????????
+    timeout: 2000ms
 
 mybatis:
-  mapper-locations: classpath:mapper/*.xml  # Mapper XML ????
-  type-aliases-package: com.vue.vuetest216.Entity    # ??????
+  mapper-locations: classpath:mapper/*.xml
+#  type-aliases-package: com/joon/ibox_back_end/market/entity
   configuration:
-    map-underscore-to-camel-case: true      # ????????
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # ?? SQL ??
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

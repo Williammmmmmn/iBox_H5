@@ -29,11 +29,6 @@ public class Consignments {
     private String sellerAddress;
 
     /**
-     * 寄售最高价（限价，可选）。
-     */
-    private BigDecimal maxPrice;
-
-    /**
      * 价格的货币类型（如 ETH、USD 等）。
      */
     private String currency;
@@ -47,22 +42,6 @@ public class Consignments {
      * 寄售结束时间（可选）。
      */
     private LocalDateTime endTime;
-
-    /**
-     * 寄售状态（进行中、已完成、已取消）。
-     */
-    private ConsignmentStatus status;
-
-    /**
-     * 寄售创建的时间戳。
-     */
-    private LocalDateTime createdAt;
-
-    /**
-     * 寄售信息最后更新的时间戳。
-     */
-    private LocalDateTime updatedAt;
-
     /**
      * 是否处于有效寄售状态（1: 是, 0: 否）。
      */
