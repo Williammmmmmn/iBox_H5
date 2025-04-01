@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.entity.po;
+package com.joon.ibox_back_end.commonEntity.po;
 
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @create: 2025-03-2417:34
  **/
 @Data
-public class purchaseRequests {
+public class PurchaseRequests {
     /**
      * 主键，唯一标识每个求购记录
      */

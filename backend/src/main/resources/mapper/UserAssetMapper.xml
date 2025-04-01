@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.personalHub.mapper.UserAssetMapper">
+    <resultMap id="userProfileMap" type="com.joon.ibox_back_end.personalHub.entity.UserProfileDto">
+        <result property="username" column="username"/>
+        <result property="avatar" column="avatar"/>
+        <result property="walletAddress" column="walletAddress"/>
+    </resultMap>
+
+    <resultMap id="nftAssetMap" type="com.joon.ibox_back_end.personalHub.entity.NftAssetDto">
+        <result property="nftName" column="nftName"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="instanceNumber" column="instanceNumber"/>
+        <result property="holdDays" column="holdDays"/>
+        <result property="purchasePrice" column="purchasePrice"/>
+        <result property="salePrice" column="salePrice"/>
+
+
+        <result property="isConsigning" column="isConsigning"/>
+    </resultMap>
+    <!-- 复合结果映射 -->
+    <resultMap id="userAssetsResultMap" type="com.joon.ibox_back_end.personalHub.entity.UserAssetsResponseDto">
+        <association property="userProfile" resultMap="userProfileMap"/>
+        <collection property="assets" resultMap="nftAssetMap"/>
+    </resultMap>
+    <select id="selectUserAssetsByWalletAddress" resultMap="userAssetsResultMap">
+        SELECT
+            u.username,
+            u.avatar,
+            u.wallet_address AS walletAddress,
+            n.name AS nftName,
+            n.image_url AS imageUrl,
+            ni.instance_number AS instanceNumber,
+            DATEDIFF(NOW(), t.transaction_date) AS holdDays,
+            t.price AS purchasePrice,
+            ni.price AS salePrice,
+            ni.is_consigning AS isConsigning
+        FROM
+            users u
+                JOIN nft_instances ni ON u.wallet_address = ni.owner_address
+                JOIN nfts n ON ni.nft_id = n.id
+                JOIN transactions t ON ni.instance_id = t.instance_id AND t.type = 'purchase'
+        WHERE u.wallet_address = #{walletAddress}
+        ORDER BY n.name, ni.instance_number
+    </select>
+</mapper>

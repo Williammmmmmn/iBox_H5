@@ -10,6 +10,7 @@ import Consignment from '@/pages/Market/Consignment/consignmentPage.vue'
 import SaleDetail from "@/pages/Market/SaleDetail/SaleDetail.vue";
 import announceDetail from "@/pages/Market/AnnounceDetail/announceDetail.vue";
 import User from "@/pages/Layout/user.vue";
+import Wallet from "@/pages/Wallet/MyWallet.vue";
 import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
 
@@ -49,7 +50,7 @@ const routes = [
     path: "/market",
     component: Market,
     meta:{
-      KeepAlive:true //启用缓存
+      requiresAuth: true
     }
   },
   {
@@ -68,7 +69,16 @@ const routes = [
     path: '/announceDetail/:nftId/:announceId',
     component:announceDetail,
     props:true
+  },
+  {
+    path: "/wallet",
+    name:'Wallet',
+    component: Wallet,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   }
+
 
 
 ];
@@ -77,10 +87,10 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 });
-
+//路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market'];
+  const protectedRoutes = ['/search', '/notice', '/market','consignment','saleDetail','announceDetail','wallet'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

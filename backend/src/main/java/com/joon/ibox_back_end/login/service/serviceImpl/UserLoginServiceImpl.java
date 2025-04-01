@@ -1,14 +1,11 @@
 package com.joon.ibox_back_end.login.service.serviceImpl;
 
-import com.joon.ibox_back_end.Utils.RandomUsernameGenerator;
-import com.joon.ibox_back_end.login.entity.UserDto;
-import com.joon.ibox_back_end.login.entity.UserPo;
+import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.utils.RandomUsernameGenerator;
 import com.joon.ibox_back_end.login.mapper.UserLoginMapper;
 import com.joon.ibox_back_end.login.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 /**
  * @program: iBox_back_end
@@ -27,8 +24,8 @@ public class UserLoginServiceImpl implements UserLoginService {
      * @return
      */
     @Override
-    public UserPo findByPhone(String phone) {
-        UserPo user = userLoginMapper.findByPhone(phone);
+    public PersonalPo findByPhone(String phone) {
+        PersonalPo user = userLoginMapper.findByPhone(phone);
         if(user != null){
             return user;
         }
@@ -41,7 +38,7 @@ public class UserLoginServiceImpl implements UserLoginService {
      */
     @Override
     public void saveNewUser(String phone) {
-        UserPo user = new UserPo();
+        PersonalPo user = new PersonalPo();
         user.setPhoneNumber(phone);
 //        user.setCreatedAt(LocalDateTime.now());
         user.setUsername(RandomUsernameGenerator.generateRandomUsername());

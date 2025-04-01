@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.entity.po;
+package com.joon.ibox_back_end.commonEntity.po;
 
 import lombok.Data;
 

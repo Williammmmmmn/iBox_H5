@@ -12,7 +12,7 @@
         <result column="start_time" property="startTime" />
     </resultMap>
 
-    <resultMap id="detailAnnounceMap" type="com.joon.ibox_back_end.market.entity.AnnounceDetailDTO">
+    <resultMap id="detailAnnounceMap" type="com.joon.ibox_back_end.market.entity.AnnounceDetailDto">
         <id column="id" property="id" />
         <result column="title" property="title" />
         <result column="content" property="content" />

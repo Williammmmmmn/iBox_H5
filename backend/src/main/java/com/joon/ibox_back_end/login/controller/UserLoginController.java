@@ -1,21 +1,17 @@
 package com.joon.ibox_back_end.login.controller;
 
-import com.joon.ibox_back_end.Utils.RandomUsernameGenerator;
 import com.joon.ibox_back_end.common.CreateTokenForLogin;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.common.Valid;
+import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
 import com.joon.ibox_back_end.login.entity.LoginRequest;
-import com.joon.ibox_back_end.login.entity.UserDto;
-import com.joon.ibox_back_end.login.entity.UserPo;
 import com.joon.ibox_back_end.login.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @program: iBox_back_end
@@ -53,7 +49,7 @@ public class UserLoginController {
             return R.error("验证码错误");
         }
         // 验证码正确，判断用户是否存在
-        UserPo user = userLoginService.findByPhone(phone);
+        PersonalPo user = userLoginService.findByPhone(phone);
         if (user == null) {
             // 用户不存在，创建新用户
             userLoginService.saveNewUser(phone);
@@ -66,7 +62,7 @@ public class UserLoginController {
         return R.success("登录成功", data);
     }
 
-    private Map<String, Object> createResponseData(UserPo user, String token) {
+    private Map<String, Object> createResponseData(PersonalPo user, String token) {
         Map<String, Object> data = new HashMap<>();
         data.put("user", user); // 用户信息
         data.put("token", token); // Token

@@ -84,7 +84,7 @@ public class MarketController {
      */
     @GetMapping("/announceDetail/{announceId}")
     public R getAnnounceDetail(@PathVariable Integer announceId) {
-        AnnounceDetailDTO announceDetail = marketService.selectAnnounceDetailById(announceId);
+        AnnounceDetailDto announceDetail = marketService.selectAnnounceDetailById(announceId);
         return R.success("查询藏品公告详情成功",announceDetail);
     }
 }

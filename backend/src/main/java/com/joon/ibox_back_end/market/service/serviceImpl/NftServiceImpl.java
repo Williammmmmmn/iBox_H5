@@ -3,12 +3,10 @@ package com.joon.ibox_back_end.market.service.serviceImpl;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.mapper.*;
 import com.joon.ibox_back_end.market.service.MarketService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @program: backend
@@ -84,7 +82,7 @@ public class NftServiceImpl implements MarketService {
      * @return
      */
     @Override
-    public AnnounceDetailDTO selectAnnounceDetailById(Integer announceId) {
+    public AnnounceDetailDto selectAnnounceDetailById(Integer announceId) {
         return announceMapper.selectAnnounceDetailById(announceId);
     }
 }

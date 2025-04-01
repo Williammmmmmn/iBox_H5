@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  **/
 
 @Data
-public class AnnounceDetailDTO {
+public class AnnounceDetailDto {
     private Integer id;
     private String title;
     private String content;

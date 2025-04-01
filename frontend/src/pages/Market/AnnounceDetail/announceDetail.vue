@@ -124,6 +124,7 @@ onMounted(() => {
   min-height: 100vh;
   background-color: #fff;
   padding-bottom: 20px;
+  user-select: none;
 }
 
 .top-nav {

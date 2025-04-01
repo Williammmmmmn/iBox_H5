@@ -46,5 +46,5 @@ public interface MarketService {
      * @param announceId
      * @return
      */
-    AnnounceDetailDTO selectAnnounceDetailById(Integer announceId);
+    AnnounceDetailDto selectAnnounceDetailById(Integer announceId);
 }

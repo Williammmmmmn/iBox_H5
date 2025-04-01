@@ -1,0 +1,17 @@
+package com.joon.ibox_back_end.personalHub.mapper;
+
+import com.joon.ibox_back_end.personalHub.entity.UserAssetsResponseDto;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+@Mapper
+public interface UserAssetMapper {
+    /**
+     * 查询用户资产
+     * @param walletAddress
+     * @return
+     */
+    List<UserAssetsResponseDto> selectUserAssetsByWalletAddress(@Param("walletAddress") String walletAddress);
+}

@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.Utils;
+package com.joon.ibox_back_end.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

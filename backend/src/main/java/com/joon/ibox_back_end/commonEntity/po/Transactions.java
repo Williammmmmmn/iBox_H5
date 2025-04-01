@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.entity.po;
+package com.joon.ibox_back_end.commonEntity.po;
 
 import lombok.Data;
 
@@ -69,4 +69,8 @@ public class Transactions {
     public enum TransactionType {
         PURCHASE, SALE, TRANSFER, CONSIGNMENT, PURCHASE_REQUEST
     }
+    /**
+     * 外键，指向的 nft实例ID。
+     */
+    private Integer instanceId;
 }

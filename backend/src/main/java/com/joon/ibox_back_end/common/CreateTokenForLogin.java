@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.common;
 
-import com.joon.ibox_back_end.Utils.JwtUtil;
+import com.joon.ibox_back_end.utils.JwtUtil;
 
 /**
  * @program: iBox_back_end
