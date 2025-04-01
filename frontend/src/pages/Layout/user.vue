@@ -3,7 +3,8 @@
     <!-- 顶部渐变背景区域 -->
     <div class="profile-header">
       <div class="user-info">
-        <van-image round width="80px" height="80px" :src="require(`@/${userProfile.avatar}`)" class="avatar" />
+        <van-image round width="80px" height="80px" :src="avatarUrl" class="avatar" 
+        @error="handleAvatarError"/>
         <div class="name">{{ userProfile.username }}</div>
         <div class="wallet-address">钱包地址: {{ shortWalletAddress }}</div>
       </div>
@@ -117,7 +118,7 @@ const showDetail = ref(false);
 const selectedAsset = ref(null);
 const loading = ref(false);
 const rawAssets = ref([]);
-
+const defaultAvatar = require('@/assets/images/sorry.jpg');
 // 从Vuex获取用户信息
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -127,7 +128,19 @@ const userProfile = computed(() => {
     walletAddress: user.walletAddress || ''
   };
 });
-
+const avatarUrl = computed(() => {
+  try {
+    return userProfile.value.avatar 
+      ? require(`@/${userProfile.value.avatar}`) 
+      : defaultAvatar;
+  } catch (e) {
+    return defaultAvatar;
+  }
+});
+const handleAvatarError = () => {
+  // 如果动态加载失败也使用默认头像
+  return defaultAvatar;
+};
 // 格式化钱包地址显示
 const shortWalletAddress = computed(() => {
   const address = userProfile.value.walletAddress;
@@ -140,7 +153,7 @@ const fetchAssets = async () => {
   try {
     // 检查钱包地址
     if (!userProfile.value.walletAddress) {
-      throw new Error('未获取到钱包地址');
+      throw new Error('您还未登录');
     }
 
     loading.value = true;

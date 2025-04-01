@@ -90,7 +90,7 @@ const router = createRouter({
 //路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market','consignment','saleDetail','announceDetail','wallet'];
+  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.wallet.mapper.TransactionMapper">
+
+    <resultMap id="TransactionResultMap" type="com.joon.ibox_back_end.commonEntity.po.Transactions">
+        <id column="id" property="id"/>
+        <result column="nft_id" property="nftId"/>
+        <result column="from_address" property="fromAddress"/>
+        <result column="to_address" property="toAddress"/>
+        <result column="transaction_hash" property="transactionHash"/>
+        <result column="price" property="price"/>
+        <result column="currency" property="currency"/>
+        <result column="transaction_date" property="transactionDate"/>
+        <result column="type" property="type"
+                typeHandler="com.joon.ibox_back_end.common.TransactionTypeHandler"/>
+        <result column="purchase_request_id" property="purchaseRequestId"/>
+        <result column="instance_id" property="instanceId"/>
+    </resultMap>
+
+    <select id="findByWalletAddress" resultMap="TransactionResultMap">
+        SELECT * FROM transactions
+        WHERE from_address = #{walletAddress} OR to_address = #{walletAddress}
+        ORDER BY transaction_date DESC
+    </select>
+</mapper>

@@ -1,57 +1,75 @@
 <template>
-    <van-nav-bar left-arrow @click-left="goBack" :border="false" />
-    <div class="login-container">
-        <div class="login-box">
-            <div class="title">
-                <h2>欢迎注册/登录iBox</h2>
-                <p>未注册号码将自动创建账号</p>
-            </div>
-            <van-popup v-model:show="showCaptchaDialog" round position="center"
-                :style="{ width: '80%', padding: '20px' }">
-                <div class="captcha-container">
-                    <span style="margin-bottom: 30px;color: gray;">请完成安全验证</span>
-                    <div class="captcha-input-group">
-                        <input type="text" v-model="captchaInput" placeholder="请输入验证码" class="captcha-input" />
-                        <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" class="captcha-image" />
-                    </div>
-                    <div class="button-container">
-                        <van-button type="primary" @click="handleCaptchaConfirm">确认</van-button>
-                        <van-button type="default" @click="showCaptchaDialog = false">取消</van-button>
-                    </div>
+    <div class="login-page-container">
+        <!-- 添加背景动画容器 -->
+        <div class="gravity-balls">
+            <img v-for="(ball, index) in balls" 
+                :key="index" class="ball-image" 
+                :src="ball.imageUrl" :style="{
+                left: `${ball.x}px`,
+                top: `${ball.y}px`,
+                width: `${ball.size}px`,
+                height: `${ball.size}px`,
+                transform: `rotate(${ball.rotation}deg)`
+            }" />
+        </div>
+
+
+        <van-nav-bar left-arrow @click-left="goBack" :border="false" />
+        <div class="login-container">
+            <div class="login-box">
+                <div class="title">
+                    <h2>欢迎注册/登录iBox</h2>
+                    <p>未注册号码将自动创建账号</p>
                 </div>
-            </van-popup>
-            <form @submit.prevent="handleLogin">
-                <div class="form-group">
-                    <input type="text" id="phone" maxlength="11" v-model="phone" placeholder="请输入本人实名认证的手机号" required />
-                </div>
-                <div class="form-group">
-                    <div class="verification-code-group">
-                        <div class="input-with-button" :class="{ 'input-focused': isVerificationCodeFocused }">
-                            <input type="text" id="verification-code" maxlength="6" v-model="verificationCode"
-                                placeholder="验证码" required @focus="isVerificationCodeFocused = true"
-                                @blur="isVerificationCodeFocused = false" />
-                            <span v-if="!isCodeSent" class="get-code-text"
-                                @click="handleGetVerificationCode">获取验证码</span>
-                            <span v-else class="get-code-text disabled">{{ countdown }}秒后重新获取</span>
+                <van-popup v-model:show="showCaptchaDialog" round position="center"
+                    :style="{ width: '80%', padding: '20px' }">
+                    <div class="captcha-container">
+                        <span style="margin-bottom: 30px;color: gray;">请完成安全验证</span>
+                        <div class="captcha-input-group">
+                            <input type="text" v-model="captchaInput" placeholder="请输入验证码" class="captcha-input" />
+                            <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" class="captcha-image" />
+                        </div>
+                        <div class="button-container">
+                            <van-button type="primary" @click="handleCaptchaConfirm">确认</van-button>
+                            <van-button type="default" @click="showCaptchaDialog = false">取消</van-button>
                         </div>
                     </div>
-                </div>
+                </van-popup>
+                <form @submit.prevent="handleLogin">
+                    <div class="form-group">
+                        <input type="text" id="phone" maxlength="11" v-model="phone" placeholder="请输入本人实名认证的手机号"
+                            required />
+                    </div>
+                    <div class="form-group">
+                        <div class="verification-code-group">
+                            <div class="input-with-button" :class="{ 'input-focused': isVerificationCodeFocused }">
+                                <input type="text" id="verification-code" maxlength="6" v-model="verificationCode"
+                                    placeholder="验证码" required @focus="isVerificationCodeFocused = true"
+                                    @blur="isVerificationCodeFocused = false" />
+                                <span v-if="!isCodeSent" class="get-code-text"
+                                    @click="handleGetVerificationCode">获取验证码</span>
+                                <span v-else class="get-code-text disabled">{{ countdown }}秒后重新获取</span>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <input type="text" id="invitation-code" v-model="invitationCode" placeholder="邀请码(选填)" />
-                </div>
-                <button type="submit" class="login-btn" :class="{ 'active': isLoginButtonActive }"
-                    :disabled="!isLoginButtonActive">登录</button>
+                    <div class="form-group">
+                        <input type="text" id="invitation-code" v-model="invitationCode" placeholder="邀请码(选填)" />
+                    </div>
+                    <button type="submit" class="login-btn" :class="{ 'active': isLoginButtonActive }"
+                        :disabled="!isLoginButtonActive">登录</button>
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" v-model="agreeTerms" />
-                        我已阅读并同意《用户协议》、《隐私政策》
-                    </label>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" v-model="agreeTerms" />
+                            我已阅读并同意《用户协议》、《隐私政策》
+                        </label>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
 </template>
 
 <script>
@@ -61,7 +79,7 @@ export default {
 </script>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted, onMounted } from 'vue';
 import { showConfirmDialog, showToast, showLoadingToast, closeToast } from 'vant';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -82,6 +100,136 @@ const showCaptchaDialog = ref(false);
 const captchaImage = ref('');
 const captchaInput = ref('');
 const captchaKey = ref(''); // 验证码标识
+
+
+// 添加球体动画相关代码
+const balls = ref([]);
+const ballCount = 15; // 球体数量
+
+// 初始化球体
+const initBalls = () => {
+  const imageUrls = [
+    require('@/assets/images/cc.jpg'),
+    require('@/assets/images/gfm.jpg'),
+    require('@/assets/images/io.jpg'),
+    require('@/assets/images/lzz.jpg'),
+    require('@/assets/images/sbl.jpg'),
+    require('@/assets/images/sw2.jpg'),
+    require('@/assets/images/yuk.jpg'),
+    require('@/assets/images/sorry.jpg'),
+    require('@/assets/images/cjdx.jpg'),
+    require('@/assets/images/emn.jpg'),
+    require('@/assets/images/hd.jpg'),
+    require('@/assets/images/jrt.jpg'),
+    require('@/assets/images/q1.jpg'),
+    require('@/assets/images/rbz.jpg'),
+    require('@/assets/images/xclh.jpg'),
+
+    // 添加更多图片路径...
+  ];
+  
+  for (let i = 0; i < ballCount; i++) {
+    balls.value.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight * 0.6,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      size: 25 + Math.random() * 50,
+      imageUrl: imageUrls[i % imageUrls.length] // 循环使用图片
+    });
+  }
+};
+
+// 重力参数
+const gravity = 0.2;
+const friction = 0.98;
+const bounce = 0.7;
+
+// 动画循环
+let animationId = null;
+const animate = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    balls.value.forEach(ball => {
+        // 应用重力
+        ball.vy += gravity;
+
+        // 更新位置
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        // 添加旋转效果（根据速度）
+        ball.rotation = (ball.rotation || 0) + ball.vx;
+        // 边界检测
+        if (ball.x + ball.size > width) {
+            ball.x = width - ball.size;
+            ball.vx *= -bounce;
+        } else if (ball.x < 0) {
+            ball.x = 0;
+            ball.vx *= -bounce;
+        }
+
+        if (ball.y + ball.size > height) {
+            ball.y = height - ball.size;
+            ball.vy *= -bounce;
+        } else if (ball.y < 0) {
+            ball.y = 0;
+            ball.vy *= -bounce;
+        }
+
+        // 摩擦力
+        ball.vx *= friction;
+        ball.vy *= friction;
+    });
+
+    animationId = requestAnimationFrame(animate);
+};
+
+// 设备运动处理
+const handleMotion = (e) => {
+    const accelerationX = e.accelerationIncludingGravity.x;
+    const accelerationY = e.accelerationIncludingGravity.y;
+
+    balls.value.forEach(ball => {
+        ball.vx += accelerationX * 2;
+        ball.vy -= accelerationY * 2; // 注意Y轴方向相反
+    });
+};
+
+onMounted(() => {
+    initBalls();
+    animate();
+
+    // 添加设备运动监听
+    if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', handleMotion);
+    } else {
+        console.log('DeviceMotionEvent not supported');
+    }
+    // 窗口大小变化时重置球体位置
+    window.addEventListener('resize', () => {
+    balls.value = [];
+    initBalls();
+    });
+    // 添加鼠标移动影响（桌面端）
+    window.addEventListener('mousemove', (e) => {
+        balls.value.forEach(ball => {
+            const dx = e.clientX - ball.x;
+            const dy = e.clientY - ball.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) { // 鼠标靠近时排斥小球
+                const force = 100 / distance;
+                ball.vx -= dx * 0.02 * force;
+                ball.vy -= dy * 0.02 * force;
+            }
+        });
+    });
+});
+onUnmounted(() => {
+    cancelAnimationFrame(animationId);
+    window.removeEventListener('devicemotion', handleMotion);
+});
 
 // 手机号格式验证
 const isPhoneValid = computed(() => {
@@ -246,11 +394,11 @@ const handleLogin = async () => {
             showToast(error);
         }
         finally {
-        // 无论成功还是失败，都关闭 loading
-        if (toast) {
-            closeToast();
+            // 无论成功还是失败，都关闭 loading
+            if (toast) {
+                closeToast();
+            }
         }
-    }
     }
 };
 
@@ -260,11 +408,46 @@ const goBack = () => {
 </script>
 
 <style scoped>
+.login-page-container {
+    user-select: none;
+
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.gravity-balls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    /* 确保在内容后面 */
+}
+
+.ball {
+    position: absolute;
+    will-change: transform;
+    /* 优化性能 */
+    transition: transform 0.1s linear;
+    filter: blur(1px);
+    opacity: 0.7;
+}
+.ball-image {
+  position: absolute;
+  will-change: transform;
+  transition: transform 0.1s linear;
+  border-radius: 50%; /* 确保图片显示为圆形 */
+  object-fit: cover; /* 保持图片比例 */
+  pointer-events: none; /* 防止图片拦截鼠标事件 */
+}
 .login-container {
     user-select: none;
     margin-top: 10px;
     display: flex;
-    height: 100vh;
+    /* height: 100vh; */
 }
 
 .title {

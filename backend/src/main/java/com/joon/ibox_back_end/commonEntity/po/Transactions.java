@@ -67,7 +67,30 @@ public class Transactions {
      * 交易类型枚举。
      */
     public enum TransactionType {
-        PURCHASE, SALE, TRANSFER, CONSIGNMENT, PURCHASE_REQUEST
+        PURCHASE("purchase"),
+        SALE("sale"),
+        TRANSFER("transfer"),
+        CONSIGNMENT("consignment"),
+        PURCHASE_REQUEST("purchase_request");
+
+        private final String dbValue;
+
+        TransactionType(String dbValue) {
+            this.dbValue = dbValue;
+        }
+
+        public String getDbValue() {
+            return dbValue;
+        }
+
+        public static TransactionType fromDbValue(String dbValue) {
+            for (TransactionType type : values()) {
+                if (type.dbValue.equalsIgnoreCase(dbValue)) {
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("未知的交易类型: " + dbValue);
+        }
     }
     /**
      * 外键，指向的 nft实例ID。

@@ -19,3 +19,22 @@ export const getUserAssets = async () => {
       throw error;
     }
   };
+
+  //钱包详情信息
+  export const getWalletInfo = async () => {
+    try {
+      // 从Vuex获取钱包地址
+      const walletAddress = store.getters.getUserInfo?.walletAddress;
+      if (!walletAddress) {
+        throw new Error('未获取到钱包地址');
+      }
+      
+      const response = await request.get('/personal/wallet', {
+        params: { walletAddress: walletAddress }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('获取用户钱包信息失败:', error);
+      throw error;
+    }
+  };

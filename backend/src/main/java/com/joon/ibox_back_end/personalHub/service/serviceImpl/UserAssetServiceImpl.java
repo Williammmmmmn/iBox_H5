@@ -38,6 +38,6 @@ public class UserAssetServiceImpl implements UserAssetService {
             allAssets.addAll(dto.getAssets());
         }
 
-        return new UserAssetsResponseDto(profile, allAssets);
+          return new UserAssetsResponseDto(profile, allAssets);
     }
 }
