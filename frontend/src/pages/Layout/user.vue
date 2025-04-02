@@ -184,9 +184,18 @@ const cancelSearch = () => {
 // 处理寄售操作
 const handleConsign = async (item) => {
   try {
-    // 这里调用寄售API
-    showToast('寄售请求已发送');
-    item.isConsigning = true;
+     // 跳转到填写寄售价格页面，并传递藏品信息
+     router.push({
+      path: '/fillConsignmentPrice',
+      query: {
+        nftId: item.id, // 藏品唯一ID
+        nftName: item.nftName, // 藏品名称
+        instanceNumber: item.instanceNumber, // 实例编号
+        totalSupply: item.issueCount, // 发行总量
+        imageUrl: item.imageUrl, // 图片路径
+        instanceId:item.instanceId //藏品实例ID
+      }
+    });
   } catch (error) {
     showToast('寄售失败: ' + error.message);
   }

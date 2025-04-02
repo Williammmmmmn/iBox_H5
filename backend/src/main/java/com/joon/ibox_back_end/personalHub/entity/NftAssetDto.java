@@ -23,6 +23,8 @@ public class NftAssetDto {
     private Integer holdDays;
     private BigDecimal purchasePrice;
     private BigDecimal salePrice;
+    private Integer issueCount;
+    private Integer instanceId;
     private Boolean isConsigning;
 
 

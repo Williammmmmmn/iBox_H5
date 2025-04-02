@@ -16,8 +16,8 @@
         <result property="holdDays" column="holdDays"/>
         <result property="purchasePrice" column="purchasePrice"/>
         <result property="salePrice" column="salePrice"/>
-
-
+        <result property="issueCount" column="issueCount"/>
+        <result property="instanceId" column="instanceId"/>
         <result property="isConsigning" column="isConsigning"/>
     </resultMap>
     <!-- 复合结果映射 -->
@@ -36,11 +36,14 @@
             DATEDIFF(NOW(), t.transaction_date) AS holdDays,
             t.price AS purchasePrice,
             ni.price AS salePrice,
+            os.issue_count AS issueCount,
+            ni.instance_id AS instanceId,
             ni.is_consigning AS isConsigning
         FROM
             users u
                 JOIN nft_instances ni ON u.wallet_address = ni.owner_address
                 JOIN nfts n ON ni.nft_id = n.id
+                JOIN official_sales os ON n.id = os.id
                 JOIN transactions t ON ni.instance_id = t.instance_id AND t.type = 'purchase'
         WHERE u.wallet_address = #{walletAddress}
         ORDER BY n.name, ni.instance_number

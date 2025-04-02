@@ -37,9 +37,16 @@ public class Instances {
      * 实例信息最后更新的时间戳。
      */
     private LocalDateTime updatedAt;
-
+    /**
+     * 示例编号
+     */
+    private Integer instanceNumber;
     /**
      * 此藏品实例的寄售价格（如果用户寄售了）。
      */
     private BigDecimal price;
+    /**
+     * 是否正在寄售
+     */
+    private Boolean isConsigning;
 }

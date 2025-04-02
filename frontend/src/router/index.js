@@ -13,7 +13,7 @@ import User from "@/pages/Layout/user.vue";
 import Wallet from "@/pages/Wallet/MyWallet.vue";
 import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
-
+import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPrice.vue";
 const routes = [
   {
     path: "/",
@@ -74,6 +74,13 @@ const routes = [
     path: "/wallet",
     name:'Wallet',
     component: Wallet,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
+    path:"/fillConsignmentPrice",
+    component: FillConsignmentPrice,
     meta: {
       keepAlive: false // 不缓存详情页
     }

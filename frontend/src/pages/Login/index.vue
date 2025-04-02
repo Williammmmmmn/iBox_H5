@@ -204,7 +204,7 @@ onMounted(() => {
     if (window.DeviceMotionEvent) {
         window.addEventListener('devicemotion', handleMotion);
     } else {
-        console.log('DeviceMotionEvent not supported');
+        console.log('设备移动不支持');
     }
     // 窗口大小变化时重置球体位置
     window.addEventListener('resize', () => {

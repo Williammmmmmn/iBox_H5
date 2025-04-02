@@ -226,6 +226,7 @@ onMounted(() => {
 <style scoped>
 .wallet-container {
   padding: 16px;
+  user-select: none;
 }
 
 .wallet-card {

@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 /**
  * @program: backend
- * @description: 寄售公告细节
+ * @description:
  * @author: Joonnn
- * @create: 2025-03-2815:20
+ * @create: 2025-04-0214:52
  **/
 
 @Data
