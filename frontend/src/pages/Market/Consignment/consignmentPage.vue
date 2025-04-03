@@ -49,26 +49,24 @@
                 </div>
                 <!-- 价格和编号 -->
                 <div class="price-and-id" v-if="isSwitchOn === 'left'">
-                  <!-- 编号排序 -->
-                  <div class="volume-content-container" @click="toggleSort('id')">
-                    <div class="text-container">
-                      <span class="text">编号</span>
-                      <div class="triangle-container">
-                        <span class="triangle triangle-up" :class="{ active: isAscId }"></span>
-                        <span class="triangle triangle-down" :class="{ active: isAscId2 }"></span>
-                      </div>
+                  <!-- 价格排序部分 -->
+                    <div class="price-content-container">
+                      <SortIndicator 
+                        label="价格" 
+                        sort-key="price"
+                        :current-sort="currentSort"
+                        @sort-change="handleSortChange"
+                      />
                     </div>
-                  </div>
-                  <!-- 价格排序 -->
-                  <div class="price-content-container" @click="toggleSort('price')">
-                    <div class="text-container">
-                      <span class="text">价格</span>
-                      <div class="triangle-container">
-                        <span class="triangle triangle-up" :class="{ active: isDescPrice }"></span>
-                        <span class="triangle triangle-down" :class="{ active: isDescPrice2 }"></span>
-                      </div>
+                  <!-- 编号排序部分 -->
+                    <div class="volume-content-container">
+                      <SortIndicator 
+                        label="编号" 
+                        sort-key="id"
+                        :current-sort="currentSort"
+                        @sort-change="handleSortChange"
+                      />
                     </div>
-                  </div>
                 </div>
               </div>
 
@@ -152,16 +150,15 @@ import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
 import { getAnnounceList } from '@/api/market';
 import dayjs from 'dayjs';
 import { Toast } from 'vant';
+import SortIndicator from '@/components/SortIndicator.vue';
 
+const currentSort = ref({ key: '', order: '' });
 const route = useRoute();
 const router = useRouter();
 const nftId = route.query.id;
 const activeTab = ref(0);
 const isSwitchOn = ref('left')//left代表寄售，right代表求购;
-const isAscId = ref(false); // 编号升序
-const isAscId2 = ref(false); // 编号降序
-const isDescPrice = ref(false); // 价格升序
-const isDescPrice2 = ref(false); // 价格降序
+
 const issueCount = ref(0);
 const circulationCount = ref(0);
 const saleList = ref([]);
@@ -231,11 +228,15 @@ const loadData = async () => {
     name.value = response.name;
     issueCount.value = response.issueCount;
     circulationCount.value = response.circulationCount;
-    saleList.value = response.instances.map(item => ({
-      name: response.name,
-      id: item.id,
-      price: item.price,
-    })).sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // 默认价格从低到高
+    // 过滤掉价格不大于0的项
+    saleList.value = response.instances
+      .filter(item => item.price > 0) // 新增过滤条件
+      .map(item => ({
+        name: response.name,
+        id: item.id,
+        price: item.price,
+      }))
+      .sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
     isReachBottom.value = true;
   } catch (error) {
     console.error('加载数据失败:', error);
@@ -251,9 +252,12 @@ const loadPurchaseData = async () => {
 
     // 正确判断方式
     if (response) {
-      purchaseList.value = response.map(item => ({
-        price: item.price
-      })).sort((a, b) => b.price - a.price);
+      purchaseList.value = response
+        .filter(item => item.price > 0) // 新增过滤条件
+        .map(item => ({
+          price: item.price
+        }))
+        .sort((a, b) => b.price - a.price);
 
     } else {
       console.error('数据格式错误:', response);
@@ -266,66 +270,22 @@ const loadPurchaseData = async () => {
     loading.value = false;
   }
 };
-
-const toggleSort = (type) => {
-  if (type === 'price') {
-    // 重置编号排序状态
-    isAscId.value = false;
-    isAscId2.value = false;
-
-    // 切换价格排序状态
-    if (!isDescPrice.value && !isDescPrice2.value) {
-      // 默认从低到高
-      isDescPrice.value = true;
-    } else if (isDescPrice.value) {
-      // 从低到高切换到从高到低
-      isDescPrice.value = false;
-      isDescPrice2.value = true;
-    } else if (isDescPrice2.value) {
-      // 从高到低切换到从低到高
-      isDescPrice2.value = false;
-      isDescPrice.value = true;
-    }
-
-    // 根据价格排序
+const handleSortChange = (sort) => {
+  currentSort.value = sort;
+  
+  if (sort.key === 'price') {
     saleList.value.sort((a, b) => {
       const priceA = parseFloat(a.price);
       const priceB = parseFloat(b.price);
-      if (isDescPrice.value) {
-        return priceA - priceB; // 从低到高
-      } else {
-        return priceB - priceA; // 从高到低
-      }
+      return sort.order === 'asc' ? priceA - priceB : priceB - priceA;
     });
-  } else if (type === 'id') {
-    // 重置价格排序状态
-    isDescPrice.value = false;
-    isDescPrice2.value = false;
-
-    // 切换编号排序状态
-    if (!isAscId.value && !isAscId2.value) {
-      // 默认从低到高
-      isAscId.value = true;
-    } else if (isAscId.value) {
-      // 从低到高切换到从高到低
-      isAscId.value = false;
-      isAscId2.value = true;
-    } else if (isAscId2.value) {
-      // 从高到低切换到从低到高
-      isAscId2.value = false;
-      isAscId.value = true;
-    }
-
-    // 根据编号排序
+  } else if (sort.key === 'id') {
     saleList.value.sort((a, b) => {
-      if (isAscId.value) {
-        return a.id - b.id; // 从低到高
-      } else {
-        return b.id - a.id; // 从高到低
-      }
+      return sort.order === 'asc' ? a.id - b.id : b.id - a.id;
     });
   }
 };
+
 
 const goBack = () => {
   // 从当前路由中获取tab参数
@@ -337,6 +297,7 @@ const goBack = () => {
 const goToSaleDetail = (instanceNumber) => {
   router.push({
     path: `/saleDetail/${nftId}/${instanceNumber}`,
+    query: { from: 'market' }  // 添加来源标识
   });
 };
 const goToAnnounceDetail = (announceId) => {
@@ -652,52 +613,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
-
-.text-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.text {
-  font-size: 10px;
-  color: #444343;
-}
-
-.triangle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.triangle {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-left: 3px;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  margin: 1px;
-}
-
-.triangle-up {
-  border-bottom: 4px solid #817f7f;
-}
-
-.triangle-down {
-  border-top: 4px solid #817f7f;
-}
-
-.triangle-up.active {
-  border-bottom: 4px solid blue;
-  /* 升序时，上面三角形变为黑色 */
-}
-
-.triangle-down.active {
-  border-top: 4px solid blue;
-  /* 降序时，下面三角形变为黑色 */
-}
-
 /* 数据展示区域 */
 .data-list {
   padding: 10px;

@@ -69,9 +69,9 @@ public class Transactions {
     public enum TransactionType {
         PURCHASE("purchase"),
         SALE("sale"),
-        TRANSFER("transfer"),
-        CONSIGNMENT("consignment"),
-        PURCHASE_REQUEST("purchase_request");
+        PURCHASE_REQUEST("purchase_request"),
+        CANCEL("cancel");
+
 
         private final String dbValue;
 

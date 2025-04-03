@@ -46,28 +46,24 @@
             <van-popup v-model:show="showReleasePicker" round position="bottom">
               <van-picker :columns="statusOptions" @cancel="showReleasePicker = false" @confirm="onStatusConfirm" />
             </van-popup>
-
-            <!-- 地板价排序 -->
-            <div class="price-content-container" @click="toggleSort('price')">
-              <div class="text-container">
-                <span class="text">地板价</span>
-                <div class="triangle-container">
-                  <span class="triangle triangle-up" :class="{ active: isPriceAsc }"></span>
-                  <span class="triangle triangle-down" :class="{ active: isPriceAsc2 }"></span>
-                </div>
+             <!-- 修改排序部分 -->
+              <div class="price-content-container">
+                <SortIndicator 
+                  label="地板价" 
+                  sort-key="price"
+                  :current-sort="currentSort"
+                  @sort-change="handleSortChange"
+                />
               </div>
-            </div>
-
-            <!-- 成交量排序 -->
-            <div class="volume-content-container" @click="toggleSort('volume')">
-              <div class="text-container">
-                <span class="text">成交量</span>
-                <div class="triangle-container">
-                  <span class="triangle triangle-up" :class="{ active: isVolumeAsc }"></span>
-                  <span class="triangle triangle-down" :class="{ active: isVolumeAsc2 }"></span>
-                </div>
+              
+              <div class="volume-content-container">
+                <SortIndicator 
+                  label="成交量" 
+                  sort-key="volume"
+                  :current-sort="currentSort"
+                  @sort-change="handleSortChange"
+                />
               </div>
-            </div>
           </div>
         </div>
         <!-- 示例藏品 -->
@@ -97,10 +93,10 @@
             </div>
 
             <!-- 地板价 -->
-            <div class="collection-price">{{ item.lowestPrice }}</div>
+            <div class="collection-price">{{  item.lowestPrice > 0 ? item.lowestPrice : '--' }}</div>
 
             <!-- 成交量 -->
-            <div class="collection-volume">{{ item.dailyTransactionCount }}</div>
+            <div class="collection-volume">{{ item.dailyTransactionCount > 0 ? item.dailyTransactionCount : '--' }}</div>
           </div>
         </div>
         <!-- 底部提示 -->
@@ -125,6 +121,8 @@ import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { Toast } from 'vant';
+import SortIndicator from '@/components/SortIndicator.vue';
+const currentSort = ref({ key: '', order: '' });
 
 const router = useRouter();
 const route = useRoute();
@@ -212,8 +210,8 @@ const loadNFTData = async (tag = null) => {
     originalCollections.value = data.map(item => ({
       ...item,
       isFavorite: false, // 默认未收藏
-      lowestPrice: item.lowestPrice || 0,
-      dailyTransactionCount: item.dailyTransactionCount || 0
+      lowestPrice: item.lowestPrice > 0 ? item.lowestPrice : 0, // 确保0值处理
+      dailyTransactionCount: item.dailyTransactionCount > 0 ? item.dailyTransactionCount : 0
     }));
     cachedData[cacheKey] = originalCollections.value;
   } catch (error) {
@@ -252,65 +250,24 @@ const onStatusConfirm = (event) => {
   showReleasePicker.value = false;
 };
 
-const toggleSort = (type) => {
-  if (type === 'price') {
-    // 重置交易量排序状态
-    isVolumeAsc.value = false;
-    isVolumeAsc2.value = false;
-    // 切换排序状态
-    if (!isPriceAsc.value && !isPriceAsc2.value) {
-      // 如果当前两个图标都未激活，第一次点击激活升序图标
-      isPriceAsc.value = true;
-    } else if (isPriceAsc.value) {
-      // 如果当前是升序图标激活，点击后切换到降序图标
-      isPriceAsc.value = false;
-      isPriceAsc2.value = true;
-    } else if (isPriceAsc2.value) {
-      // 如果当前是降序图标激活，点击后切换到升序图标
-      isPriceAsc2.value = false;
-      isPriceAsc.value = true;
-    }
-
-    // 根据当前排序状态对数据进行排序
+const handleSortChange = (sort) => {
+  currentSort.value = sort;
+  
+  if (sort.key === 'price') {
     filteredCollections.value.sort((a, b) => {
-      if (isPriceAsc.value) {
-        // 升序
-        return a.lowestPrice - b.lowestPrice;
-      } else {
-        // 降序
-        return b.lowestPrice - a.lowestPrice;
-      }
+      const priceA = parseFloat(a.lowestPrice);
+      const priceB = parseFloat(b.lowestPrice);
+      return sort.order === 'asc' ? priceA - priceB : priceB - priceA;
     });
-  }
-  else if (type === 'volume') {
-    //重置价格排序
-    isPriceAsc.value = false;
-    isPriceAsc2.value = false;
-    // 切换排序状态
-    if (!isVolumeAsc.value && !isVolumeAsc2.value) {
-      // 如果当前两个图标都未激活，第一次点击激活升序图标
-      isVolumeAsc.value = true;
-    } else if (isVolumeAsc.value) {
-      // 如果当前是升序图标激活，点击后切换到降序图标
-      isVolumeAsc.value = false;
-      isVolumeAsc2.value = true;
-    } else if (isVolumeAsc2.value) {
-      // 如果当前是降序图标激活，点击后切换到升序图标
-      isVolumeAsc2.value = false;
-      isVolumeAsc.value = true;
-    }
-    // 根据成交量排序
+  } else if (sort.key === 'volume') {
     filteredCollections.value.sort((a, b) => {
-      if (isVolumeAsc.value) {
-        // 升序
-        return a.dailyTransactionCount - b.dailyTransactionCount;
-      } else {
-        // 降序
-        return b.dailyTransactionCount - a.dailyTransactionCount;
-      }
+      const volA = parseFloat(a.dailyTransactionCount);
+      const volB = parseFloat(b.dailyTransactionCount);
+      return sort.order === 'asc' ? volA - volB : volB - volA;
     });
   }
 };
+
 const toggleFavorite = (item) => {
   item.isFavorite = !item.isFavorite; // 切换收藏状态
 };
@@ -524,51 +481,6 @@ onActivated(() => {
   margin-left: 5px;
   display: flex;
   align-items: center;
-}
-
-.text-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.text {
-  font-size: 10px;
-  color: #444343;
-}
-
-.triangle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.triangle {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-left: 3px;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  margin: 1px;
-}
-
-.triangle-up {
-  border-bottom: 4px solid #817f7f;
-}
-
-.triangle-down {
-  border-top: 4px solid #817f7f;
-}
-
-.triangle-up.active {
-  border-bottom: 4px solid blue;
-  /* 升序时，上面三角形变为黑色 */
-}
-
-.triangle-down.active {
-  border-top: 4px solid blue;
-  /* 降序时，下面三角形变为黑色 */
 }
 
 /* 示例藏品样式 */

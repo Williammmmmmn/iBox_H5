@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class NftAssetDto {
     private String nftName;
+    private Integer nftId;
+
     private String imageUrl;
     private Integer instanceNumber;
     private Integer holdDays;

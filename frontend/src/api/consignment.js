@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-
+//上架藏品
 export function submitConsignmentPublish(data) {
     return request({
       url: '/consignments/publishSale',

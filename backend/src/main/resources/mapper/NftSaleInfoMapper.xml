@@ -33,7 +33,7 @@
                 JOIN
             nft_instances ON nfts.id = nft_instances.nft_id
         WHERE
-            nfts.id = #{nftId} AND nft_instances.is_consigning = 1
+            nfts.id = #{nftId}
         ORDER BY
             nft_instances.instance_number ASC;
     </select>

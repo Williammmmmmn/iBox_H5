@@ -38,3 +38,17 @@ export const getUserAssets = async () => {
       throw error;
     }
   };
+
+  //确认取消寄售
+  export const cancelSale = async (walletAddress,instanceId) => {
+    try {
+      const response = await request.post('/personal/cancelSale', {
+        walletAddress,
+            instanceId
+      });
+      return response;
+    } catch (error) {
+      console.error('取消寄售失败:', error);
+      throw error;
+    }
+  };

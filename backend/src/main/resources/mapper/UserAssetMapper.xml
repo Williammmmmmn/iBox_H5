@@ -11,6 +11,7 @@
 
     <resultMap id="nftAssetMap" type="com.joon.ibox_back_end.personalHub.entity.NftAssetDto">
         <result property="nftName" column="nftName"/>
+        <result property="nftId" column="nftId"/>
         <result property="imageUrl" column="imageUrl"/>
         <result property="instanceNumber" column="instanceNumber"/>
         <result property="holdDays" column="holdDays"/>
@@ -31,6 +32,7 @@
             u.avatar,
             u.wallet_address AS walletAddress,
             n.name AS nftName,
+            n.id AS nftId,
             n.image_url AS imageUrl,
             ni.instance_number AS instanceNumber,
             DATEDIFF(NOW(), t.transaction_date) AS holdDays,

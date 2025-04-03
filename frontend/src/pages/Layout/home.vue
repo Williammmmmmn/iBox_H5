@@ -125,7 +125,7 @@
           <van-picker :columns="statusOptions" @cancel="showStatusPicker = false" @confirm="onStatusConfirm"/>
         </van-popup>
 
-        <div class="price-content-container" @click="handlePriceSortClick">
+        <!-- <div class="price-content-container" @click="handlePriceSortClick">
           <div class="text-container">
             <span class="text">价格排序</span>
             <div class="triangle-container">
@@ -142,7 +142,26 @@
               <span class="triangle triangle-down" :class="{ 'active': !isDesc }"></span>
             </div>
           </div>
-        </div>
+        </div> -->
+
+         <!-- 修改排序部分 -->
+          <div class="price-content-container">
+            <SortIndicator 
+              label="价格排序" 
+              sort-key="price"
+              :current-sort="currentSort"
+              @sort-change="handleSortChange"
+            />
+          </div>
+          
+          <div class="time-content-container">
+            <SortIndicator 
+              label="时间倒序" 
+              sort-key="time"
+              :current-sort="currentSort"
+              @sort-change="handleSortChange"
+            />
+          </div>
       </div>
 
       <!-- 发售记录内容 -->
@@ -185,7 +204,9 @@ export default {
 <script setup>
 import {ref, onMounted, computed} from 'vue';
 import {useRouter} from 'vue-router';
+import SortIndicator from '@/components/SortIndicator.vue';
 
+const currentSort = ref({ key: '', order: '' });
 const router = useRouter();
 const scrollContainer = ref(null);
 const scrollPosition = ref(0);
@@ -224,9 +245,6 @@ const statusOptions = [
   {text: '进行中', value: '进行中'},
   {text: '已结束', value: '已结束'},
 ];
-const isAsc = ref(true);
-const isDesc = ref(false);
-
 const indicatorStyle = computed(() => {
   const scrollPercentage = scrollPosition.value / (contentWidth.value - containerWidth.value);
   return {
@@ -249,11 +267,14 @@ const startNoticeCarousel = () => {
     noticeIndex.value = (noticeIndex.value + 1) % notices.value.length;
   }, 3000);
 };
-const handlePriceSortClick = () => {
-  isAsc.value = !isAsc.value; // 切换升序/降序状态
-};
-const handleTimeSortClick = () => {
-  isDesc.value = !isDesc.value; // 切换升序/降序状态
+const handleSortChange = (sort) => {
+  currentSort.value = sort;
+  // 这里根据实际数据结构实现排序逻辑
+  if (sort.key === 'price') {
+    // 价格排序逻辑
+  } else if (sort.key === 'time') {
+    // 时间排序逻辑
+  }
 };
 const onCategoryConfirm = (value) => {
   selectedCategory.value = value;
@@ -288,7 +309,7 @@ const gridItems = [
 
 <style scoped>
 .top {
-  margin-bottom: 1%;
+  margin-bottom: 2%;
 }
 
 .nav-logo {
@@ -627,48 +648,6 @@ const gridItems = [
 .time-content-container {
   display: flex;
   align-items: center;
-}
-
-.text-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.text {
-  font-size: 10px;
-  color: #817f7f;
-}
-
-.triangle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.triangle {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-left: 3px;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  margin: 1px;
-}
-
-.triangle-up {
-  border-bottom: 4px solid #817f7f;
-}
-
-.triangle-down {
-  border-top: 4px solid #817f7f;
-}
-.triangle-up.active {
-  border-bottom: 4px solid blue; /* 升序时，上面三角形变为黑色 */
-}
-
-.triangle-down.active {
-  border-top: 4px solid blue; /* 降序时，下面三角形变为黑色 */
 }
 .record-container {
   margin-top: 5%;

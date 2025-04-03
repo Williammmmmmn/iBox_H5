@@ -72,19 +72,21 @@
       <!-- 底部白色区域 -->
       <div class="bottom-sheet-container">
         <div class="bottom-sheet">
-          <div class="white-top"></div> <!-- 新增的顶部圆角装饰 -->
+          <div class="white-top"></div>
           <van-tabs v-model="activeTab" class="tabs">
-            <van-tab title="购买">
+            <van-tab :title="isPersonalView ? '管理' : '购买'">
               <div class="content">
-                <div class="price-section">
-                  <div class="left">
+                <div class="price-section" :class="{ 'personal-view': isPersonalView }">
+                  <div class="left" v-if="!isPersonalView">
                     <div class="price">￥{{ price }}</div>
                     <div class="market-list" @click="goBack">
                       市场列表
                       <van-icon name="arrow" class="chevron" />
                     </div>
                   </div>
-                  <van-button type="primary" class="buy-button">立即购买</van-button>
+                  <van-button type="primary" class="buy-button" @click="handleAction">
+                    {{ isPersonalView ? '取消寄售' : '立即购买' }}
+                  </van-button>
                 </div>
               </div>
             </van-tab>
@@ -96,9 +98,7 @@
           </van-tabs>
         </div>
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -116,10 +116,17 @@ export default {
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { getSaleDetail } from '@/api/market';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { showConfirmDialog } from 'vant';
+import { showToast } from 'vant';
+import { useStore } from 'vuex';
+import { cancelSale } from '@/api/personal';
+
 const router = useRouter();
 
 const route = useRoute();
+const store = useStore();
+
 const nftId = route.params.nftId;
 const instanceNumber = route.params.instanceNumber;
 const imageUrl = ref('');
@@ -128,11 +135,25 @@ const issueCount = ref(0);
 const circulationCount = ref(0);
 const storyInfo = ref('');
 const price = ref(0);
+
+
+const userProfile = computed(() => {
+  const user = store.getters.getUserInfo || {};
+  return {
+    wallet_Address: user.walletAddress || ''
+  };
+});
+const walletAddress = userProfile.value.wallet_Address;
+const instanceId = Number(route.query.instanceId);
+// 计算属性判断是否来自个人中心
+const isPersonalView = computed(() => {
+  return route.query.from === 'personal';
+});
+
 const loading = ref(false); // 加载状态
 const loadData = async () => {
   loading.value = true; // 开始加载
   try {
-    console.log(nftId, instanceNumber);
     const response = await getSaleDetail(nftId, instanceNumber);
     console.log(response);
     imageUrl.value = require(`@/${response.nftImage}`);
@@ -146,6 +167,45 @@ const loadData = async () => {
   } finally {
     loading.value = false;
   }
+};
+// 处理按钮点击
+const handleAction = async () => {
+  if (isPersonalView.value) {
+    await handleCancelSale();
+  } else {
+    await buyNow();
+  }
+};
+
+const handleCancelSale = async () => {
+  try {
+    await showConfirmDialog({
+      title: '确认取消寄售',
+      message: '确认取消该藏品的寄售状态？',
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      confirmButtonColor: '#ff4444'
+    });
+    console.log(walletAddress, instanceId)
+    // 调用取消寄售API
+    await cancelSale(
+      walletAddress,
+      instanceId
+    );
+
+    showToast('取消寄售成功');
+    setTimeout(() => router.go(-1), 1000);
+  } catch (error) {
+    if (error !== 'cancel') {
+      showToast('取消寄售失败');
+      console.error('取消寄售失败:', error);
+    }
+  }
+};
+
+const buyNow = async () => {
+  // 立即购买逻辑
+  console.log('立即购买');
 };
 const goBack = () => {
   router.go(-1);
@@ -327,6 +387,7 @@ onMounted(() => {
   z-index: 7;
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
+
 /* 六边形装饰线容器 */
 .hexagon-decoration {
   position: absolute;
@@ -340,12 +401,10 @@ onMounted(() => {
 /* 装饰线基础样式 */
 .deco-line {
   position: absolute;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(245, 196, 37, 0.6) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(to right,
+      transparent 0%,
+      rgba(245, 196, 37, 0.6) 50%,
+      transparent 100%);
   height: 1px;
   width: 100%;
   box-shadow: 0 0 3px rgba(245, 196, 37, 0.4);
@@ -373,12 +432,10 @@ onMounted(() => {
   right: 0;
   height: 100%;
   width: 1px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(245, 196, 37, 0.6) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(245, 196, 37, 0.6) 50%,
+      transparent 100%);
   transform: translateY(-50%);
 }
 
@@ -403,12 +460,10 @@ onMounted(() => {
   left: 0;
   height: 100%;
   width: 1px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(245, 196, 37, 0.6) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(245, 196, 37, 0.6) 50%,
+      transparent 100%);
   transform: translateY(-50%);
 }
 
@@ -645,6 +700,12 @@ onMounted(() => {
   /* 与按钮同高 */
 }
 
+/* 个人中心视图下的价格区域 */
+.price-section.personal-view {
+  justify-content: center;
+  /* 个人中心视图时居中 */
+}
+
 .left {
   display: flex;
   flex-direction: column;
@@ -678,10 +739,24 @@ onMounted(() => {
 .buy-button {
   width: 208px;
   height: 36px;
-  border-radius: 22px;
+  border-radius: 18px;
   font-weight: bold;
   flex-shrink: 0;
   /* 防止按钮被压缩 */
+}
+
+/* 个人中心视图下的按钮样式 */
+.price-section.personal-view .buy-button {
+  width: 80%;
+  /* 占据屏幕80%宽度 */
+  margin: 0 auto;
+  /* 水平居中 */
+}
+
+/* 取消寄售按钮特殊样式 */
+.price-section.personal-view .buy-button {
+  background-color: #3aa1fc;
+  /* 红色表示警告操作 */
 }
 
 /* 动画保持不变 */

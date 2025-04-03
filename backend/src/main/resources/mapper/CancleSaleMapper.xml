@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.personalHub.mapper.CancleSaleMapper">
+
+    <update id="cancelConsignment">
+        UPDATE consignments
+        SET status = 'canceled',
+        is_active = 0,
+        end_time = NOW()
+        WHERE seller_address = #{walletAddress}
+        AND instance_id = #{instanceId}
+        AND status = 'active'
+    </update>
+
+    <update id="updateNftInstanceStatus">
+        UPDATE nft_instances
+        SET is_consigning = 0,
+        price = NULL
+        WHERE instance_id = #{instanceId}
+    </update>
+</mapper>

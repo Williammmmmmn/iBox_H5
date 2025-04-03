@@ -78,7 +78,9 @@
         </div>
 
         <div class="asset-items-container">
-          <div v-for="(item, index) in selectedAssetItems" :key="index" class="asset-detail-item">
+          <div v-for="(item, index) in selectedAssetItems" :key="index" 
+          class="asset-detail-item"
+          @click="handleConsign(item)">
             <div class="item-image-container">
               <img :src="require(`@/${selectedAsset?.imageUrl}`)" class="detail-image" alt="藏品图片" />
             </div>
@@ -91,7 +93,7 @@
                 </span>
               </div>
             </div>
-            <van-button type="primary" size="small" class="consign-btn" @click="handleConsign(item)"
+            <van-button type="primary" size="small" class="consign-btn" @click.stop="handleConsign(item)"
               :disabled="item.isConsigning">
               {{ item.isConsigning ? '寄售中' : '去寄售' }}
             </van-button>
@@ -184,20 +186,30 @@ const cancelSearch = () => {
 // 处理寄售操作
 const handleConsign = async (item) => {
   try {
-     // 跳转到填写寄售价格页面，并传递藏品信息
-     router.push({
-      path: '/fillConsignmentPrice',
-      query: {
-        nftId: item.id, // 藏品唯一ID
-        nftName: item.nftName, // 藏品名称
-        instanceNumber: item.instanceNumber, // 实例编号
-        totalSupply: item.issueCount, // 发行总量
-        imageUrl: item.imageUrl, // 图片路径
-        instanceId:item.instanceId //藏品实例ID
-      }
-    });
+    if (item.isConsigning) {
+      // 如果是已寄售的藏品，跳转到详情页
+      router.push({
+        path: `/saleDetail/${item.nftId}/${item.instanceNumber}`,
+          query: { from: 'personal',
+                    instanceId:item.instanceId
+         }  // 添加来源标识
+      });
+    } else {
+      // 未寄售的藏品，跳转到填写寄售价格页面
+      router.push({
+        path: '/fillConsignmentPrice',
+        query: {
+          nftId: item.nftId,
+          nftName: item.nftName,
+          instanceNumber: item.instanceNumber,
+          totalSupply: item.issueCount,
+          imageUrl: item.imageUrl,
+          instanceId: item.instanceId
+        }
+      });
+    }
   } catch (error) {
-    showToast('寄售失败: ' + error.message);
+    showToast('操作失败: ' + error.message);
   }
 };
 // 分组计算持有数量
