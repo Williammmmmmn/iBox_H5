@@ -108,7 +108,7 @@
       });
     }, 1000); // 跳转
     } catch (error) {
-      showToast('购买失败: ' + error.message);
+      showToast('购买失败，请稍后重试');
     }finally {
     isProcessing.value = false; // 请求完成后重置状态
   }

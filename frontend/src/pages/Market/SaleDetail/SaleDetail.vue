@@ -87,7 +87,9 @@
                   <van-button 
                   type="primary" 
                   class="buy-button" 
-                  @click="handleAction">
+                  @click="handleAction"
+                  :disabled="!isPersonalView && isOwner" 
+                  >
                     {{ isPersonalView ? '取消寄售' : '立即购买' }}
                   </van-button>
                 </div>
@@ -137,6 +139,7 @@ const circulationCount = ref(0);
 const storyInfo = ref('');
 const price = ref(0);
 const instanceId = ref(0);
+const ownerAddress = ref('');
 
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -149,7 +152,10 @@ const walletAddress = userProfile.value.wallet_Address;
 const isPersonalView = computed(() => {
   return route.query.from === 'personal';
 });
-
+// 计算属性判断是否是卖家本人
+const isOwner = computed(() => {
+  return walletAddress === ownerAddress.value;
+});
 const loading = ref(false); // 加载状态
 const loadData = async () => {
   loading.value = true; // 开始加载
@@ -163,6 +169,7 @@ const loadData = async () => {
     storyInfo.value = response.nftDescription;
     price.value = response.instancePrice;
     instanceId.value = response.instanceId;
+    ownerAddress.value = response.ownerAddress;
   } catch (error) {
     console.error('加载数据失败:', error);
   } finally {
@@ -201,7 +208,7 @@ const handleCancelSale = async () => {
     // 调用取消寄售API
     await cancelSale(
       walletAddress,
-      instanceId
+      instanceId.value
     );
 
     showToast('取消寄售成功');

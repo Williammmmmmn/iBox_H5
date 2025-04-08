@@ -18,7 +18,14 @@
     </resultMap>
 
     <select id="findByWalletAddress" resultMap="TransactionResultMap">
-        SELECT * FROM transactions
+        SELECT
+            id, nft_id, from_address, to_address, transaction_hash,
+            price, currency, transaction_date, purchase_request_id, instance_id,
+            CASE
+                WHEN to_address = #{walletAddress} THEN 'PURCHASE'
+                WHEN from_address = #{walletAddress} THEN 'SALE'
+                END as type
+        FROM transactions
         WHERE from_address = #{walletAddress} OR to_address = #{walletAddress}
         ORDER BY transaction_date DESC
     </select>

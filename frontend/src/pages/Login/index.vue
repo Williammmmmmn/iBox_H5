@@ -295,6 +295,7 @@ const handleCaptchaConfirm = async () => {
         }
     } catch (error) {
         showToast('验证码错误，请重试');
+        refreshCaptcha(); // 刷新图片验证码
     }
 };
 

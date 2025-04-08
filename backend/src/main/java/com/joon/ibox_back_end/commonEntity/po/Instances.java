@@ -49,4 +49,8 @@ public class Instances {
      * 是否正在寄售
      */
     private Boolean isConsigning;
+    /**
+     * 版本号
+     */
+    private Integer version; // 新增的乐观锁版本字段
 }

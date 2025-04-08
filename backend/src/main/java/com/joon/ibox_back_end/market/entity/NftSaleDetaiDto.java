@@ -21,4 +21,5 @@ public class NftSaleDetaiDto {
     private Integer instanceNumber;
     private BigDecimal instancePrice;
     private Integer instanceId;
+    private String ownerAddress;
 }

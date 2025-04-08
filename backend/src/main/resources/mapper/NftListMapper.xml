@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.market.mapper.NftListMapper">
-    <!-- 新增用户 -->
     <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.entity.NftListDto">
             SELECT
             nfts.id AS nftId,
@@ -24,7 +23,10 @@
             nfts.is_listed = 0
 
             <if test="tag != null and tag != '全部'">
-                AND tags.name = #{tag}
+                AND tags.name = #{tag} AND nft_instances.is_consigning = 1
+            </if>
+            <if test="tag == '全部'">
+                    AND nft_instances.is_consigning = 1
             </if>
             GROUP BY
             nfts.id

@@ -4,7 +4,13 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.joon.ibox_back_end.market.mapper.PurchaseMapper">
-
+    <!-- 获取当前所有者（带行锁） -->
+    <select id="getCurrentOwnerWithLock" resultType="string">
+        SELECT owner_address
+        FROM nft_instances
+        WHERE instance_id = #{instanceId}
+            FOR UPDATE
+    </select>
     <!-- 更新 consignments 表 -->
     <update id="updateConsignmentStatus">
         UPDATE consignments
@@ -15,14 +21,7 @@
           AND is_active = 1;
     </update>
 
-    <!-- 更新 nft_instances 表 -->
-    <update id="updateNftInstanceOwner">
-        UPDATE nft_instances
-            SET owner_address = #{newOwnerWalletAddress},
-            price = NULL,
-            is_consigning = 0
-        WHERE instance_id = #{instanceId};
-    </update>
+
 
     <!-- 插入交易记录 -->
     <insert id="insertTransaction">
@@ -36,7 +35,8 @@
     <update id="updateBuyerWallet">
         UPDATE wallets
         SET balance = balance - #{price}
-        WHERE wallet_address = #{buyerWalletAddress};
+        WHERE wallet_address = #{buyerWalletAddress}
+        AND balance >= #{price} <!-- 确保余额充足 -->
     </update>
 
     <!-- 更新寄售者钱包余额 -->
@@ -58,6 +58,11 @@
         SELECT nft_id
         FROM nft_instances
         WHERE instance_id = #{instanceId};
+    </select>
+
+<!--    查询用户余额-->
+    <select id="getWalletBalance" resultType="java.math.BigDecimal">
+        SELECT balance FROM wallets WHERE wallet_address = #{walletAddress}
     </select>
 
 </mapper>

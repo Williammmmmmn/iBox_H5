@@ -1,16 +1,22 @@
 package com.joon.ibox_back_end.market.service.serviceImpl;
 
+import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.mapper.*;
 import com.joon.ibox_back_end.market.service.MarketService;
 import com.joon.ibox_back_end.wallet.mapper.TransactionMapper;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: backend
@@ -27,13 +33,18 @@ public class NftServiceImpl implements MarketService {
     @Autowired
     private PurchaseRequestMapper purchaseRequestMapper;
     @Autowired
-    private SaleDetailMapper saleDetailMapper; ;
+    private SaleDetailMapper saleDetailMapper;
+    ;
     @Autowired
     private AnnounceMapper announceMapper;
     @Autowired
     private PurchaseMapper purchaseMapper;
+    @Autowired
+    private RedissonClient redissonClient;
+
     /**
      * 查询市场列表
+     *
      * @param tag
      * @return
      */
@@ -41,8 +52,10 @@ public class NftServiceImpl implements MarketService {
     public List<NftListDto> getNFTListByTag(String tag) {
         return nftListMapper.getNFTListByTag(tag);
     }
+
     /**
      * 查询NFT寄售详情
+     *
      * @param nftId
      * @return
      */
@@ -53,6 +66,7 @@ public class NftServiceImpl implements MarketService {
 
     /**
      * 查询nft求购信息
+     *
      * @param nftId
      */
     @Override
@@ -60,6 +74,7 @@ public class NftServiceImpl implements MarketService {
         // 查询求购记录并按价格降序排列
         return purchaseRequestMapper.getPurchaseRequestsByNftId(nftId);
     }
+
     /**
      * 查询寄售详情信息
      *
@@ -69,11 +84,12 @@ public class NftServiceImpl implements MarketService {
      */
     @Override
     public NftSaleDetaiDto getSaleDetail(Integer nftId, Integer instanceNumber) {
-        return  saleDetailMapper.selectSaleDetail(nftId, instanceNumber);
+        return saleDetailMapper.selectSaleDetail(nftId, instanceNumber);
     }
 
     /**
      * 查询寄售公告列表
+     *
      * @param nftId
      * @return
      */
@@ -82,8 +98,10 @@ public class NftServiceImpl implements MarketService {
         List<NftAnnounceDto> simpleAnnounceList = announceMapper.getSimpleAnnounceList(nftId);
         return simpleAnnounceList;
     }
+
     /**
      * 查询藏品公告详情
+     *
      * @param announceId
      * @return
      */
@@ -94,12 +112,12 @@ public class NftServiceImpl implements MarketService {
 
     /**
      * 用户购买另一个用户寄售藏品
+     *
      * @param instanceId
-     * @param buyerAddress
      * @param price
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class,isolation = Isolation.SERIALIZABLE)
     public void processPurchase(Integer instanceId, String buyerWalletAddress, BigDecimal price) {
         if (instanceId == null || instanceId <= 0) {
             throw new IllegalArgumentException("无效的实例ID");
@@ -110,37 +128,69 @@ public class NftServiceImpl implements MarketService {
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("价格必须大于0");
         }
-        // 查询寄售者地址
-        String sellerWalletAddress  = purchaseMapper.getSellerAddress(instanceId);
+        // 2. 分布式锁
+        String lockKey = "purchase_lock:" + instanceId;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            // 尝试获取锁（等待5秒，锁定30秒）
+            if (!lock.tryLock(5, 30, TimeUnit.SECONDS)) {
+                throw new RuntimeException("系统繁忙，请稍后再试");
+            }
+            // 使用新方法获取NFT实例信息（带行锁）
+            Instances instanceInfo = purchaseMapper.getNftInstanceWithLock(instanceId);
+            if (instanceInfo == null) {
+                throw new IllegalArgumentException("NFT实例不存在");
+            }
+            // 检查购买者是否是卖家本人
+            if (buyerWalletAddress.equalsIgnoreCase(instanceInfo.getOwnerAddress())) {
+                throw new IllegalArgumentException("不能购买自己上架的藏品");
+            }
+            // 在processPurchase方法中添加余额检查
+            BigDecimal buyerBalance = purchaseMapper.getWalletBalance(buyerWalletAddress);
+            if (buyerBalance.compareTo(price) < 0) {
+                throw new IllegalArgumentException("钱包余额不足");
+            }
+            // 在processPurchase开始时检查交易是否已存在
+            if (purchaseMapper.checkTransactionExists(instanceId,instanceInfo.getOwnerAddress(), buyerWalletAddress) > 0) {
+                throw new IllegalArgumentException("请勿重复操作");
+            }
+            // 查询 NftId
+            int nftId = purchaseMapper.getNftIdByInstanceId(instanceId);
 
-        // 查询 NftId
-        int nftId = purchaseMapper.getNftIdByInstanceId(instanceId);
+            // 生成交易哈希
+            String transactionHash = "0x" + UUID.randomUUID().toString().replace("-", "").toUpperCase();
+            // 计算寄售者实际到账金额（扣除 5% 手续费）
+            BigDecimal feeRate = new BigDecimal("0.05"); // 手续费率
+            BigDecimal sellerAmount = price.multiply(BigDecimal.ONE.subtract(feeRate)); // 计算实际到账金额
+            String currency = "CNY"; // 货币类型
 
-        // 生成交易哈希
-        String transactionHash = generateTransactionHash();
+            // 更新NFT所有者（带版本检查）
+            int updated = purchaseMapper.updateNftInstanceOwner(
+                    instanceId,
+                    buyerWalletAddress,
+                    instanceInfo.getVersion()
+            );
 
-        // 更新 consignments 表
-        purchaseMapper.updateConsignmentStatus(instanceId, buyerWalletAddress);
+            if (updated == 0) {
+                throw new ConcurrentModificationException("藏品状态已变更，请重试");
+            }
+            // 更新 consignments 表
+            purchaseMapper.updateConsignmentStatus(instanceId, buyerWalletAddress);
+            // 插入交易记录
+            purchaseMapper.insertTransaction(nftId, instanceInfo.getOwnerAddress(),buyerWalletAddress, transactionHash, price, currency, instanceId);
 
-        // 更新 nft_instances 表
-        purchaseMapper.updateNftInstanceOwner(instanceId, buyerWalletAddress);
+            // 更新购买者钱包余额
+            purchaseMapper.updateBuyerWallet(buyerWalletAddress, sellerAmount);
 
-        // 计算寄售者实际到账金额（扣除 5% 手续费）
-        BigDecimal feeRate = new BigDecimal("0.05"); // 手续费率
-        BigDecimal sellerAmount = price.multiply(BigDecimal.ONE.subtract(feeRate)); // 计算实际到账金额
-        String currency = "CNY"; // 货币类型
-        // 插入交易记录
-        purchaseMapper.insertTransaction(nftId, sellerWalletAddress, buyerWalletAddress, transactionHash, price,currency, instanceId);
+            // 更新寄售者钱包余额
+            purchaseMapper.updateSellerWallet(instanceInfo.getOwnerAddress(), sellerAmount);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("操作被中断");
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
 
-        // 更新购买者钱包余额
-        purchaseMapper.updateBuyerWallet(buyerWalletAddress, sellerAmount);
-
-        // 更新寄售者钱包余额
-        purchaseMapper.updateSellerWallet(sellerWalletAddress, sellerAmount);
-    }
-
-    private String generateTransactionHash() {
-        // 生成随机的交易哈希
-        return "0x" + UUID.randomUUID().toString().replace("-", "").toUpperCase();
     }
 }

@@ -21,11 +21,13 @@
         <result property="instanceId" column="instanceId"/>
         <result property="isConsigning" column="isConsigning"/>
     </resultMap>
+
     <!-- 复合结果映射 -->
     <resultMap id="userAssetsResultMap" type="com.joon.ibox_back_end.personalHub.entity.UserAssetsResponseDto">
         <association property="userProfile" resultMap="userProfileMap"/>
         <collection property="assets" resultMap="nftAssetMap"/>
     </resultMap>
+
     <select id="selectUserAssetsByWalletAddress" resultMap="userAssetsResultMap">
         SELECT
             u.username,
@@ -35,8 +37,8 @@
             n.id AS nftId,
             n.image_url AS imageUrl,
             ni.instance_number AS instanceNumber,
-            DATEDIFF(NOW(), t.transaction_date) AS holdDays,
-            t.price AS purchasePrice,
+            DATEDIFF(NOW(), latest_purchase.transaction_date) AS holdDays,
+            latest_purchase.price AS purchasePrice,
             ni.price AS salePrice,
             os.issue_count AS issueCount,
             ni.instance_id AS instanceId,
@@ -46,8 +48,28 @@
                 JOIN nft_instances ni ON u.wallet_address = ni.owner_address
                 JOIN nfts n ON ni.nft_id = n.id
                 JOIN official_sales os ON n.id = os.id
-                JOIN transactions t ON ni.instance_id = t.instance_id AND t.type = 'purchase'
-        WHERE u.wallet_address = #{walletAddress}
-        ORDER BY n.name, ni.instance_number
+                JOIN (
+                SELECT
+                    t1.*
+                FROM
+                    transactions t1
+                        INNER JOIN (
+                        SELECT
+                            instance_id,
+                            MAX(transaction_date) AS latest_date
+                        FROM
+                            transactions
+                        WHERE
+                            type = 'purchase'
+                        GROUP BY
+                            instance_id
+                    ) t2 ON t1.instance_id = t2.instance_id AND t1.transaction_date = t2.latest_date
+                WHERE
+                    t1.type = 'purchase'
+            ) latest_purchase ON ni.instance_id = latest_purchase.instance_id
+        WHERE
+            ni.owner_address = #{walletAddress}
+        ORDER BY
+            n.name, ni.instance_number
     </select>
 </mapper>
