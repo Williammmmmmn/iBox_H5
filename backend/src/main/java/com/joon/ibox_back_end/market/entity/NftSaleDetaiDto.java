@@ -20,4 +20,5 @@ public class NftSaleDetaiDto {
     private Integer circulationCount;
     private Integer instanceNumber;
     private BigDecimal instancePrice;
+    private Integer instanceId;
 }

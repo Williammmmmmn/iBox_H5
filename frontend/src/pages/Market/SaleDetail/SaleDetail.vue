@@ -84,7 +84,10 @@
                       <van-icon name="arrow" class="chevron" />
                     </div>
                   </div>
-                  <van-button type="primary" class="buy-button" @click="handleAction">
+                  <van-button 
+                  type="primary" 
+                  class="buy-button" 
+                  @click="handleAction">
                     {{ isPersonalView ? '取消寄售' : '立即购买' }}
                   </van-button>
                 </div>
@@ -123,10 +126,8 @@ import { useStore } from 'vuex';
 import { cancelSale } from '@/api/personal';
 
 const router = useRouter();
-
 const route = useRoute();
 const store = useStore();
-
 const nftId = route.params.nftId;
 const instanceNumber = route.params.instanceNumber;
 const imageUrl = ref('');
@@ -135,7 +136,7 @@ const issueCount = ref(0);
 const circulationCount = ref(0);
 const storyInfo = ref('');
 const price = ref(0);
-
+const instanceId = ref(0);
 
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -144,7 +145,6 @@ const userProfile = computed(() => {
   };
 });
 const walletAddress = userProfile.value.wallet_Address;
-const instanceId = Number(route.query.instanceId);
 // 计算属性判断是否来自个人中心
 const isPersonalView = computed(() => {
   return route.query.from === 'personal';
@@ -162,6 +162,7 @@ const loadData = async () => {
     circulationCount.value = response.circulationCount;
     storyInfo.value = response.nftDescription;
     price.value = response.instancePrice;
+    instanceId.value = response.instanceId;
   } catch (error) {
     console.error('加载数据失败:', error);
   } finally {
@@ -172,8 +173,18 @@ const loadData = async () => {
 const handleAction = async () => {
   if (isPersonalView.value) {
     await handleCancelSale();
-  } else {
-    await buyNow();
+  } else { 
+    router.push({
+      path: '/buyPage',
+      query: {
+        nftId: nftId,
+        instanceNumber: instanceNumber,
+        price: price.value,
+        imageUrl: imageUrl.value,
+        name: name.value,
+        instanceId: instanceId.value,
+      },
+    });
   }
 };
 
@@ -203,10 +214,6 @@ const handleCancelSale = async () => {
   }
 };
 
-const buyNow = async () => {
-  // 立即购买逻辑
-  console.log('立即购买');
-};
 const goBack = () => {
   router.go(-1);
 };

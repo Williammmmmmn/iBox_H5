@@ -11,7 +11,8 @@
             os.issue_count AS issueCount,
             os.circulate_count AS circulationCount,
             ni.instance_number AS instanceNumber,
-            ni.price AS instancePrice
+            ni.price AS instancePrice,
+            ni.instance_id AS instanceId
         FROM
             nfts nft
                 JOIN

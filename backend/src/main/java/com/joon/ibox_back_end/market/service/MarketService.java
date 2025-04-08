@@ -1,7 +1,9 @@
 package com.joon.ibox_back_end.market.service;
 
 import com.joon.ibox_back_end.market.entity.*;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface MarketService {
@@ -47,4 +49,16 @@ public interface MarketService {
      * @return
      */
     AnnounceDetailDto selectAnnounceDetailById(Integer announceId);
+
+    /**
+     * 用户购买另一个用户寄售藏品
+     * @param instanceId
+     * @param price
+     * @return
+     */
+    @Transactional
+    void processPurchase(Integer instanceId, String buyerWalletAddress, BigDecimal price);
+
+
+
 }

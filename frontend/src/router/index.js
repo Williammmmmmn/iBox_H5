@@ -14,6 +14,8 @@ import Wallet from "@/pages/Wallet/MyWallet.vue";
 import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
 import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPrice.vue";
+import BuyPage from "@/pages/BuyPage/BuyPage.vue";
+
 const routes = [
   {
     path: "/",
@@ -84,8 +86,15 @@ const routes = [
     meta: {
       keepAlive: false // 不缓存详情页
     }
+  },
+  {
+    path:"/buyPage",
+    name:'BuyPage',
+    component: BuyPage,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   }
-
 
 
 ];
@@ -97,7 +106,7 @@ const router = createRouter({
 //路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet'];
+  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

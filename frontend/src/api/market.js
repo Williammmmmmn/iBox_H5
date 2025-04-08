@@ -66,4 +66,18 @@ export const getSaleDetail = async (nftId, instanceNumber) => {
     throw error;
   }
 };
+// 购买 API
+export const purchaseItem = async (walletAddress, instanceId, price) => {
+  try {
+    const response = await request.post('/nfts/purchase', {
+      walletAddress,
+      instanceId,
+      price
+    });
+    return response.data; // 返回响应数据
+  } catch (error) {
+    console.error('购买失败:', error);
+    throw error; // 抛出错误以便调用方处理
+  }
+};
 

@@ -5,6 +5,7 @@
         left-arrow
         @click-left="$router.back()"
         :border="false"
+        class="full-width-nav-bar"
       />
   
       <!-- 藏品信息展示 -->
@@ -22,7 +23,7 @@
       </div>
   
       <!-- 价格设置 -->
-      <div class="price-section">
+      <div class="price-section ">
         <div class="section-title">设置售价</div>
         <div class="price-input-container">
           <span class="currency-symbol">￥</span>
@@ -36,7 +37,7 @@
       </div>
   
       <!-- 收款账户 -->
-      <div class="payment-section">
+      <div class="payment-section ">
         <div class="section-title">收款账户</div>
         <div class="wallet-info">
           <van-icon name="balance-o" color="#1989fa" size="20" />
@@ -46,7 +47,7 @@
       </div>
   
       <!-- 预计收入 -->
-      <div class="income-section">
+      <div class="income-section ">
         <div class="section-title">预计收入</div>
         <div class="income-details">
           <div class="income-row">
@@ -140,20 +141,27 @@
   
   <style scoped>
   .consignment-page {
-    padding: 0 16px;
     background-color: #f7f8fa;
     min-height: 100vh;
+    padding: 0 16px;
     padding-bottom: 80px;
   }
-  
+  .full-width-nav-bar {
+    background-color: #f7f8fa;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
   /* 藏品信息展示 */
   .nft-display {
+    padding: 12px;
     display: flex;
-    padding: 16px 0;
+    margin-top: 46px;
     margin-bottom: 20px;
     background: #fff;
     border-radius: 8px;
-    padding: 12px;
   }
   
   .nft-image {
@@ -177,7 +185,7 @@
     font-size: 18px;
     font-weight: bold;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   
   .nft-series {

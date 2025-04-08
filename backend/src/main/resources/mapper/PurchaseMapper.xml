@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.market.mapper.PurchaseMapper">
+
+    <!-- 更新 consignments 表 -->
+    <update id="updateConsignmentStatus">
+        UPDATE consignments
+        SET seller_address = #{buyerWalletAddress},
+            status = 'completed',
+            is_active = 0
+        WHERE instance_id = #{instanceId}
+          AND is_active = 1;
+    </update>
+
+    <!-- 更新 nft_instances 表 -->
+    <update id="updateNftInstanceOwner">
+        UPDATE nft_instances
+            SET owner_address = #{newOwnerWalletAddress},
+            price = NULL,
+            is_consigning = 0
+        WHERE instance_id = #{instanceId};
+    </update>
+
+    <!-- 插入交易记录 -->
+    <insert id="insertTransaction">
+        INSERT INTO transactions
+        (nft_id, from_address, to_address, transaction_hash, price, currency, transaction_date, type, instance_id)
+        VALUES
+            (#{nftId}, #{fromWalletAddress}, #{toWalletAddress}, #{transactionHash}, #{price}, #{currency}, NOW(), 'purchase', #{instanceId});
+    </insert>
+
+    <!-- 更新购买者钱包余额 -->
+    <update id="updateBuyerWallet">
+        UPDATE wallets
+        SET balance = balance - #{price}
+        WHERE wallet_address = #{buyerWalletAddress};
+    </update>
+
+    <!-- 更新寄售者钱包余额 -->
+    <update id="updateSellerWallet">
+        UPDATE wallets
+        SET balance = balance + #{sellerAmount}
+        WHERE wallet_address = #{sellerWalletAddress};
+    </update>
+
+    <!-- 查询寄售者地址 -->
+    <select id="getSellerAddress" resultType="string">
+        SELECT owner_address
+        FROM nft_instances
+        WHERE instance_id = #{instanceId};
+    </select>
+
+    <!-- 查询 NFT ID -->
+    <select id="getNftIdByInstanceId" resultType="int">
+        SELECT nft_id
+        FROM nft_instances
+        WHERE instance_id = #{instanceId};
+    </select>
+
+</mapper>

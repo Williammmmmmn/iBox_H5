@@ -6,6 +6,7 @@ import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -87,4 +88,26 @@ public class MarketController {
         AnnounceDetailDto announceDetail = marketService.selectAnnounceDetailById(announceId);
         return R.success("查询藏品公告详情成功",announceDetail);
     }
+
+    /**
+     * 用户购买另一个用户寄售藏品
+     * @return
+     */
+    @PostMapping("/purchase")
+    public R purchase(@RequestBody BuyRequest request) {
+        try {
+            // 简单参数校验
+            if (request.getInstanceId() == null || request.getPrice() == null) {
+                return R.error("参数不能为空");
+            }
+
+            marketService.processPurchase(request.getInstanceId(), request.getWalletAddress(), request.getPrice());
+            return R.success("购买成功");
+        } catch (Exception e) {
+            return R.error("购买失败：" + e.getMessage()); // 返回具体错误信息
+        }
+    }
+
+
+
 }
