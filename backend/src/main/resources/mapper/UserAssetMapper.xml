@@ -53,17 +53,20 @@
                     t1.*
                 FROM
                     transactions t1
-                        INNER JOIN (
+                        JOIN (
                         SELECT
                             instance_id,
-                            MAX(transaction_date) AS latest_date
+                            MAX(transaction_date) AS max_date,
+                            MAX(id) AS max_id  -- 额外取最大的 id
                         FROM
                             transactions
                         WHERE
                             type = 'purchase'
                         GROUP BY
                             instance_id
-                    ) t2 ON t1.instance_id = t2.instance_id AND t1.transaction_date = t2.latest_date
+                    ) t2 ON t1.instance_id = t2.instance_id
+                        AND t1.transaction_date = t2.max_date
+                        AND t1.id = t2.max_id  -- 确保只匹配最新的记录
                 WHERE
                     t1.type = 'purchase'
             ) latest_purchase ON ni.instance_id = latest_purchase.instance_id

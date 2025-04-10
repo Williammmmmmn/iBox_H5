@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * @program: backend
@@ -53,4 +54,16 @@ public class Instances {
      * 版本号
      */
     private Integer version; // 新增的乐观锁版本字段
+    /**
+     * 锁定者钱包地址
+     */
+    private String lockedBy;
+    /**
+     * 锁定开始的时间
+     */
+    private LocalDateTime lockedAt;
+    /**
+     * 锁定期限
+     */
+    private LocalDateTime lockExpiry;
 }

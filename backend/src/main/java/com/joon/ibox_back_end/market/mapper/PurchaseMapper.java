@@ -10,12 +10,13 @@ import java.math.BigDecimal;
 
 @Mapper
 public interface PurchaseMapper {
+
     String getSellerAddress(@Param("instanceId") Integer instanceId);
 
     String getCurrentOwnerWithLock(@Param("instanceId") Integer instanceId);
 
     // 新增方法：获取NFT实例信息（带行锁）
-    @Select("SELECT instance_id, nft_id, owner_address, version " +
+    @Select("SELECT instance_id, nft_id, owner_address, version,is_consigning " +
             "FROM nft_instances WHERE instance_id = #{instanceId} FOR UPDATE")
     Instances getNftInstanceWithLock(@Param("instanceId") Integer instanceId);
     int getNftIdByInstanceId(@Param("instanceId") Integer instanceId);
@@ -29,7 +30,8 @@ public interface PurchaseMapper {
             "    version = version + 1, " +
             "    is_consigning = 0 " +
             "WHERE instance_id = #{instanceId} " +
-            "AND version = #{expectedVersion}")
+            "  AND is_consigning = 1 " +
+            "  AND version = #{expectedVersion}")
     int updateNftInstanceOwner(
             @Param("instanceId") Integer instanceId,
             @Param("newOwnerWalletAddress") String newOwnerWalletAddress,
@@ -64,4 +66,6 @@ public interface PurchaseMapper {
             @Param("sellerWalletAddress") String sellerWalletAddress,
             @Param("buyerWalletAddress") String buyerWalletAddress
             );
+
+
 }

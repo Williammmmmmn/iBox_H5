@@ -19,4 +19,5 @@ public class NftSaleDto {
     private int issueCount; // 发行量
     private int circulationCount; // 流通量
     private List<NftInstanceDto> instances; // NFT 实例列表
+
 }

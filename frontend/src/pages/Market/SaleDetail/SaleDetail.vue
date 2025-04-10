@@ -85,12 +85,16 @@
                     </div>
                   </div>
                   <van-button 
-                  type="primary" 
-                  class="buy-button" 
-                  @click="handleAction"
-                  :disabled="!isPersonalView && isOwner" 
+                    type="primary" 
+                    class="buy-button" 
+                    @click="handleAction"
+                    :disabled="!isPersonalView && (isOwner || consignmentStatus === 'completed' || isLocked)"
+                    :class="{ 
+                      'disabled-button': consignmentStatus === 'completed' || isLocked,
+                      'locked-button': isLocked
+                    }"
                   >
-                    {{ isPersonalView ? '取消寄售' : '立即购买' }}
+                    {{ isLocked ? '已锁定' : (isPersonalView ? '取消寄售' : '立即购买') }}
                   </van-button>
                 </div>
               </div>
@@ -126,6 +130,7 @@ import { showConfirmDialog } from 'vant';
 import { showToast } from 'vant';
 import { useStore } from 'vuex';
 import { cancelSale } from '@/api/personal';
+import { lockNFTInstance } from '@/api/buyLock';
 
 const router = useRouter();
 const route = useRoute();
@@ -140,6 +145,9 @@ const storyInfo = ref('');
 const price = ref(0);
 const instanceId = ref(0);
 const ownerAddress = ref('');
+const consignmentStatus = ref('');
+const isLocked = ref(false);
+
 
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -170,28 +178,48 @@ const loadData = async () => {
     price.value = response.instancePrice;
     instanceId.value = response.instanceId;
     ownerAddress.value = response.ownerAddress;
+    consignmentStatus.value = response.consignmentStatus;
+    // 判断是否锁定
+    isLocked.value = 
+      response.lockExpiry && 
+      new Date(response.lockExpiry) > new Date() &&
+      response.lockedBy !== walletAddress;
   } catch (error) {
     console.error('加载数据失败:', error);
   } finally {
     loading.value = false;
   }
 };
-// 处理按钮点击
 const handleAction = async () => {
   if (isPersonalView.value) {
     await handleCancelSale();
-  } else { 
-    router.push({
-      path: '/buyPage',
-      query: {
-        nftId: nftId,
-        instanceNumber: instanceNumber,
-        price: price.value,
-        imageUrl: imageUrl.value,
-        name: name.value,
-        instanceId: instanceId.value,
-      },
-    });
+  } else {
+    try {
+      // 调用锁定 API
+      const response = await lockNFTInstance(walletAddress, instanceId.value);
+      // 判断锁定是否成功
+      if (response.success) {
+        // 成功则跳转到购买页面
+        router.push({
+          path: '/buyPage',
+          query: {
+            nftId: nftId,
+            instanceNumber: instanceNumber,
+            price: price.value,
+            imageUrl: imageUrl.value,
+            name: name.value,
+            instanceId: instanceId.value,
+            lockExpiry: response.lockExpiry, // 传递锁定过期时间
+          },
+        });
+      } else {
+        // 如果 success 为 false，显示错误信息
+        showToast(response.message || '锁定藏品失败，请重试');
+      }
+    } catch (error) {
+      // 捕获异常并显示错误信息
+      showToast('已被其他用户锁定，请稍后再试');
+    }
   }
 };
 
@@ -311,7 +339,11 @@ onMounted(() => {
   position: relative;
   z-index: 2;
 }
-
+.disabled-button {
+  background-color: #d3d3d3 !important; /* 灰色背景 */
+  color: #ffffff !important; /* 白色文字 */
+  cursor: not-allowed; /* 禁用状态的鼠标样式 */
+}
 .header {
   position: absolute;
   top: 0;
@@ -802,5 +834,10 @@ onMounted(() => {
   75% {
     transform: rotateY(20deg) rotateX(5deg);
   }
+}
+
+.locked-button {
+  background-color: #ccc !important;
+  border-color: #ccc !important;
 }
 </style>

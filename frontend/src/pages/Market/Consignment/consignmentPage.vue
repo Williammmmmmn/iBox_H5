@@ -86,7 +86,12 @@
                       class="sale-item">
                       <!-- 左边：名称和编号 -->
                       <div class="left-info">
-                        <div class="name">{{ item.name }}</div>
+                        <div class="name">{{ item.name }}
+                          <!-- 如果订单被锁定，显示“已锁定”标识 -->
+                          <span v-if="item.lockExpiry && new Date(item.lockExpiry) > new Date()" class="locked-tag">
+                            已锁定
+                          </span>
+                        </div>
                         <div class="id">
                           <span class="hash">#</span>
                           <span class="number">{{ item.id }}</span>
@@ -235,6 +240,7 @@ const loadData = async () => {
         name: response.name,
         id: item.id,
         price: item.price,
+        lockExpiry: item.lockExpiry // 添加锁定过期时间
       }))
       .sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
     isReachBottom.value = true;
@@ -750,5 +756,15 @@ onMounted(() => {
   font-size: 14px;
   padding: 20px 0;
   margin-top: 30px;
+}
+.locked-tag {
+  display: inline-block;
+  margin-left: 8px; /* 与名称保持一定间距 */
+  padding: 2px 6px; /* 内边距 */
+  font-size: 12px; /* 字体大小 */
+  font-weight: bold; /* 加粗字体 */
+  color: #ffffff; /* 白色字体 */
+  background-color: #28a745; /* 绿色背景 */
+  border-radius: 4px; /* 圆角 */
 }
 </style>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.market.mapper.LockNftInstanceMapper">
+
+    <resultMap id="nftInstanceMap" type="com.joon.ibox_back_end.commonEntity.po.Instances">
+        <id column="instance_id" property="instanceId"/>
+        <result column="nft_id" property="nftId"/>
+        <result column="owner_address" property="ownerAddress"/>
+        <result column="instance_number" property="instanceNumber"/>
+        <result column="price" property="price"/>
+        <result column="is_consigning" property="isConsigning"/>
+        <result column="version" property="version"/>
+        <result column="locked_by" property="lockedBy"/>
+        <result column="locked_at" property="lockedAt"/>
+        <result column="lock_expiry" property="lockExpiry"/>
+    </resultMap>
+
+    <select id="findByInstanceId" resultMap="nftInstanceMap">
+        SELECT * FROM nft_instances
+        WHERE instance_id = #{instanceId}
+    </select>
+
+    <update id="lockNftInstance" parameterType="com.joon.ibox_back_end.commonEntity.po.Instances">
+        UPDATE nft_instances SET
+                                 locked_by = #{lockedBy},
+                                 locked_at = #{lockedAt},
+                                 lock_expiry = #{lockExpiry},
+                                 version = version + 1
+        WHERE instance_id = #{instanceId} AND version = #{version}
+    </update>
+
+    <update id="unlockNftInstance">
+        UPDATE nft_instances SET
+                                 locked_by = NULL,
+                                 locked_at = NULL,
+                                 lock_expiry = NULL
+        WHERE instance_id = #{instanceId}
+    </update>
+
+    <update id="unlockExpiredNfts">
+        UPDATE nft_instances SET
+                                 locked_by = NULL,
+                                 locked_at = NULL,
+                                 lock_expiry = NULL
+        WHERE lock_expiry &lt;= NOW()
+    </update>
+</mapper>

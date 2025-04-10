@@ -14,6 +14,9 @@
         <collection property="instances" ofType="com.joon.ibox_back_end.market.entity.NftInstanceDto">
             <result property="id" column="instance_number" />
             <result property="price" column="instance_price" />
+            <result property="lockedBy" column="lockedBy" />
+            <result property="lockedAt" column="lockedAt" />
+            <result property="lockExpiry" column="lockExpiry" />
         </collection>
     </resultMap>
 
@@ -25,7 +28,10 @@
             official_sales.issue_count AS issue_count,
             official_sales.circulate_count AS circulation_count,
             nft_instances.instance_number AS instance_number,
-            nft_instances.price AS instance_price
+            nft_instances.price AS instance_price,
+            nft_instances.locked_by AS lockedBy,
+            nft_instances.locked_at AS lockedAt,
+            nft_instances.lock_expiry AS lockExpiry
         FROM
             nfts
                 JOIN

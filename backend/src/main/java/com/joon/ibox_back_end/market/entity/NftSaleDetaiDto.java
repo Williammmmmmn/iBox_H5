@@ -3,6 +3,7 @@ package com.joon.ibox_back_end.market.entity;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * @program: backend
@@ -22,4 +23,8 @@ public class NftSaleDetaiDto {
     private BigDecimal instancePrice;
     private Integer instanceId;
     private String ownerAddress;
+    private String consignmentStatus;
+    private String lockedBy;
+    private LocalDateTime lockedAt;
+    private LocalDateTime lockExpiry;
 }

@@ -13,16 +13,22 @@
             ni.instance_number AS instanceNumber,
             ni.price AS instancePrice,
             ni.instance_id AS instanceId,
-            ni.owner_address AS ownerAddress
+            ni.owner_address AS ownerAddress,
+            c.status AS consignmentStatus,
+            ni.locked_by AS lockedBy,
+            ni.locked_at AS lockedAt,
+            ni.lock_expiry AS lockExpiry
         FROM
             nfts nft
                 JOIN
             official_sales os ON nft.id = os.nft_id
                 JOIN
             nft_instances ni ON nft.id = ni.nft_id
+                JOIN
+            consignments c ON ni.instance_id = c.instance_id
         WHERE
             nft.id = #{nftId}
-          AND ni.instance_number = #{instanceNumber}
+          AND ni.instance_number = #{instanceNumber} AND c.status = 'active'
     </select>
 
 </mapper>

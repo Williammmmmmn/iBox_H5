@@ -61,7 +61,8 @@ public class NftServiceImpl implements MarketService {
      */
     @Override
     public NftSaleDto getNFTSaleInfo(int nftId) {
-        return nftSaleInfoMapper.getNFTSaleInfo(nftId);
+        NftSaleDto nftSaleInfo = nftSaleInfoMapper.getNFTSaleInfo(nftId);
+        return nftSaleInfo;
     }
 
     /**
@@ -133,13 +134,17 @@ public class NftServiceImpl implements MarketService {
         RLock lock = redissonClient.getLock(lockKey);
         try {
             // 尝试获取锁（等待5秒，锁定30秒）
-            if (!lock.tryLock(5, 30, TimeUnit.SECONDS)) {
+            if (!lock.tryLock(0, 60, TimeUnit.SECONDS)) {
                 throw new RuntimeException("系统繁忙，请稍后再试");
             }
             // 使用新方法获取NFT实例信息（带行锁）
             Instances instanceInfo = purchaseMapper.getNftInstanceWithLock(instanceId);
             if (instanceInfo == null) {
                 throw new IllegalArgumentException("NFT实例不存在");
+            }
+            // 检查是否已售出（双重检查）
+            if (!instanceInfo.getIsConsigning()) {
+                throw new IllegalArgumentException("该藏品已下架或已售出");
             }
             // 检查购买者是否是卖家本人
             if (buyerWalletAddress.equalsIgnoreCase(instanceInfo.getOwnerAddress())) {
