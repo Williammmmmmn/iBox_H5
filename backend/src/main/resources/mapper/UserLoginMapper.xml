@@ -2,7 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.login.mapper.UserLoginMapper">
     <!-- 新增用户 -->
-    <insert id="saveNewUser" parameterType="com.joon.ibox_back_end.commonEntity.po.PersonalPo">
+    <insert id="saveNewUser" parameterType="com.joon.ibox_back_end.commonEntity.po.PersonalPo"
+            useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users (
             username, password, phone_number, full_name, identity_id, status, role, avatar, referrer_id, referral_code, referral_count,wallet_address,transaction_password
         ) VALUES (

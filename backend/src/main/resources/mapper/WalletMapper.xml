@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.wallet.mapper.WalletMapper">
+    <!-- 新增用户 -->
+    <insert id="insertWallet" parameterType="com.joon.ibox_back_end.commonEntity.po.Wallet">
+            INSERT INTO wallets (
+                   wallet_address, user_id, balance, currency, created_at, updated_at)
+            VALUES (
+                    #{walletAddress}, #{userId}, #{balance}, #{currency}, NOW(), NOW()
+                    )
+    </insert>
+</mapper>

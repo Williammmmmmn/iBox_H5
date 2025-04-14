@@ -53,7 +53,8 @@ public class UserLoginController {
         if (user == null) {
             // 用户不存在，创建新用户
             userLoginService.saveNewUser(phone);
-            // 返回用户信息
+            // 重新获取新用户的信息
+            user = userLoginService.findByPhone(phone);
         }
         // 生成 Token
         String token = CreateTokenForLogin.generateToken(phone);
