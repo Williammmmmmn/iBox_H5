@@ -3,6 +3,7 @@ package com.joon.ibox_back_end.personalHub.service.serviceImpl;
 import com.joon.ibox_back_end.personalHub.entity.NftAssetDto;
 import com.joon.ibox_back_end.personalHub.entity.UserAssetsResponseDto;
 import com.joon.ibox_back_end.personalHub.entity.UserProfileDto;
+import com.joon.ibox_back_end.personalHub.entity.UserSoldAsset;
 import com.joon.ibox_back_end.personalHub.mapper.UserAssetMapper;
 import com.joon.ibox_back_end.personalHub.service.UserAssetService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,5 +40,18 @@ public class UserAssetServiceImpl implements UserAssetService {
         }
 
           return new UserAssetsResponseDto(profile, allAssets);
+    }
+
+    /**
+     * 查询用户已出售
+     * @param walletAddress
+     * @return
+     */
+    @Override
+    public List<UserSoldAsset> getUserSoldAssets(String walletAddress) {
+
+        List<UserSoldAsset> userSoldAssets = userAssetMapper.selectUserSoldAssets(walletAddress);
+        return userSoldAssets;
+
     }
 }

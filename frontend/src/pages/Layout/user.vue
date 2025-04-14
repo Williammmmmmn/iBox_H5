@@ -3,8 +3,7 @@
     <!-- 顶部渐变背景区域 -->
     <div class="profile-header">
       <div class="user-info">
-        <van-image round width="80px" height="80px" :src="avatarUrl" class="avatar" 
-        @error="handleAvatarError"/>
+        <van-image round width="80px" height="80px" :src="avatarUrl" class="avatar" @error="handleAvatarError" />
         <div class="name">{{ userProfile.username }}</div>
         <div class="wallet-address">钱包地址: {{ shortWalletAddress }}</div>
       </div>
@@ -62,8 +61,29 @@
             </template>
           </div>
         </van-tab>
-        <van-tab title="出售资产">
+        <van-tab title="出售资产"  @click="fetchSaleAssets">
           <!-- 出售资产内容 -->
+          <div class="asset-list bottom-padding">
+            <!-- 1. 加载中状态 -->
+            <van-empty v-if="loadingSaleAssets" description="加载中..." class="full-width-empty" />
+
+            <!-- 2. 无数据状态 -->
+            <van-empty v-else-if="rawSaleAssets.value === 0" description="暂无出售资产" class="full-width-empty" />
+
+            <!-- 3. 正常数据状态 -->
+            <template v-else>
+              <div v-for="(asset, index) in rawSaleAssets" :key="index" class="asset-item">
+                <div class="image-container">
+                  <img :src="require(`@/${asset.imageUrl}`)" class="custom-image" alt="藏品图片" />
+                </div>
+                <div class="asset-info">
+                  <div class="asset-name">{{ asset.name }}</div>
+                  <div class="asset-id">#{{ asset.instanceNumber }}</div>
+                  <div class="asset-price">￥{{ asset.price }}</div>
+                </div>
+              </div>
+            </template>
+          </div>
         </van-tab>
       </van-tabs>
     </div>
@@ -76,11 +96,9 @@
           <div class="detail-hold">持有: {{ selectedAsset?.count }}个</div>
           <van-icon name="cross" size="20" class="close-icon" @click="showDetail = false" />
         </div>
-
         <div class="asset-items-container">
-          <div v-for="(item, index) in selectedAssetItems" :key="index" 
-          class="asset-detail-item"
-          @click="handleConsign(item)">
+          <div v-for="(item, index) in selectedAssetItems" :key="index" class="asset-detail-item"
+            @click="handleConsign(item)">
             <div class="item-image-container">
               <img :src="require(`@/${selectedAsset?.imageUrl}`)" class="detail-image" alt="藏品图片" />
             </div>
@@ -105,11 +123,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { getUserAssets } from '@/api/personal'; // 修改为正确的API引入
+import { ref, computed, onMounted,watch } from 'vue';
+import { getUserAssets,getUserSaleAssets } from '@/api/personal'; // 修改为正确的API引入
 import { showToast } from 'vant';
 import { useStore } from 'vuex';
-import { useRouter }  from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const store = useStore();
@@ -121,6 +139,9 @@ const selectedAsset = ref(null);
 const loading = ref(false);
 const rawAssets = ref([]);
 const defaultAvatar = require('@/assets/images/sorry.jpg');
+
+const loadingSaleAssets = ref(false); // 加载状态
+const rawSaleAssets = ref([]); // 原始出售资产数据
 // 从Vuex获取用户信息
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -130,10 +151,11 @@ const userProfile = computed(() => {
     walletAddress: user.walletAddress || ''
   };
 });
+const walletAddress = userProfile.value.walletAddress;
 const avatarUrl = computed(() => {
   try {
-    return userProfile.value.avatar 
-      ? require(`@/${userProfile.value.avatar}`) 
+    return userProfile.value.avatar
+      ? require(`@/${userProfile.value.avatar}`)
       : defaultAvatar;
   } catch (e) {
     return defaultAvatar;
@@ -149,7 +171,11 @@ const shortWalletAddress = computed(() => {
   if (!address) return '未绑定钱包';
   return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
 });
-
+watch(activeTab, (newTab) => {
+  if (newTab === 1) { // 假设“出售资产”是第二个标签，索引为 1
+    fetchSaleAssets();
+  }
+});
 // 获取资产数据
 const fetchAssets = async () => {
   try {
@@ -190,9 +216,10 @@ const handleConsign = async (item) => {
       // 如果是已寄售的藏品，跳转到详情页
       router.push({
         path: `/saleDetail/${item.nftId}/${item.instanceNumber}`,
-          query: { from: 'personal',
-                    instanceId:item.instanceId
-         }  // 添加来源标识
+        query: {
+          from: 'personal',
+          instanceId: item.instanceId
+        }  // 添加来源标识
       });
     } else {
       // 未寄售的藏品，跳转到填写寄售价格页面
@@ -236,7 +263,7 @@ const groupedAssets = computed(() => {
         count: 0   // 初始化计数器
       };
     }
-    
+
     // 4. 再次检查确保分组对象已正确初始化
     if (groups[item.nftName]?.items) {
       groups[item.nftName].items.push(item);
@@ -264,6 +291,23 @@ const showAssetDetail = (asset) => {
 const goTo = (name) => {
   router.push({ name })
 }
+
+// 获取出售资产数据
+const fetchSaleAssets = async () => {
+  try {
+    loadingSaleAssets.value = true;
+    const res = await getUserSaleAssets(walletAddress); // 调用 API 获取出售资产数据
+    if (res) {
+      rawSaleAssets.value = res
+    }
+    console.log("出售资产数据:", rawSaleAssets.value);
+  } catch (error) {
+    showToast(error.message || '获取出售资产失败');
+    console.error('获取出售资产API错误:', error);
+  } finally {
+    loadingSaleAssets.value = false;
+  }
+};
 // 初始化加载
 onMounted(() => {
   fetchAssets();
@@ -454,7 +498,23 @@ onMounted(() => {
   font-size: 12px;
   color: #666;
 }
+.asset-id{
+  font-size: 12px;
+  font-weight: bold;
 
+  color: #595858;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.asset-price{
+  font-size: 13px;
+  font-weight: bold;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* 添加底部内边距，根据您的tabbar高度调整 */
 .bottom-padding {
   padding-bottom: 30px;
@@ -562,4 +622,6 @@ onMounted(() => {
   height: 30px;
   border-radius: 30px;
 }
+
+
 </style>

@@ -40,6 +40,8 @@ public class NftServiceImpl implements MarketService {
     @Autowired
     private PurchaseMapper purchaseMapper;
     @Autowired
+    private LockNftInstanceMapper lockNftInstanceMapper;
+    @Autowired
     private RedissonClient redissonClient;
 
     /**
@@ -179,6 +181,8 @@ public class NftServiceImpl implements MarketService {
             if (updated == 0) {
                 throw new ConcurrentModificationException("藏品状态已变更，请重试");
             }
+            //立即解锁购买的藏品实例
+            lockNftInstanceMapper.unlockNftInstance(instanceId);
             // 更新 consignments 表
             purchaseMapper.updateConsignmentStatus(instanceId, buyerWalletAddress);
             // 插入交易记录
@@ -189,6 +193,7 @@ public class NftServiceImpl implements MarketService {
 
             // 更新寄售者钱包余额
             purchaseMapper.updateSellerWallet(instanceInfo.getOwnerAddress(), sellerAmount);
+
         } catch (InterruptedException e) {
             throw new RuntimeException("操作被中断");
         } finally {

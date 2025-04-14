@@ -2,6 +2,7 @@ package com.joon.ibox_back_end.personalHub.controller;
 
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.personalHub.entity.UserAssetsResponseDto;
+import com.joon.ibox_back_end.personalHub.entity.UserSoldAsset;
 import com.joon.ibox_back_end.personalHub.entity.cancelSale.CancelConsignmentRequest;
 import com.joon.ibox_back_end.personalHub.service.CancleSaleService;
 import com.joon.ibox_back_end.personalHub.service.UserAssetService;
@@ -38,6 +39,16 @@ public class UserAssetController {
         return R.success("查询个人藏品资产成功",userAssets);
     }
 
+    /**
+     * 查询个人已售
+     * @param walletAddress
+     * @return
+     */
+    @GetMapping("/getSaleAssets")
+    public R<List<UserSoldAsset>> getSaleAssets(@RequestParam String walletAddress) {
+        List<UserSoldAsset> assets = userAssetService.getUserSoldAssets(walletAddress);
+        return R.success("查询已出售成功",assets);
+    }
     @PostMapping("/cancelSale")
     public R cancelSale(@RequestBody CancelConsignmentRequest request) {
         try {

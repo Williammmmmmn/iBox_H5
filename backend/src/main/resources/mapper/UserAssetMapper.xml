@@ -75,4 +75,32 @@
         ORDER BY
             n.name, ni.instance_number
     </select>
+    <!--    查询用户已售-->
+
+    <resultMap id="UserSoldAssetMap" type="com.joon.ibox_back_end.personalHub.entity.UserSoldAsset">
+        <result property="name" column="name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="instanceNumber" column="instance_number"/>
+        <result property="price" column="price"/>
+    </resultMap>
+
+
+    <select id="selectUserSoldAssets" resultMap="UserSoldAssetMap">
+        SELECT
+            n.name,
+            n.image_url,
+            ni.instance_number,
+            t.price
+        FROM
+            transactions t
+                JOIN
+            nft_instances ni ON t.instance_id = ni.instance_id
+                JOIN
+            nfts n ON t.nft_id = n.id
+        WHERE
+            t.from_address = #{walletAddress}
+          AND t.type IN ('purchase', 'purchase_request')
+        ORDER BY
+            t.transaction_date DESC
+    </select>
 </mapper>

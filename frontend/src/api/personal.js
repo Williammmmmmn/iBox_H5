@@ -19,6 +19,16 @@ export const getUserAssets = async () => {
       throw error;
     }
   };
+  export const getUserSaleAssets = async (walletAddress) => {
+    try {
+      const response = await request.get('/personal/getSaleAssets', {params: { walletAddress }} );
+      return response.data;
+    } catch (error) {
+      console.error('获取用户已出售资产失败:', error);
+      throw error;
+    }
+  };
+
 
   //钱包详情信息
   export const getWalletInfo = async () => {

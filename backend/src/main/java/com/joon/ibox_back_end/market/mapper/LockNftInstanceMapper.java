@@ -10,4 +10,6 @@ public interface LockNftInstanceMapper {
     int lockNftInstance(Instances nftInstance);
 
     void unlockExpiredNfts();
+
+    void unlockNftInstance(Integer instanceId); // 确保这个方法存在
 }
