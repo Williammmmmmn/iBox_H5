@@ -2,9 +2,7 @@
     <div class="login-page-container">
         <!-- 添加背景动画容器 -->
         <div class="gravity-balls">
-            <img v-for="(ball, index) in balls" 
-                :key="index" class="ball-image" 
-                :src="ball.imageUrl" :style="{
+            <img v-for="(ball, index) in balls" :key="index" class="ball-image" :src="ball.imageUrl" :style="{
                 left: `${ball.x}px`,
                 top: `${ball.y}px`,
                 width: `${ball.size}px`,
@@ -108,36 +106,36 @@ const ballCount = 15; // 球体数量
 
 // 初始化球体
 const initBalls = () => {
-  const imageUrls = [
-    require('@/assets/images/cc.jpg'),
-    require('@/assets/images/gfm.jpg'),
-    require('@/assets/images/io.jpg'),
-    require('@/assets/images/lzz.jpg'),
-    require('@/assets/images/sbl.jpg'),
-    require('@/assets/images/sw2.jpg'),
-    require('@/assets/images/yuk.jpg'),
-    require('@/assets/images/sorry.jpg'),
-    require('@/assets/images/cjdx.jpg'),
-    require('@/assets/images/emn.jpg'),
-    require('@/assets/images/hd.jpg'),
-    require('@/assets/images/jrt.jpg'),
-    require('@/assets/images/q1.jpg'),
-    require('@/assets/images/rbz.jpg'),
-    require('@/assets/images/xclh.jpg'),
+    const imageUrls = [
+        require('@/assets/images/cc.jpg'),
+        require('@/assets/images/gfm.jpg'),
+        require('@/assets/images/io.jpg'),
+        require('@/assets/images/lzz.jpg'),
+        require('@/assets/images/sbl.jpg'),
+        require('@/assets/images/sw2.jpg'),
+        require('@/assets/images/yuk.jpg'),
+        require('@/assets/images/sorry.jpg'),
+        require('@/assets/images/cjdx.jpg'),
+        require('@/assets/images/emn.jpg'),
+        require('@/assets/images/hd.jpg'),
+        require('@/assets/images/jrt.jpg'),
+        require('@/assets/images/q1.jpg'),
+        require('@/assets/images/rbz.jpg'),
+        require('@/assets/images/xclh.jpg'),
 
-    // 添加更多图片路径...
-  ];
-  
-  for (let i = 0; i < ballCount; i++) {
-    balls.value.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight * 0.6,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
-      size: 25 + Math.random() * 50,
-      imageUrl: imageUrls[i % imageUrls.length] // 循环使用图片
-    });
-  }
+        // 添加更多图片路径...
+    ];
+
+    for (let i = 0; i < ballCount; i++) {
+        balls.value.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight * 0.6,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            size: 25 + Math.random() * 50,
+            imageUrl: imageUrls[i % imageUrls.length] // 循环使用图片
+        });
+    }
 };
 
 // 重力参数
@@ -208,8 +206,8 @@ onMounted(() => {
     }
     // 窗口大小变化时重置球体位置
     window.addEventListener('resize', () => {
-    balls.value = [];
-    initBalls();
+        balls.value = [];
+        initBalls();
     });
     // 添加鼠标移动影响（桌面端）
     window.addEventListener('mousemove', (e) => {
@@ -269,7 +267,10 @@ const refreshCaptcha = async () => {
         // 请求成功后打开弹窗
         showCaptchaDialog.value = true;
     } catch (error) {
-        showToast('获取图片验证码失败，请重试');
+        showToast({
+            message: '验证码发送失败，请重试',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
     } finally {
         // 无论成功还是失败，都关闭 loading
         if (toast) {
@@ -290,11 +291,17 @@ const handleCaptchaConfirm = async () => {
             showCaptchaDialog.value = false; // 关闭验证码弹窗
             await sendVerificationCode(); // 验证通过后发送短信验证码
         } else {
-            showToast('验证码错误，请重试');
+            showToast({
+            message: '验证码错误，请重试',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
             refreshCaptcha(); // 刷新图片验证码
         }
     } catch (error) {
-        showToast('验证码错误，请重试');
+        showToast({
+            message: '验证码错误，请重试',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
         refreshCaptcha(); // 刷新图片验证码
     }
 };
@@ -302,14 +309,20 @@ const handleCaptchaConfirm = async () => {
 // 发送短信验证码
 const sendVerificationCode = async () => {
     if (!isPhoneValid.value) {
-        showToast('请输入有效的手机号');
+        showToast({
+            message: '请输入有效的手机号',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
         return;
     }
 
     try {
         const response = await sendCode(phone.value); // 调用 API 发送短信验证码
         if (response.code === 200) {
-            showToast('验证码已发送');
+            showToast({
+            message: '验证码已发售送',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
             isCodeSent.value = true;
             countdown.value = 60;
 
@@ -326,14 +339,21 @@ const sendVerificationCode = async () => {
             showToast(response.data.message || '验证码发送失败');
         }
     } catch (error) {
-        showToast('验证码发送失败，请重试');
+        showToast({
+            message: '验证码发送失败，请重试',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
     }
 };
 
 // 点击“获取验证码”按钮
 const handleGetVerificationCode = () => {
     if (!isPhoneValid.value) {
-        showToast('请输入有效的手机号');
+        showToast({
+            message: '请输入有效的手机号',
+            duration: 2000 // 显示时间设置为 2 秒
+        });
+
         return;
     }
 
@@ -436,14 +456,19 @@ const goBack = () => {
     filter: blur(1px);
     opacity: 0.7;
 }
+
 .ball-image {
-  position: absolute;
-  will-change: transform;
-  transition: transform 0.1s linear;
-  border-radius: 50%; /* 确保图片显示为圆形 */
-  object-fit: cover; /* 保持图片比例 */
-  pointer-events: none; /* 防止图片拦截鼠标事件 */
+    position: absolute;
+    will-change: transform;
+    transition: transform 0.1s linear;
+    border-radius: 50%;
+    /* 确保图片显示为圆形 */
+    object-fit: cover;
+    /* 保持图片比例 */
+    pointer-events: none;
+    /* 防止图片拦截鼠标事件 */
 }
+
 .login-container {
     user-select: none;
     margin-top: 10px;

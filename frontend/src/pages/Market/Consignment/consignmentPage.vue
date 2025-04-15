@@ -107,13 +107,28 @@
                   </template>
                   <!-- 求购模式的数据项 -->
                   <template v-else>
-                    <div v-for="(item, index) in currentDataList" :key="'purchase-' + index" class="purchase-item">
+                    <div v-for="(item, index) in currentDataList" 
+                    :key="'purchase-' + index" 
+                    class="purchase-item"
+                    @click="goToSellPurchaseRequests(item)"
+                    >
                       <div class="purchase-price">
                         <span class="price-symbol">￥</span>
                         <span class="price">{{ item.price }}</span>
                       </div>
                       <!-- 新增的 chevron 图标 -->
                       <van-icon name="arrow" class="chevron-icon" />
+                    </div>
+                    <!-- 发起求购按钮 -->
+                    <div class="purchase-button-container">
+                      <van-button
+                        type="primary"
+                        block
+                        class="purchase-button"
+                        @click="handleInitiatePurchase"
+                      >
+                        发起求购
+                      </van-button>
                     </div>
                   </template>
                   <!-- 划到底部时 -->
@@ -309,6 +324,17 @@ const goToSaleDetail = (instanceNumber) => {
 const goToAnnounceDetail = (announceId) => {
   router.push({
     path: `/announceDetail/${nftId}/${announceId}`,
+  });
+};
+const goToSellPurchaseRequests = (item) => {
+  router.push({
+    path: '/sellPurchaseRequests',
+    query: {
+      price: item.price, // 传递价格参数
+      name: name.value, // 传递名称参数
+      imageUrl: imageUrl.value, // 传递图片参数
+      nftId: nftId, // 传递nftId参数
+    },
   });
 };
 onMounted(() => {
@@ -655,7 +681,26 @@ onMounted(() => {
   padding: 10px 0;
   border-bottom: 1px solid #eee;
 }
+.purchase-button-container {
+  position: fixed; /* 固定定位 */
+  bottom: 0; /* 距离屏幕底部 0 */
+  left: 0; /* 距离屏幕左侧 0 */
+  width: 90%; /* 按钮宽度占满屏幕 */
+  padding: 10px 16px; /* 内边距 */
+  background-color: #ffffff; /* 背景色，避免与内容混淆 */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* 添加顶部阴影 */
+  z-index: 100; /* 确保按钮在最上层 */
+}
 
+.purchase-button {
+  background-color: #1989fa; /* 蓝色背景 */
+  color: #ffffff; /* 白色字体 */
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 16px;
+  height: 44px;
+  line-height: 44px;
+}
 .announce-info {
   flex-direction: row;
   align-items: center;

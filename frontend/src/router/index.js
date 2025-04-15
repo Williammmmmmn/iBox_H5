@@ -15,6 +15,8 @@ import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
 import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPrice.vue";
 import BuyPage from "@/pages/BuyPage/BuyPage.vue";
+import SellPurchaseRequests from "@/pages/Market/SellPurchaseRequests/SellPurchaseRequests.vue";
+
 
 const routes = [
   {
@@ -94,6 +96,14 @@ const routes = [
     meta: {
       keepAlive: false // 不缓存详情页
     }
+  },
+  {
+    path:"/sellPurchaseRequests",
+    name:'SellPurchaseRequests',
+    component: SellPurchaseRequests,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   }
 
 
@@ -106,7 +116,7 @@ const router = createRouter({
 //路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage'];
+  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

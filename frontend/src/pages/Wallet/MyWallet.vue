@@ -174,6 +174,9 @@ const onLoad = async () => {
   }
 };
 const getTransactionType= (type) => {
+  if (type === 'SALE') {
+    return '出售'; // 如果类型为 SALE，返回 "出售"
+  }
   return getTransactionTypeName(type);
 };
 // 充值处理

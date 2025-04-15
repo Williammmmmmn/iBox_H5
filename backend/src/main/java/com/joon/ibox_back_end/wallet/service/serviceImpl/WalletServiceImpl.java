@@ -33,6 +33,7 @@ public class WalletServiceImpl implements WalletService {
         Wallet wallet = walletMapper.findByWalletAddress(walletAddress);
         if (wallet == null) {
             throw new BusinessException("钱包不存在");
+
         }
         return wallet;
     }
