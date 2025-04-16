@@ -4,6 +4,7 @@ import com.joon.ibox_back_end.market.entity.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 public interface MarketService {
@@ -59,6 +60,12 @@ public interface MarketService {
     @Transactional
     void processPurchase(Integer instanceId, String buyerWalletAddress, BigDecimal price);
 
-
-
+    /**
+     * 出售给求购者先查询自己拥有的藏品信息
+     *
+     * @param walletAddress
+     * @param nftId
+     * @return
+     */
+        HashMap<String, Object> getOwnedInstances(String walletAddress, Integer nftId);
 }

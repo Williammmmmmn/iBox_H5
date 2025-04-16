@@ -15,4 +15,6 @@ public interface WalletMapper {
     int updateBalance(@Param("walletId") Integer walletId, @Param("amount") BigDecimal amount);
 
     int insertWallet(Wallet wallet);
+
+    BigDecimal selectBalanceByAddress(@Param("walletAddress") String walletAddress);
 }

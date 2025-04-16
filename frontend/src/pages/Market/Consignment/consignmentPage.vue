@@ -179,6 +179,8 @@ const nftId = route.query.id;
 const activeTab = ref(0);
 const isSwitchOn = ref('left')//left代表寄售，right代表求购;
 
+const tab = route.query.tab;
+
 const issueCount = ref(0);
 const circulationCount = ref(0);
 const saleList = ref([]);
@@ -201,6 +203,7 @@ watch(route, (newRoute) => {
     activeTab.value = parseInt(newRoute.query.activeTab, 10);
   }
 }, { immediate: true });
+
 // 计算当前显示的数据列表
 const currentDataList = computed(() => {
   return isSwitchOn.value === 'left' ? saleList.value : purchaseList.value;
@@ -312,7 +315,7 @@ const goBack = () => {
   // 从当前路由中获取tab参数
   router.push({
     path: '/market',
-    query: { tab: route.query.tab || 'all' }
+    query: { tab:tab|| 'all' }
   });
 };
 const goToSaleDetail = (instanceNumber) => {
@@ -334,9 +337,18 @@ const goToSellPurchaseRequests = (item) => {
       name: name.value, // 传递名称参数
       imageUrl: imageUrl.value, // 传递图片参数
       nftId: nftId, // 传递nftId参数
+      id: item.id, // 传递编号参数
+      tab: tab
     },
   });
 };
+// 监听路由变化
+watch(() => route.query.isSwitchOn, (newVal) => {
+  if (newVal === 'right') {
+    isSwitchOn.value = 'right';
+    loadPurchaseData();
+  }
+}, { immediate: true });
 onMounted(() => {
   // 如果从公告详情页返回，设置 activeTab 为 query 中的值
   if (route.query.activeTab) {

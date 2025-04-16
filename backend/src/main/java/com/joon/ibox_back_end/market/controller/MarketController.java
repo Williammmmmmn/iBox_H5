@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: backend
@@ -108,6 +110,21 @@ public class MarketController {
         }
     }
 
-
+    /**
+     * 出售给求购者先查询自己拥有的藏品信息
+     * @param walletAddress
+     * @param nftId
+     * @return
+     */
+    @GetMapping("/sellPurchaseRequest")
+    public R getOwnedInstances(@RequestParam String walletAddress,
+                                      @RequestParam Integer nftId) {
+        try {
+            HashMap<String, Object> result = marketService.getOwnedInstances(walletAddress, nftId);
+            return R.success(result);
+        } catch (Exception e) {
+            return R.error(500, "查询失败: " + e.getMessage());
+        }
+    }
 
 }

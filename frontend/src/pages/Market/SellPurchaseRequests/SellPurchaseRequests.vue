@@ -1,7 +1,7 @@
 <template>
   <div class="sell-page">
     <!-- 顶部导航栏 -->
-    <van-nav-bar title="以求购价格售出" left-arrow @click-left="$router.back()" :border="false" class="full-width-nav-bar" />
+    <van-nav-bar title="以求购价格售出" left-arrow @click-left="goBackToConsignmentPage" :border="false" class="full-width-nav-bar" />
 
     <!-- 求购信息展示 -->
     <div class="nft-display">
@@ -17,19 +17,24 @@
     </div>
 
     <!-- 选择售出编号 -->
-    <div class="sell-number">
+    <!-- 选择售出编号 -->
+    <div class="sell-number" v-if="quantity > 0">
       <div class="section-title">
         选择售出编号
         <span class="subtitle">(仅支持单笔)</span>
       </div>
-      <van-field v-model="sellNumber" placeholder="请选择编号" readonly is-link @click="showPopup = true"
-        class="sell-number-input" />
+      <van-field
+        v-model="sellNumber"
+        placeholder="请选择编号"
+        readonly
+        is-link
+        @click="showPopup = true"
+        class="sell-number-input"
+      />
     </div>
     <!-- 弹框选择编号 -->
     <van-popup v-model:show="showPopup" position="bottom" class="popup">
       <div class="popup-header">
-        <span class="confirm-btn" @click="confirmSelection">确认</span>
-        <span class="cancel-btn" @click="showPopup = false">取消</span>
       </div>
       <div class="popup-body">
         <div
@@ -48,6 +53,7 @@
       <div class="wallet-info">
           <van-icon name="balance-o" color="#1989fa" size="20" />
           <span class="wallet-name">默认钱包</span>
+          <span class="wallet-balance">(余额：￥{{ balance }})</span>
           <van-icon name="success" color="#07c160" size="20" />
         </div>
     </div>
@@ -73,7 +79,13 @@
 
     <!-- 底部按钮 -->
     <div class="submit-btn">
-      <van-button round block type="primary" @click="handleSell">
+      <van-button 
+      round 
+      block 
+      type="primary" 
+      :disabled="quantity === 0"
+      :style="{ backgroundColor: quantity === 0 ? '#4988cc' : '' }"
+      @click="handleSell">
         确认成交
       </van-button>
     </div>
@@ -82,35 +94,61 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed } from 'vue';
+import { ref, computed,onMounted  } from 'vue';
 import { showToast } from 'vant';
-
+import { useStore } from 'vuex';
+import { sellPurchaseRequest } from '@/api/purchaseRequest';
 // 路由和数据
 const route = useRoute();
 const router = useRouter();
+const store = useStore();
 
 // 从路由参数获取数据
 const price = Number(route.query.price) || 0; // 获取价格
 const imageUrl = route.query.imageUrl || ''; // 获取图片 URL
 const name = route.query.name || '求购商品'; // 获取商品名称
-// const nftId = route.query.nftId || ''; // 获取 NFT ID
-const quantity = ref(''); // 获取拥有数量
+const nftId = route.query.nftId || ''; // 获取 NFT ID
+const tab = route.query.tab || '全部'; // 获取tab
 
-// 售出编号
+// 从 Vuex 获取钱包地址
+const walletAddress = computed(() => store.getters.getUserInfo?.walletAddress || '');
+
+// 售出相关数据
 const sellNumber = ref('');
 const showPopup = ref(false); // 控制弹框显示
-
-// 假设拥有的藏品实例编号
-const ownedInstances = ref([101, 102, 103, 104, 105]);
+const quantity = ref(0); // 拥有藏品实例数量
+const ownedInstances = ref();
+const balance = ref(0); // 初始化余额
 
 // 计算综合服务费和预计收入
 const serviceFee = computed(() => (price * 0.05).toFixed(2)); // 服务费 5%
 const estimatedIncome = computed(() => (price - serviceFee.value).toFixed(2)); // 预计收入
 
+// 加载用户拥有的NFT实例
+const loadOwnedInstances = async () => {
+  try {
+    if (!walletAddress.value || !nftId) return;
+    
+    const response = await sellPurchaseRequest(walletAddress.value, nftId);
+    ownedInstances.value = response.instances || [];
+    quantity.value = response.quantity || 0;
+    balance.value = response.balance || 0.00;
+  } catch (error) {
+    showToast('加载藏品信息失败');
+    console.error('Error loading owned instances:', error);
+  }
+};
+
 // 处理图片加载失败
 const handleImageError = (e) => {
   e.target.src = require('@/assets/images/sorry.jpg'); // 替换为默认图片
 };
+// 选择实例
+const selectInstance = (instanceNumber) => {
+  sellNumber.value = instanceNumber;
+};
+
+
 
 // 确认出售逻辑
 const handleSell = async () => {
@@ -126,6 +164,20 @@ const handleSell = async () => {
   } catch (error) {
     showToast('出售失败，请稍后重试');
   }
+};
+onMounted(() => {
+  loadOwnedInstances();
+});
+const goBackToConsignmentPage = () => {
+  router.push({
+    path: '/consignment',
+    query: {
+      id: nftId, // 当前的 NFT ID
+      isSwitchOn: 'right',// 设置开关状态为右边
+      tab: tab, // 当前的 tab
+      from: 'sellPurchase' // 添加来源标识
+    },
+  });
 };
 </script>
 
@@ -198,7 +250,7 @@ const handleSell = async () => {
 }
 
 .confirm-btn {
-  color: #0f7cf0; /* 绿色确认按钮 */
+  color: #4988cc; /* 绿色确认按钮 */
   cursor: pointer;
 }
 
@@ -285,7 +337,11 @@ const handleSell = async () => {
   padding: 16px;
   margin-bottom: 12px;
 }
-
+.wallet-balance {
+  font-size: 11px; /* 字体较小 */
+  color: #999; /* 灰色字体 */
+  margin-right:48px
+}
 .wallet-info {
     display: flex;
     align-items: center;

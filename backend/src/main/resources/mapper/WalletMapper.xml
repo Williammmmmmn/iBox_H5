@@ -9,4 +9,10 @@
                     #{walletAddress}, #{userId}, #{balance}, #{currency}, NOW(), NOW()
                     )
     </insert>
+<!--    根据钱包地址查询余额-->
+    <select id="selectBalanceByAddress" resultType="java.math.BigDecimal">
+        SELECT balance
+        FROM wallets
+        WHERE wallet_address = #{walletAddress}
+    </select>
 </mapper>

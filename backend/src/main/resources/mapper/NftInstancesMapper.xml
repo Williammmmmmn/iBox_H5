@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.market.mapper.NftInstancesMapper">
+    <select id="selectInstancesByOwnerAndNftId" resultType="java.lang.Integer">
+        SELECT instance_number
+        FROM nft_instances
+        WHERE owner_address = #{walletAddress}
+          AND nft_id = #{nftId}
+          AND is_consigning = 0
+          AND (locked_by IS NULL OR locked_by = #{walletAddress})
+        ORDER BY instance_number ASC
+    </select>
+</mapper>

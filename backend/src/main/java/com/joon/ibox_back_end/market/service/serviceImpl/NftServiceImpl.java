@@ -4,7 +4,7 @@ import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.mapper.*;
 import com.joon.ibox_back_end.market.service.MarketService;
-import com.joon.ibox_back_end.wallet.mapper.TransactionMapper;
+import com.joon.ibox_back_end.wallet.mapper.WalletMapper;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,7 +41,10 @@ public class NftServiceImpl implements MarketService {
     private LockNftInstanceMapper lockNftInstanceMapper;
     @Autowired
     private RedissonClient redissonClient;
-
+    @Autowired
+    private WalletMapper walletMapper;
+    @Autowired
+    private NftInstancesMapper nftInstancesMapper;
     /**
      * 查询市场列表
      *
@@ -202,5 +203,25 @@ public class NftServiceImpl implements MarketService {
             }
         }
 
+    }
+    /**
+     * 出售给求购者先查询自己拥有的藏品信息
+     *
+     * @param walletAddress
+     * @param nftId
+     * @return
+     */
+    @Override
+    public HashMap<String, Object> getOwnedInstances(String walletAddress, Integer nftId) {
+        HashMap<String, Object> result = new HashMap<>();
+        //查询对应钱包地址的实例
+        List<Integer> instances = nftInstancesMapper.selectInstancesByOwnerAndNftId(walletAddress, nftId);
+        result.put("instances",instances);
+        result.put("quantity",instances.size());
+
+        // 查询钱包余额
+        BigDecimal balance = walletMapper.selectBalanceByAddress(walletAddress);
+        result.put("balance", balance);
+        return result;
     }
 }
