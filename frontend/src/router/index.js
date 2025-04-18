@@ -16,7 +16,7 @@ import Home from "@/pages/Layout/home.vue";
 import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPrice.vue";
 import BuyPage from "@/pages/BuyPage/BuyPage.vue";
 import SellPurchaseRequests from "@/pages/Market/SellPurchaseRequests/SellPurchaseRequests.vue";
-
+import LaunchPurchaseRequests from "@/pages/Market/LaunchPurchaseRequests/LaunchPurchaseRequests.vue";
 
 const routes = [
   {
@@ -104,6 +104,14 @@ const routes = [
     meta: {
       keepAlive: false // 不缓存详情页
     }
+  },
+  {
+    path:"/launchPurchaseRequests",
+    name:'LaunchPurchaseRequests',
+    component: LaunchPurchaseRequests,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   }
 
 
@@ -116,7 +124,7 @@ const router = createRouter({
 //路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests'];
+  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests','/launchPurchaseRequests'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

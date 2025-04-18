@@ -84,6 +84,7 @@
       block 
       type="primary" 
       :disabled="quantity === 0"
+      :loading="loading"
       :style="{ backgroundColor: quantity === 0 ? '#4988cc' : '' }"
       @click="handleSell">
         确认成交
@@ -98,12 +99,14 @@ import { ref, computed,onMounted  } from 'vue';
 import { showToast } from 'vant';
 import { useStore } from 'vuex';
 import { sellPurchaseRequest } from '@/api/purchaseRequest';
+import { sellToPurchaseRequest } from '@/api/purchaseRequest';
 // 路由和数据
 const route = useRoute();
 const router = useRouter();
 const store = useStore();
 
 // 从路由参数获取数据
+const loading = ref(false); 
 const price = Number(route.query.price) || 0; // 获取价格
 const imageUrl = route.query.imageUrl || ''; // 获取图片 URL
 const name = route.query.name || '求购商品'; // 获取商品名称
@@ -152,16 +155,26 @@ const selectInstance = (instanceNumber) => {
 
 // 确认出售逻辑
 const handleSell = async () => {
+  if (loading.value) return; // 如果正在加载，直接返回，阻止重复提交
   if (!sellNumber.value) {
     showToast('请输入售出编号');
     return;
   }
+  loading.value = true; // 设置加载状态为 true
   try {
-    showToast('出售成功');
-    setTimeout(() => {
-      router.push('/success'); // 跳转到成功页面
-    }, 1000);
+    // 调用售出 API
+    const response = await sellToPurchaseRequest(walletAddress.value, sellNumber.value, price,nftId);
+    // 检查 API 响应
+    if (response.code === 200) {
+      showToast('出售成功');
+      setTimeout(() => {
+        router.back(); // 跳转到成功页面
+      }, 1000);
+    } else {
+      showToast(response.message || '出售失败，请稍后重试');
+    }
   } catch (error) {
+    console.error('出售失败:', error);
     showToast('出售失败，请稍后重试');
   }
 };

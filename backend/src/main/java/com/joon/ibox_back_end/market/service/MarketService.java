@@ -67,5 +67,14 @@ public interface MarketService {
      * @param nftId
      * @return
      */
-        HashMap<String, Object> getOwnedInstances(String walletAddress, Integer nftId);
+    HashMap<String, Object> getOwnedInstances(String walletAddress, Integer nftId);
+
+    /**
+     * 用户出售给求购者
+     * @param instanceNumber
+     * @param walletAddress
+     * @param price
+     */
+    @Transactional
+    void sellToPurchaseRequest(Integer instanceNumber, String walletAddress, BigDecimal price,Integer nftId) throws InterruptedException;
 }

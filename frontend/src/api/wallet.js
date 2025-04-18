@@ -53,3 +53,22 @@ export const getWalletTransactions = async (walletAddress) => {
     throw error;
   }
 };
+
+/**
+ * 查询用户钱包余额
+ * @param {string} walletAddress 用户钱包地址
+ * @returns {Promise<number>} 返回用户余额
+ */
+export const getUserWalletBalance = async (walletAddress) => {
+  try {
+    const response = await request.get('/wallet/getBalance', {
+      params: {  // 使用params传递GET参数
+        walletAddress
+      }
+    });
+    return response.data; // 返回用户余额
+  } catch (error) {
+    console.error('查询用户钱包余额失败:', error);
+    throw error;
+  }
+};

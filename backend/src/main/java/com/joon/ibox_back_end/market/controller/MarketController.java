@@ -3,6 +3,7 @@ package com.joon.ibox_back_end.market.controller;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.entity.BuyDto.BuyRequest;
+import com.joon.ibox_back_end.market.entity.SellToRequest.SellToRequest;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -103,7 +104,7 @@ public class MarketController {
             }
 
             marketService.processPurchase(request.getInstanceId(), request.getWalletAddress(), request.getPrice());
-            return R.success("购买成功");
+            return R.success("购买成功","购买成功");
         } catch (Exception e) {
             return R.error("购买失败：" + e.getMessage()); // 返回具体错误信息
         }
@@ -115,7 +116,7 @@ public class MarketController {
      * @param nftId
      * @return
      */
-    @GetMapping("/sellPurchaseRequest")
+    @GetMapping("/sellPurchaseRequestInfo")
     public R getOwnedInstances(@RequestParam String walletAddress,
                                       @RequestParam Integer nftId) {
         try {
@@ -126,4 +127,21 @@ public class MarketController {
         }
     }
 
+    /**
+     * 用户将藏品出售给求购者
+     * @return
+     */
+    @PostMapping("/sellToPurchaseRequest")
+    public R sellToPurchaseRequest(@RequestBody SellToRequest request) {
+        try {
+            // 简单参数校验
+            if (request.getInstanceNumber() == null || request.getPrice() == null) {
+                return R.error("参数不能为空");
+            }
+            marketService.sellToPurchaseRequest(request.getInstanceNumber(), request.getWalletAddress(), request.getPrice(),request.getNftId());
+            return R.success("出售给求购者成功","出售给求购者成功");
+        } catch (Exception e) {
+            return R.error("出售给求购者失败"+ e.getMessage()); // 返回具体错误信息
+        }
+    }
 }

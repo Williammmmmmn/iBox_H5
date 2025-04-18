@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.config;
+package com.joon.ibox_back_end.config;
 
 /**
  * @program: backend

@@ -76,18 +76,16 @@
                 <div v-if="loading" class="loading">
                   数据加载中...
                 </div>
-                <!-- 无数据时 -->
-                <van-empty v-else-if="currentDataList.length === 0" description="暂无数据" />
-                <!-- 有数据时 -->
-                <template v-else>
-                  <!-- 寄售模式的数据项 -->
-                  <template v-if="isSwitchOn === 'left'">
+                
+                <!-- 寄售模式 -->
+                <template v-else-if="isSwitchOn === 'left'">
+                  <van-empty v-if="currentDataList.length === 0" description="暂无数据" />
+                  <template v-else>
                     <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)"
                       class="sale-item">
                       <!-- 左边：名称和编号 -->
                       <div class="left-info">
                         <div class="name">{{ item.name }}
-                          <!-- 如果订单被锁定，显示“已锁定”标识 -->
                           <span v-if="item.lockExpiry && new Date(item.lockExpiry) > new Date()" class="locked-tag">
                             已锁定
                           </span>
@@ -103,39 +101,42 @@
                         <span class="price">{{ item.price }}</span>
                       </div>
                     </div>
-
                   </template>
-                  <!-- 求购模式的数据项 -->
+                </template>
+                
+                <!-- 求购模式 -->
+                <template v-else>
+                  <van-empty v-if="purchaseList.length === 0" description="暂无求购记录" class="empty-purchase" />
                   <template v-else>
-                    <div v-for="(item, index) in currentDataList" 
-                    :key="'purchase-' + index" 
-                    class="purchase-item"
-                    @click="goToSellPurchaseRequests(item)"
-                    >
+                    <div v-for="(item, index) in purchaseList" 
+                        :key="'purchase-' + index" 
+                        class="purchase-item"
+                        @click="goToSellPurchaseRequests(item)">
                       <div class="purchase-price">
                         <span class="price-symbol">￥</span>
                         <span class="price">{{ item.price }}</span>
                       </div>
-                      <!-- 新增的 chevron 图标 -->
                       <van-icon name="arrow" class="chevron-icon" />
                     </div>
-                    <!-- 发起求购按钮 -->
-                    <div class="purchase-button-container">
-                      <van-button
-                        type="primary"
-                        block
-                        class="purchase-button"
-                        @click="handleInitiatePurchase"
-                      >
-                        发起求购
-                      </van-button>
-                    </div>
                   </template>
-                  <!-- 划到底部时 -->
-                  <div v-if="isReachBottom" class="no-more">
-                    --没有更多--
+                  
+                  <!-- 始终显示的发起求购按钮 -->
+                  <div class="purchase-button-container">
+                    <van-button
+                      type="primary"
+                      block
+                      class="purchase-button"
+                      @click="handleInitiatePurchase"
+                    >
+                      发起求购
+                    </van-button>
                   </div>
                 </template>
+                
+                <!-- 底部提示 -->
+                <div v-if="isReachBottom" class="no-more">
+                  --没有更多--
+                </div>
               </div>
             </div>
           </van-tab>
@@ -339,6 +340,17 @@ const goToSellPurchaseRequests = (item) => {
       nftId: nftId, // 传递nftId参数
       id: item.id, // 传递编号参数
       tab: tab
+    },
+  });
+};
+const handleInitiatePurchase = () => {
+  router.push({
+    path: '/launchPurchaseRequests',
+    query: {
+      highestPrice: purchaseList.value.length > 0 ? purchaseList.value[0].price : 0, // 当前最高求购价
+      name: name.value, // 藏品名称
+      imageUrl: imageUrl.value, // 图片 URL
+      nftId: nftId, // NFT ID
     },
   });
 };

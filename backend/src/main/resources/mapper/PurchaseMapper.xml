@@ -30,6 +30,32 @@
         VALUES
             (#{nftId}, #{fromWalletAddress}, #{toWalletAddress}, #{transactionHash}, #{price}, #{currency}, NOW(), 'purchase', #{instanceId});
     </insert>
+    <!-- 插入出售给求购者的交易记录 -->
+    <insert id="insertPurchaseRequestTransaction">
+        INSERT INTO transactions (
+            nft_id,
+            from_address,
+            to_address,
+            transaction_hash,
+            price,
+            currency,
+            transaction_date,
+            type,
+            purchase_request_id,
+            instance_id
+        ) VALUES (
+                     #{nftId},
+                     #{fromAddress},
+                     #{toAddress},
+                     #{transactionHash},
+                     #{price},
+                     #{currency},
+                     NOW(),
+                     #{type},
+                     #{purchaseRequestId},
+                     #{instanceId}
+                 )
+    </insert>
 
     <!-- 更新购买者钱包余额 -->
     <update id="updateBuyerWallet">
@@ -44,6 +70,24 @@
         UPDATE wallets
         SET balance = balance + #{sellerAmount}
         WHERE wallet_address = #{sellerWalletAddress};
+    </update>
+
+    <!-- 更新求购记录状态 -->
+    <update id="updatePurchaseRequestStatus">
+        UPDATE purchase_requests
+        SET status = #{status},
+            instance_id = #{instanceId},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+    <update id="updateNftInstanceOwnerForPurchaseRequest">
+        UPDATE nft_instances
+        SET owner_address = #{newOwnerWalletAddress},
+            version = version + 1,
+            is_consigning = 0,
+            updated_at = NOW()
+        WHERE instance_id = #{instanceId}
+          AND version = #{expectedVersion}
     </update>
 
     <!-- 查询寄售者地址 -->
@@ -64,5 +108,32 @@
     <select id="getWalletBalance" resultType="java.math.BigDecimal">
         SELECT balance FROM wallets WHERE wallet_address = #{walletAddress}
     </select>
+    <!-- 根据藏品编号和NFT ID获取NFT实例（带锁） -->
+    <select id="getNftInstanceByNumberAndNftIdWithLock"  resultType="com.joon.ibox_back_end.commonEntity.po.Instances">
+        SELECT *
+        FROM nft_instances
+        WHERE instance_number = #{instanceNumber}
+          AND nft_id = #{nftId}
+            FOR UPDATE
+    </select>
+
+<!--     获取匹配的对应求购记录。来看买家地址的-->
+    <select id="getActivePurchaseRequestByNftIdAndPrice" resultType="com.joon.ibox_back_end.commonEntity.po.PurchaseRequests">
+        SELECT *
+        FROM purchase_requests
+        WHERE nft_id = #{nftId}
+          AND price = #{price}
+          AND status = 'requesting'
+        LIMIT 1
+    </select>
+    <!-- 检查是否已存在出售交易 -->
+    <select id="checkSellTransactionExists" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE purchase_request_id = #{purchaseRequestId}
+          AND instance_id = #{instanceId}
+          AND type = 'purchase_request'
+    </select>
+
 
 </mapper>

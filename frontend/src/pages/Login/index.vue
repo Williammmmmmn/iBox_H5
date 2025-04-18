@@ -320,7 +320,7 @@ const sendVerificationCode = async () => {
         const response = await sendCode(phone.value); // 调用 API 发送短信验证码
         if (response.code === 200) {
             showToast({
-            message: '验证码已发售送',
+            message: '验证码已发送',
             duration: 2000 // 显示时间设置为 2 秒
         });
             isCodeSent.value = true;
