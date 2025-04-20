@@ -28,4 +28,5 @@ public interface WalletService {
 
     List<Transactions> getTransactions(String walletAddress);
 
+
 }

@@ -113,29 +113,27 @@ const getFormattedAmount = (type, price) => {
   const amount = Number(price);
   if (isNaN(amount)) return '0.00';
   
-  // 确定符号
   let sign = '';
-  if (['PURCHASE', 'PURCHASE_REQUEST'].includes(type)) {
-    sign = '-';
-  } else if (type === 'SALE') {
-    sign = '+';
+  if (type === 'PURCHASE' || type === 'PURCHASE_REQUEST') {
+    sign = '-';  // 购买或求购扣款，显示负号
+  } else if (type === 'SALE' || type === 'PURCHASE_REFUND') {
+    sign = '+';  // 出售或退款，显示正号
   }
-  // 转账和寄售可以根据from/to地址判断，这里简化处理
   
   return `${sign}${Math.abs(amount).toFixed(2)}`;
 };
+
 
 // 获取金额样式类
 const getAmountClass = (type, price) => {
   const amount = Number(price);
   if (isNaN(amount)) return '';
   
-  if (['PURCHASE', 'PURCHASE_REQUEST'].includes(type)) {
-    return 'expense';
-  } else if (type === 'SALE') {
-    return 'income';
+  if (type === 'PURCHASE' || type === 'PURCHASE_REQUEST') {
+    return 'expense';  // 支出类
+  } else if (type === 'SALE' || type === 'PURCHASE_REFUND' ) {
+    return 'income';   // 收入类
   }
-  // 其他类型根据实际业务处理
   return amount > 0 ? 'income' : 'expense';
 };
 // 加载钱包信息

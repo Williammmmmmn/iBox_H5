@@ -2,7 +2,7 @@ package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.LockResponse;
 import com.joon.ibox_back_end.common.R;
-import com.joon.ibox_back_end.market.entity.LockRequest;
+import com.joon.ibox_back_end.market.entity.LockRequestDto;
 import com.joon.ibox_back_end.market.service.NftLockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class NftLockController {
     private NftLockService  nftLockService;
 
     @PostMapping("/lock")
-    public R lockNft(@RequestBody LockRequest request) {
+    public R lockNft(@RequestBody LockRequestDto request) {
         try {
             LockResponse lockResponse = nftLockService.lockNftInstance(request);
             return R.success(lockResponse);

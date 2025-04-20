@@ -20,4 +20,24 @@
         ORDER BY price DESC       -- 按价格降序排列
     </select>
 
+    <insert id="batchInsertPurchaseRequests" parameterType="java.util.List">
+        INSERT INTO purchase_requests (
+        nft_id,
+        buyer_address,
+        price,
+        currency,
+        status,
+        instance_id
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.nftId},
+            #{item.buyerAddress},
+            #{item.price},
+            #{item.currency},
+            #{item.status},
+            #{item.instanceId}
+            )
+        </foreach>
+    </insert>
 </mapper>

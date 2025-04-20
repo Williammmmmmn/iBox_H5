@@ -66,7 +66,7 @@ export const getUserWalletBalance = async (walletAddress) => {
         walletAddress
       }
     });
-    return response.data; // 返回用户余额
+    return response; // 返回用户余额
   } catch (error) {
     console.error('查询用户钱包余额失败:', error);
     throw error;

@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.commonEntity.po;
+package com.joon.ibox_back_end.wallet.entity;
 
 import lombok.Data;
 
@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 /**
  * @program: backend
- * @description: 交易记录
+ * @description: 交易记录Dto实体类
  * @author: Joonnn
- * @create: 2025-03-2001:28
+ * @create: 2025-04-2023:24
  **/
 @Data
-public class Transactions {
+public class TransactionRecordDto {
     /**
      * 主键，唯一标识每笔交易。
      */
@@ -54,7 +54,7 @@ public class Transactions {
     private LocalDateTime transactionDate;
 
     /**
-     * 交易类型（如购买、出售、转账、寄售、求购等）。
+     * 交易类型（如购买、出售、转账、寄售、求购等,还有求购表中的state，发起和退款）。
      */
     private String type;
 

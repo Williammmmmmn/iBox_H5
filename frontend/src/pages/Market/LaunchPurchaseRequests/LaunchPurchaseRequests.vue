@@ -1,5 +1,12 @@
 <template>
-    <div class="launch-page">
+  <div class="launch-page">
+    <!-- 加载中状态 -->
+    <van-loading v-if="loading" type="spinner" size="24px" color="#1989fa">
+      加载中...
+    </van-loading>
+
+    <!-- 页面内容 -->
+    <div v-else>
       <!-- 顶部导航栏 -->
       <van-nav-bar
         title="发起求购"
@@ -8,7 +15,7 @@
         :border="false"
         class="full-width-nav-bar"
       />
-  
+
       <!-- 藏品信息展示 -->
       <div class="nft-display">
         <img :src="imageUrl" @error="handleImageError" class="nft-image" />
@@ -25,16 +32,22 @@
           </div>
         </div>
       </div>
-  
+
       <!-- 求购价格 -->
       <div class="purchase-price">
         <div class="price-title">求购价格</div>
         <div class="price-content">
           <span class="price-symbol">￥</span>
-          <van-field v-model="purchasePrice" placeholder="请输入求购价格" type="number" maxlength="6"  class="price-input" />
+          <van-field
+            v-model="purchasePrice"
+            placeholder="请输入求购价格"
+            type="number"
+            maxlength="6"
+            class="price-input"
+          />
         </div>
       </div>
-  
+
       <!-- 求购数量 -->
       <div class="purchase-quantity">
         <div class="quantity-header">
@@ -57,7 +70,7 @@
         </div>
         <div class="quantity-note">最大支持9笔求购</div>
       </div>
-  
+
       <!-- 支付方式 -->
       <div class="payment-method">
         <div class="section-title">支付方式</div>
@@ -68,35 +81,46 @@
           <van-icon name="success" color="#07c160" size="20" class="success-icon" />
         </div>
       </div>
-  
+
       <!-- 底部按钮 -->
-    <div class="submit-btn">
+      <div class="submit-btn">
         <div class="total-amount">￥{{ totalAmount }}</div>
         <van-button
-            round
-            type="primary"
-            class="confirm-button"
-            :disabled="!purchasePrice || quantity === 0"
-            @click="handleLaunch"
+          round
+          type="primary"
+          class="confirm-button"
+          :disabled="!purchasePrice || quantity === 0"
+          @click="handleLaunch"
         >
-            确认支付
+          确认支付
         </van-button>
-        </div>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref,computed,onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { showToast } from 'vant';
-import { computed } from 'vue';
+import { useStore } from 'vuex';
+import {getUserWalletBalance} from '@/api/wallet'; //获取用户钱包余额
+import {createPurchaseRequest} from '@/api/purchaseRequest'; //发起求购请求
+import { useRouter } from 'vue-router';
+
 // 获取路由参数
 const route = useRoute();
+const router = useRouter();
 const highestPrice = ref(route.query.highestPrice || 0); // 当前最高求购价
 const name = ref(route.query.name || ''); // 藏品名称
 const imageUrl = ref(route.query.imageUrl || ''); // 图片 URL
-// const nftId = ref(route.query.nftId || ''); // NFT ID
+const nftId = ref(route.query.nftId || ''); // NFT ID
 
+//获取当前登录用户地址
+const store = useStore();
+const walletAddress = computed(() => store.getters.getUserInfo?.walletAddress || '');
+
+const loading = ref(true); // 加载状态，初始为 true
 
 const totalAmount = computed(() => {
   const price = parseFloat(purchasePrice.value) || 0;
@@ -106,7 +130,7 @@ const totalAmount = computed(() => {
 // 数据
 const purchasePrice = ref(''); // 求购价格
 const quantity = ref(1); // 求购数量
-const balance = ref(10000); // 默认余额
+const balance = ref(0); // 默认余额
 
 // 刷新最高求购价
 const refreshHighestPrice = () => {
@@ -130,13 +154,57 @@ const increaseQuantity = () => {
 };
 
 // 发起求购逻辑
-const handleLaunch = () => {
+const handleLaunch = async () => {
   if (!purchasePrice.value) {
     showToast('请输入求购价格');
     return;
   }
-  showToast('求购成功');
+  if (totalAmount.value > balance.value) {
+    showToast('余额不足');
+    return;
+  }
+  if (!nftId.value) {
+    showToast('藏品信息获取失败');
+    return;
+  }
+  try {
+    const response = await createPurchaseRequest(
+      walletAddress.value,
+      Number(route.query.nftId),
+      parseFloat(purchasePrice.value),
+      quantity.value
+    );
+    if (response.code === 200) {
+      showToast('求购成功');
+      // 可以在这里添加跳转逻辑，比如返回上一页
+      setTimeout(() => {
+        router.back();
+      }, 1500);
+    } else {
+      showToast(response.message || '求购失败');
+    }
+  } catch (error) {
+    console.error('发起求购请求失败:', error);
+    showToast(error.response?.data?.message || '求购请求发送失败');
+  }
 };
+
+// 组件挂载时获取钱包余额
+onMounted(async () => {
+  try {
+    if (walletAddress.value) {
+      const response = await getUserWalletBalance(walletAddress.value);
+      balance.value = response.data; // 假设返回的数据结构中有 balance 字段
+    } else {
+      showToast('未获取到用户钱包地址');
+    }
+  } catch (error) {
+    console.error('获取钱包余额失败:', error);
+    showToast('获取钱包余额失败');
+  } finally {
+    loading.value = false; // 加载完成后设置为 false
+  }
+});
 </script>
 
 <style scoped>

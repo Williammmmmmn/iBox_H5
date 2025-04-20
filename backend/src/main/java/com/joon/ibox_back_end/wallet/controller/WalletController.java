@@ -55,5 +55,19 @@ public class WalletController {
         }
     }
 
-
+    /**
+     * 获取钱包余额
+     *
+     * @param walletAddress
+     * @return
+     */
+    @GetMapping("/getBalance")
+    public R<BigDecimal> getBalance(@RequestParam String walletAddress) {
+        Wallet wallet = walletService.getWalletByAddress(walletAddress);
+        if (wallet == null) {
+            return R.error("钱包不存在");
+        }
+        BigDecimal balance = wallet.getBalance();
+        return R.success(balance);
+    }
 }

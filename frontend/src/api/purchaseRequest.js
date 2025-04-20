@@ -33,3 +33,26 @@ export const sellToPurchaseRequest = async (walletAddress, instanceNumber, price
     throw error; // 抛出错误以便调用方处理
   }
 };
+
+/** 
+* 发起求购请求
+* @param {string} walletAddress 用户钱包地址
+* @param {string} nftId NFT唯一标识
+* @param {number} price 求购价格
+* @param {number} quantity 求购数量
+* @returns {Promise} 返回请求结果
+*/
+export const createPurchaseRequest = async (buyerAddress, nftId, price, quantity) => {
+ try {
+   const response = await request.post('/nfts/createPurchase', {
+    buyerAddress,
+     nftId,
+     price,
+     quantity
+   });
+   return response;
+ } catch (error) {
+   console.error('发起求购请求失败:', error);
+   throw error;
+ }
+};

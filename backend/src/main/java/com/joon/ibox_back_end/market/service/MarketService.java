@@ -77,4 +77,14 @@ public interface MarketService {
      */
     @Transactional
     void sellToPurchaseRequest(Integer instanceNumber, String walletAddress, BigDecimal price,Integer nftId) throws InterruptedException;
+
+    /**
+     * 用户出售藏品
+     * @param nftId
+     * @param buyerAddress
+     * @param price
+     * @param quantity
+     * @return
+     */
+    int createPurchaseRequest(Integer nftId, String buyerAddress, BigDecimal price, Integer quantity);
 }

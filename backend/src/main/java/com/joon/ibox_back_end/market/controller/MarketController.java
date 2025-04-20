@@ -3,7 +3,8 @@ package com.joon.ibox_back_end.market.controller;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.entity.BuyDto.BuyRequest;
-import com.joon.ibox_back_end.market.entity.SellToRequest.SellToRequest;
+import com.joon.ibox_back_end.market.entity.PurchaseRequest.CreatePurchaseDto;
+import com.joon.ibox_back_end.market.entity.PurchaseRequest.SellToRequestDto;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -132,7 +133,7 @@ public class MarketController {
      * @return
      */
     @PostMapping("/sellToPurchaseRequest")
-    public R sellToPurchaseRequest(@RequestBody SellToRequest request) {
+    public R sellToPurchaseRequest(@RequestBody SellToRequestDto request) {
         try {
             // 简单参数校验
             if (request.getInstanceNumber() == null || request.getPrice() == null) {
@@ -142,6 +143,20 @@ public class MarketController {
             return R.success("出售给求购者成功","出售给求购者成功");
         } catch (Exception e) {
             return R.error("出售给求购者失败"+ e.getMessage()); // 返回具体错误信息
+        }
+    }
+
+    @PostMapping("/createPurchase")
+    public R<String> createPurchaseRequest(@RequestBody CreatePurchaseDto createPurchaseDto) {
+
+        try {
+            int count = marketService.createPurchaseRequest(createPurchaseDto.getNftId(), createPurchaseDto.getBuyerAddress(),
+                    createPurchaseDto.getPrice(),createPurchaseDto.getQuantity());
+            return R.success("成功创建" + count + "条求购记录");
+        } catch (IllegalArgumentException e) {
+            return R.error(e.getMessage());
+        } catch (Exception e) {
+            return R.error("创建求购请求失败");
         }
     }
 }

@@ -84,4 +84,6 @@ public class WalletServiceImpl implements WalletService {
             throw new BusinessException("查询交易记录失败: " + e.getMessage());
         }
     }
+
+
 }

@@ -9,7 +9,7 @@ import lombok.Data;
  * @create: 2025-04-1010:53
  **/
 @Data
-public class LockRequest {
+public class LockRequestDto {
     private String walletAddress;
     private Integer instanceId;
 }

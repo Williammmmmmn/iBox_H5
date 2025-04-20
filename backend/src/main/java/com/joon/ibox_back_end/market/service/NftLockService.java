@@ -1,7 +1,7 @@
 package com.joon.ibox_back_end.market.service;
 
 import com.joon.ibox_back_end.common.LockResponse;
-import com.joon.ibox_back_end.market.entity.LockRequest;
+import com.joon.ibox_back_end.market.entity.LockRequestDto;
 
 public interface NftLockService {
     /**
@@ -10,7 +10,7 @@ public interface NftLockService {
      * @param request 锁定请求
      * @return 锁定响应
      */
-    LockResponse lockNftInstance(LockRequest request);
+    LockResponse lockNftInstance(LockRequestDto request);
     /**
      * 解锁NFT实例
      *

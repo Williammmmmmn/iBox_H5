@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.wallet.mapper.TransactionMapper">
 
-    <resultMap id="TransactionResultMap" type="com.joon.ibox_back_end.commonEntity.po.Transactions">
+    <resultMap id="TransactionResultMap" type="com.joon.ibox_back_end.wallet.entity.TransactionRecordDto">
         <id column="id" property="id"/>
         <result column="nft_id" property="nftId"/>
         <result column="from_address" property="fromAddress"/>
@@ -11,13 +11,13 @@
         <result column="price" property="price"/>
         <result column="currency" property="currency"/>
         <result column="transaction_date" property="transactionDate"/>
-        <result column="type" property="type"
-                typeHandler="com.joon.ibox_back_end.common.TransactionTypeHandler"/>
+        <result column="type" property="type"/>
         <result column="purchase_request_id" property="purchaseRequestId"/>
         <result column="instance_id" property="instanceId"/>
     </resultMap>
 
     <select id="findByWalletAddress" resultMap="TransactionResultMap">
+        -- 1. 查询 transactions 表（原有逻辑）
         SELECT
             id, nft_id, from_address, to_address, transaction_hash,
             price, currency, transaction_date, purchase_request_id, instance_id,
@@ -27,6 +27,30 @@
                 END as type
         FROM transactions
         WHERE from_address = #{walletAddress} OR to_address = #{walletAddress}
+
+        UNION ALL
+
+        -- 2. 查询 purchase_requests 表（仅显示未完成的求购）
+        SELECT
+            pr.id,
+            pr.nft_id,
+            pr.buyer_address AS from_address,
+            '' AS to_address,
+            '' AS transaction_hash,
+            pr.price,
+            pr.currency,
+            pr.created_at AS transaction_date,
+            NULL AS purchase_request_id,
+            pr.instance_id,
+            CASE
+                WHEN pr.status = 'requesting' THEN 'PURCHASE_REQUEST'  -- 求购中
+                WHEN pr.status = 'canceled' THEN 'PURCHASE_REFUND'     -- 求购取消
+            -- 不再处理 completed，避免重复
+                END as type
+        FROM purchase_requests pr
+        WHERE pr.buyer_address = #{walletAddress}
+          AND (pr.status = 'requesting' OR pr.status = 'canceled')  -- 不查询 completed
+
         ORDER BY transaction_date DESC
     </select>
 </mapper>

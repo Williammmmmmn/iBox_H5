@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.entity.SellToRequest;
+package com.joon.ibox_back_end.market.entity.PurchaseRequest;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * @create: 2025-04-1717:35
  **/
 @Data
-public class SellToRequest {
+public class SellToRequestDto {
     private Integer instanceNumber;
     private String walletAddress;
     private BigDecimal price;

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -302,6 +303,55 @@ public class NftServiceImpl implements MarketService {
                 }
             }
         }
+    }
+
+    /**
+     * 创建求购
+     * @param nftId
+     * @param buyerAddress
+     * @param price
+     * @param quantity
+     * @return
+     */
+    @Override
+    @Transactional
+    public int createPurchaseRequest(Integer nftId, String buyerAddress, BigDecimal price, Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("求购数量必须大于0");
+        }
+        // 计算总金额
+        BigDecimal totalAmount = price.multiply(new BigDecimal(quantity));
+
+        // 1. 先扣款
+        int updatedRows = purchaseMapper.updateBuyerWallet(buyerAddress, totalAmount);
+        if (updatedRows == 0) {
+            // 扣款失败，可能是余额不足或钱包不存在
+            throw new RuntimeException("扣款失败，请检查钱包余额或钱包地址是否正确");
+        }
+        // 创建求购记录列表
+        List<PurchaseRequests> requests = new ArrayList<>();
+        for (int i = 0; i < quantity; i++) {
+            PurchaseRequests request = new PurchaseRequests();
+            request.setNftId(nftId);
+            request.setBuyerAddress(buyerAddress);
+            request.setPrice(price);
+            request.setCurrency("CNY");
+            request.setStatus("requesting");
+            request.setCreatedAt(LocalDateTime.now());
+            request.setUpdatedAt(LocalDateTime.now());
+            request.setInstanceId(0); // 根据实际情况设置instanceId
+
+            requests.add(request);
+        }
+        // 根据数量决定插入方式
+        if (quantity == 1) {
+            return purchaseRequestMapper.insertPurchaseRequest(requests.get(0)) == 1 ? 1 : 0;
+
+        } else {
+            return purchaseRequestMapper.batchInsertPurchaseRequests(requests);
+
+        }
+
     }
 
     @Transactional(rollbackFor = Exception.class)

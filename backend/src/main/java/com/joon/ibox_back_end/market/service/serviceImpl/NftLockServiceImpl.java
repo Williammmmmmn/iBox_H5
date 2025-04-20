@@ -2,18 +2,16 @@ package com.joon.ibox_back_end.market.service.serviceImpl;
 
 import com.joon.ibox_back_end.common.LockResponse;
 import com.joon.ibox_back_end.commonEntity.po.Instances;
-import com.joon.ibox_back_end.market.entity.LockRequest;
+import com.joon.ibox_back_end.market.entity.LockRequestDto;
 import com.joon.ibox_back_end.market.mapper.LockNftInstanceMapper;
 import com.joon.ibox_back_end.market.service.NftLockService;
 import com.joon.ibox_back_end.wallet.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
 import static com.joon.ibox_back_end.common.Constants.LOCK_DURATION_MINUTES;
 
@@ -30,7 +28,7 @@ public class NftLockServiceImpl implements NftLockService {
 
     @Transactional
     @Override
-    public LockResponse lockNftInstance(LockRequest request) {
+    public LockResponse lockNftInstance(LockRequestDto request) {
         Instances nftInstance = lockNftInstanceMapper.findByInstanceId(request.getInstanceId());
         if (nftInstance == null) {
             throw new BusinessException("NFT实例不存在");
