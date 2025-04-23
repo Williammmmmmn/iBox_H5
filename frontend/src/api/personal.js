@@ -62,3 +62,4 @@ export const getUserAssets = async () => {
       throw error;
     }
   };
+

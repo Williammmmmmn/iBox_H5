@@ -10,7 +10,9 @@ import Consignment from '@/pages/Market/Consignment/consignmentPage.vue'
 import SaleDetail from "@/pages/Market/SaleDetail/SaleDetail.vue";
 import announceDetail from "@/pages/Market/AnnounceDetail/announceDetail.vue";
 import User from "@/pages/Layout/user.vue";
-import Wallet from "@/pages/Wallet/MyWallet.vue";
+import Wallet from "@/pages/MyPersonal/Wallet/MyWallet.vue";
+import MyOrder from "@/pages/MyPersonal/Order/MyOrder.vue";
+import OrderDetail from "@/pages/MyPersonal/Order/OrderDetail.vue";
 import Community from "@/pages/Layout/community.vue";
 import Home from "@/pages/Layout/home.vue";
 import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPrice.vue";
@@ -83,6 +85,22 @@ const routes = [
     }
   },
   {
+    path: "/myOrder",
+    name:'MyOrder',
+    component: MyOrder,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
+    path:"/orderDetail",
+    name:'OrderDetail',
+    component: OrderDetail,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
     path:"/fillConsignmentPrice",
     component: FillConsignmentPrice,
     meta: {
@@ -124,7 +142,8 @@ const router = createRouter({
 //路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
-  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests','/launchPurchaseRequests'];
+  const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests',
+    '/launchPurchaseRequests','/myOrder','/orderDetail'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

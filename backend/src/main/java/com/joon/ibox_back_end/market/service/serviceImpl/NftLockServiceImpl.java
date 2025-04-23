@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static com.joon.ibox_back_end.common.Constants.LOCK_DURATION_MINUTES;
+import static com.joon.ibox_back_end.common.Constants.*;
 
 /**
  * @program: backend
@@ -29,35 +31,54 @@ public class NftLockServiceImpl implements NftLockService {
     @Transactional
     @Override
     public LockResponse lockNftInstance(LockRequestDto request) {
-        Instances nftInstance = lockNftInstanceMapper.findByInstanceId(request.getInstanceId());
-        if (nftInstance == null) {
-            throw new BusinessException("NFT实例不存在");
+        // 首先检查当前实例的锁定状态
+        Instances currentInstance = lockNftInstanceMapper.findByInstanceId(request.getInstanceId());
+        if (currentInstance == null) {
+            throw new BusinessException(ERROR_NFT_NOT_EXIST);
         }
-        // 获取当前时间（使用明确时区）
+
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Shanghai"));
-        LocalDateTime expiry = now.plusMinutes(LOCK_DURATION_MINUTES);
-        // 检查是否已被锁定
-        if (nftInstance.getLockedBy() != null &&
-                nftInstance.getLockExpiry() != null &&
-                nftInstance.getLockExpiry().isAfter(now)){
-            if (nftInstance.getLockedBy().equals(request.getWalletAddress())) {
-                return new LockResponse(true, "您已成功锁定该NFT", nftInstance.getLockExpiry());
-            } else {
-                throw new BusinessException("该NFT已被其他用户锁定");
+
+        // 如果是用户自己已锁定的实例，直接返回成功
+        if (currentInstance.getLockedBy() != null &&
+                currentInstance.getLockedBy().equals(request.getWalletAddress()) &&
+                currentInstance.getLockExpiry() != null &&
+                currentInstance.getLockExpiry().isAfter(now)) {
+            return new LockResponse(true, "继续购买流程", currentInstance.getLockExpiry());
+        }
+
+        // 检查用户是否锁定了其他实例
+        List<Instances> userLockedInstances = lockNftInstanceMapper.findLockedByUser(request.getWalletAddress())
+                .stream()
+                .filter(instance -> !instance.getInstanceId().equals(request.getInstanceId()))
+                .collect(Collectors.toList());
+
+        if (!userLockedInstances.isEmpty()) {
+            for (Instances instance : userLockedInstances) {
+                if (instance.getLockExpiry() != null && instance.getLockExpiry().isAfter(now)) {
+                    throw new BusinessException(ERROR_PENDING_ORDER);
+                }
             }
         }
 
-        // 设置锁定信息
-        nftInstance.setLockedBy(request.getWalletAddress());
-        nftInstance.setLockedAt(now);
-        nftInstance.setLockExpiry(expiry);
-
-        int updated = lockNftInstanceMapper.lockNftInstance(nftInstance);
-        if (updated == 0) {
-            throw new BusinessException("锁定NFT失败，可能已被其他用户修改");
+        // 如果当前实例被其他人锁定
+        if (currentInstance.getLockedBy() != null &&
+                currentInstance.getLockExpiry() != null &&
+                currentInstance.getLockExpiry().isAfter(now)) {
+            throw new BusinessException(ERROR_ALREADY_LOCKED);
         }
 
-        return new LockResponse(true, "锁定成功", expiry);
+        // 设置锁定信息
+        currentInstance.setLockedBy(request.getWalletAddress());
+        currentInstance.setLockedAt(now);
+        currentInstance.setLockExpiry(now.plusMinutes(LOCK_DURATION_MINUTES));
+
+        int updated = lockNftInstanceMapper.lockNftInstance(currentInstance);
+        if (updated == 0) {
+            throw new BusinessException(ERROR_LOCK_FAILED);
+        }
+
+        return new LockResponse(true, "锁定成功", currentInstance.getLockExpiry());
     }
     public void unlockExpiredNfts() {
         lockNftInstanceMapper.unlockExpiredNfts();

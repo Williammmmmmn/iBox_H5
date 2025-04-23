@@ -193,33 +193,30 @@ const loadData = async () => {
 const handleAction = async () => {
   if (isPersonalView.value) {
     await handleCancelSale();
-  } else {
-    try {
-      // 调用锁定 API
-      const response = await lockNFTInstance(walletAddress, instanceId.value);
-      // 判断锁定是否成功
-      if (response.success) {
-        // 成功则跳转到购买页面
-        router.push({
-          path: '/buyPage',
-          query: {
-            nftId: nftId,
-            instanceNumber: instanceNumber,
-            price: price.value,
-            imageUrl: imageUrl.value,
-            name: name.value,
-            instanceId: instanceId.value,
-            lockExpiry: response.lockExpiry, // 传递锁定过期时间
-          },
-        });
-      } else {
-        // 如果 success 为 false，显示错误信息
-        showToast(response.message || '锁定藏品失败，请重试');
-      }
-    } catch (error) {
-      // 捕获异常并显示错误信息
-      showToast('已被其他用户锁定，请稍后再试');
+    return;
+  }
+
+  try {
+    // 调用锁定 API
+    const response = await lockNFTInstance(walletAddress, instanceId.value);
+    console.log('锁定相应:', response);
+    // 成功则跳转到购买页面
+    if (response.success) {
+      router.push({
+        path: '/buyPage',
+        query: {
+          nftId: nftId,
+          instanceNumber: instanceNumber,
+          price: price.value,
+          imageUrl: imageUrl.value,
+          name: name.value,
+          instanceId: instanceId.value,
+          lockExpiry: response.lockExpiry,
+        },
+      });
     }
+  } catch (error) {
+      showToast(error);
   }
 };
 

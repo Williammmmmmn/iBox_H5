@@ -1,5 +1,7 @@
 package com.joon.ibox_back_end.common;
 
+import com.github.pagehelper.PageInfo;
+
 /**
  * 通用响应工具类
  */
@@ -57,7 +59,12 @@ public class R<T> {
     public static <T> R<T> error(int code, String message) {
         return new R<>(code, message, null);
     }
-
+    /**
+     * 成功响应（带分页数据）
+     */
+    public static <T> R<PageInfo<T>> success(String message, PageInfo<T> pageInfo) {
+        return new R<>(200, message, pageInfo);
+    }
     // Getter 和 Setter 方法
     public int getCode() {
         return code;

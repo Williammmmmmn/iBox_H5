@@ -74,7 +74,7 @@ public class CaptchaController {
 
         // 根据验证结果返回不同的响应
         if (isCaptchaValid) {
-            return R.success("验证成功", null); // 或者 R.success() 如果不需要返回任何数据
+            return R.success("验证成功"); // 或者 R.success() 如果不需要返回任何数据
         } else {
             return R.error("图片验证失败"); // 这里可以根据实际情况返回错误信息，并设置相应的状态码
         }

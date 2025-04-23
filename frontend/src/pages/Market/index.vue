@@ -17,7 +17,7 @@
     <!-- 内容区域 -->
     <div v-if="currentView === 'market'" class="market-content">
       <!-- 滑动选项卡 -->
-      <van-tabs v-model:active="activeTab" swipeable class="custom-tabs" @change="handleTabChange">
+      <van-tabs v-model:active="activeTab" swipeable  @change="handleTabChange">
         <van-tab v-for="tab in tabs" :key="tab.name" :title="tab.title" :name="tab.name"></van-tab>
       </van-tabs>
 

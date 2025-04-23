@@ -11,7 +11,7 @@
 
     <!-- 功能模块入口 -->
     <div class="function-modules">
-      <div class="module" @click="goTo('orders')">
+      <div class="module" @click="goTo('MyOrder')">
         <van-icon name="orders-o" size="24" />
         <span>我的订单</span>
       </div>
@@ -19,7 +19,7 @@
         <van-icon name="balance-o" size="24" />
         <span>我的钱包</span>
       </div>
-      <div class="module" @click="goTo('settings')">
+      <div class="module" @click="goTo('MySettings')">
         <van-icon name="setting-o" size="24" />
         <span>设置中心</span>
       </div>

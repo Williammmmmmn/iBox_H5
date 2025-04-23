@@ -121,6 +121,7 @@
     min-height: 100vh;
     padding: 0 16px;
     padding-bottom: 80px;
+    user-select: none;
   }
   
   .full-width-nav-bar {

@@ -21,6 +21,10 @@
         SELECT * FROM nft_instances
         WHERE instance_id = #{instanceId}
     </select>
+    <select id="findLockedByUser" resultMap="nftInstanceMap">
+        SELECT * FROM nft_instances
+        WHERE locked_by = #{walletAddress}
+    </select>
 
     <update id="lockNftInstance" parameterType="com.joon.ibox_back_end.commonEntity.po.Instances">
         UPDATE nft_instances SET

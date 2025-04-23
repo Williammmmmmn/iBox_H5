@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.personalHub.mapper.OrderMapper">
+
+    <!-- 待支付订单(锁定但未支付的NFT) -->
+    <select id="selectPendingPaymentOrders" resultType="com.joon.ibox_back_end.personalHub.entity.orders.OrderDto">
+        SELECT
+            CONCAT('lock-', ni.instance_id) AS orderId,
+            ni.price,
+            ni.updated_at AS createdAt,
+            '待支付' AS status,
+            '待支付' AS type,
+            n.name,
+            n.image_url AS imageUrl,
+            #{walletAddress} AS walletAddress
+        FROM
+            nft_instances ni
+                JOIN
+            nfts n ON ni.nft_id = n.id
+        WHERE
+            ni.locked_by = #{walletAddress}
+          AND ni.locked_at IS NOT NULL
+          AND (ni.lock_expiry IS NULL OR ni.lock_expiry > NOW())
+    </select>
+
+    <!-- 求购中订单 -->
+    <select id="selectRequestingPurchaseRequests" resultType="com.joon.ibox_back_end.personalHub.entity.orders.OrderDto">
+        SELECT
+            CONCAT('pr-', pr.id) AS orderId,
+            pr.price,
+            pr.created_at AS createdAt,
+            '求购中' AS status,
+            '求购中' AS type,
+            n.name,
+            n.image_url AS imageUrl,
+            #{walletAddress} AS walletAddress
+        FROM
+            purchase_requests pr
+                JOIN
+            nfts n ON pr.nft_id = n.id
+        WHERE
+            pr.buyer_address = #{walletAddress}
+          AND pr.status = 'requesting'
+    </select>
+
+    <!-- 已完成订单 -->
+    <select id="selectCompletedTransactions" resultType="com.joon.ibox_back_end.personalHub.entity.orders.OrderDto">
+        SELECT
+            CONCAT('t-', t.id) AS orderId,
+            t.price,
+            t.transaction_date AS createdAt,
+            '已完成' AS status,
+            CASE
+                WHEN t.type = 'purchase' THEN '购买'
+                WHEN t.type = 'purchase_request' THEN '求购成交'
+                ELSE t.type
+                END AS type,
+            n.name,
+            n.image_url AS imageUrl,
+            #{walletAddress} AS walletAddress
+        FROM
+            transactions t
+                JOIN
+            nfts n ON t.nft_id = n.id
+        WHERE
+            (t.from_address = #{walletAddress} OR t.to_address = #{walletAddress})
+          AND t.type IN ('purchase', 'purchase_request')
+    </select>
+
+    <!-- 所有订单 -->
+    <select id="selectAllOrders" resultType="com.joon.ibox_back_end.personalHub.entity.orders.OrderDto">
+        (
+        <!-- 待支付订单 -->
+        SELECT
+        CONCAT('lock-', ni.instance_id) AS orderId,
+        ni.price,
+        ni.updated_at AS createdAt,
+        '待支付' AS status,
+        '待支付' AS type,
+        n.name,
+        n.image_url AS imageUrl,
+        #{walletAddress} AS walletAddress
+        FROM
+        nft_instances ni
+        JOIN
+        nfts n ON ni.nft_id = n.id
+        WHERE
+        ni.locked_by = #{walletAddress}
+        AND ni.locked_at IS NOT NULL
+        AND (ni.lock_expiry IS NULL OR ni.lock_expiry > NOW())
+        )
+        UNION ALL
+        (
+        <!-- 求购中订单 -->
+        SELECT
+        CONCAT('pr-', pr.id) AS orderId,
+        pr.price,
+        pr.created_at AS createdAt,
+        '求购中' AS status,
+        '求购中' AS type,
+        n.name,
+        n.image_url AS imageUrl,
+        #{walletAddress} AS walletAddress
+        FROM
+        purchase_requests pr
+        JOIN
+        nfts n ON pr.nft_id = n.id
+        WHERE
+        pr.buyer_address = #{walletAddress}
+        AND pr.status = 'requesting'
+        )
+        UNION ALL
+        (
+        <!-- 已完成订单 -->
+        SELECT
+        CONCAT('t-', t.id) AS orderId,
+        t.price,
+        t.transaction_date AS createdAt,
+        '已完成' AS status,
+        CASE
+        WHEN t.type = 'purchase' THEN '购买'
+        WHEN t.type = 'purchase_request' THEN '求购成交'
+        ELSE t.type
+        END AS type,
+        n.name,
+        n.image_url AS imageUrl,
+        #{walletAddress} AS walletAddress
+        FROM
+        transactions t
+        JOIN
+        nfts n ON t.nft_id = n.id
+        WHERE
+        (t.from_address = #{walletAddress} OR t.to_address = #{walletAddress})
+        AND t.type IN ('purchase', 'purchase_request')
+        )
+        ORDER BY createdAt DESC
+    </select>
+<!--    待支付订单-->
+    <resultMap id="NftInstanceResultMap" type="com.joon.ibox_back_end.commonEntity.po.Instances">
+        <id column="instance_id" property="instanceId" />
+        <result column="nft_id" property="nftId" />
+        <result column="owner_address" property="ownerAddress" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="instance_number" property="instanceNumber" />
+        <result column="price" property="price" />
+        <result column="is_consigning" property="isConsigning" />
+        <result column="version" property="version" />
+        <result column="locked_by" property="lockedBy" />
+        <result column="locked_at" property="lockedAt" />
+        <result column="lock_expiry" property="lockExpiry" />
+    </resultMap>
+
+    <select id="selectByInstanceId" resultMap="NftInstanceResultMap">
+        SELECT * FROM nft_instances WHERE instance_id = #{instanceId}
+    </select>
+</mapper>
