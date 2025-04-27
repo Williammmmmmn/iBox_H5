@@ -4,7 +4,7 @@
     <van-nav-bar
       title="我的订单"
       left-arrow
-      @click-left="$router.back()"
+      @click-left="navigateBack"
       :border="false"
       class="full-width-nav-bar"
     />
@@ -225,6 +225,9 @@ const goToOrderDetail = (order) => {
       activeTab: activeTab.value 
     }
   });
+};
+const navigateBack = () => {
+  router.push('/user');
 };
 </script>
 

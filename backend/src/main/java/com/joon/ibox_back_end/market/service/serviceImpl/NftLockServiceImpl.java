@@ -1,6 +1,7 @@
 package com.joon.ibox_back_end.market.service.serviceImpl;
 
 import com.joon.ibox_back_end.common.LockResponse;
+import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.market.entity.LockRequestDto;
 import com.joon.ibox_back_end.market.mapper.LockNftInstanceMapper;
@@ -84,7 +85,24 @@ public class NftLockServiceImpl implements NftLockService {
         lockNftInstanceMapper.unlockExpiredNfts();
     }
     @Override
-    public void unlockNftInstance(Integer instanceId) {
+    public R unlockNftInstance(Integer instanceId) {
+        // 1. 查询NFT实例信息
+        Instances instance = lockNftInstanceMapper.findByInstanceId(instanceId);
+        if (instance == null) {
+            throw new BusinessException(ERROR_NFT_NOT_EXIST);
+        }
 
+        // 2. 检查锁定状态
+        if (instance.getLockedBy() == null) {
+            throw new BusinessException("该藏品未被锁定");
+        }
+
+        // 3. 解锁操作
+        int updated = lockNftInstanceMapper.unlockNftInstance(instanceId);
+        if (updated == 0) {
+            throw new BusinessException("解锁失败，请稍后再试");
+        }
+
+        return R.success("解锁成功");
     }
 }

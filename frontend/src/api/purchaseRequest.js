@@ -56,3 +56,17 @@ export const createPurchaseRequest = async (buyerAddress, nftId, price, quantity
    throw error;
  }
 };
+
+//取消求购
+export const cancelPurchaseRequest = async (walletAddress, purchaseId) => {
+  try {
+    const response = await request.post('/nfts/cancelPurchaseRequest', {
+      walletAddress,
+      purchaseId
+    });
+    return response; // 返回响应数据
+  } catch (error) {
+    console.error('取消求购失败:', error);
+    throw error; // 抛出错误以便调用方处理
+  }
+}

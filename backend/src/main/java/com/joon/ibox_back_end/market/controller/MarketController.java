@@ -3,6 +3,7 @@ package com.joon.ibox_back_end.market.controller;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.*;
 import com.joon.ibox_back_end.market.entity.BuyDto.BuyRequest;
+import com.joon.ibox_back_end.market.entity.PurchaseRequest.CancelPurchaseRequestDto;
 import com.joon.ibox_back_end.market.entity.PurchaseRequest.CreatePurchaseDto;
 import com.joon.ibox_back_end.market.entity.PurchaseRequest.SellToRequestDto;
 import com.joon.ibox_back_end.market.service.MarketService;
@@ -156,7 +157,20 @@ public class MarketController {
         } catch (IllegalArgumentException e) {
             return R.error(e.getMessage());
         } catch (Exception e) {
-            return R.error("创建求购请求失败");
+            return R.error("创建求购失败");
+        }
+    }
+
+    @PostMapping("/cancelPurchaseRequest")
+    public R cancelPurchaseRequest(@RequestBody CancelPurchaseRequestDto cancelPurchaseRequestDto) {
+        try {
+            marketService.cancelPurchaseRequest(cancelPurchaseRequestDto.getWalletAddress(),
+                    cancelPurchaseRequestDto.getPurchaseId());
+            return R.success("取消求购成功");
+        } catch (IllegalArgumentException e) {
+            return R.error(e.getMessage());
+        } catch (Exception e) {
+            return R.error("取消求购请求失败");
         }
     }
 }

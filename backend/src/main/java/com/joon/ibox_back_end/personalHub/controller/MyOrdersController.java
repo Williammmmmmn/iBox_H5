@@ -58,7 +58,12 @@ public class MyOrdersController {
 
 
 
-
+    /**
+     * 获取待支付订单的支付信息
+     *
+     * @param orderId 订单ID
+     * @return 支付信息
+     */
     @GetMapping("/paymentInfo")
     public R getPaymentInfo(@RequestParam String orderId) {
         try {

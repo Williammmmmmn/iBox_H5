@@ -118,8 +118,9 @@
         t.transaction_date AS createdAt,
         '已完成' AS status,
         CASE
-        WHEN t.type = 'purchase' THEN '购买'
         WHEN t.type = 'purchase_request' THEN '求购成交'
+        WHEN t.from_address = #{walletAddress} THEN '出售'
+        WHEN t.to_address = #{walletAddress} THEN '购买'
         ELSE t.type
         END AS type,
         n.name,

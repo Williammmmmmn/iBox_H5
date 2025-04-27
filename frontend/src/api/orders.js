@@ -20,3 +20,4 @@ export const getpayOrdersInfo = (orderId) => {
     }
   });
 };
+

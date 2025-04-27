@@ -87,4 +87,11 @@ public interface MarketService {
      * @return
      */
     int createPurchaseRequest(Integer nftId, String buyerAddress, BigDecimal price, Integer quantity);
+
+    /**
+     * 取消求购
+     * @param walletAddress
+     * @param purchaseId
+     */
+    void cancelPurchaseRequest(String walletAddress, Integer purchaseId);
 }

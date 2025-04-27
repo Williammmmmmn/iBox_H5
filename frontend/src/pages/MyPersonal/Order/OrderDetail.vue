@@ -80,8 +80,14 @@
   <script setup>
   import { ref, computed, onMounted,onUnmounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
+  import { useStore } from 'vuex';
   import { showConfirmDialog, showToast } from 'vant';
-  import { getpayOrdersInfo } from '@/api/orders'; // 假设你有一个API函数来获取订单信息
+  import { getpayOrdersInfo } from '@/api/orders'; // 获取订单信息
+  import {cancelPurchaseRequest } from '@/api/purchaseRequest'; // 取消订单和求购请求
+  import { cancelOrder } from '@/api/buyLock'; // 取消订单
+  const store = useStore();
+  //钱包地址
+  const walletAddress = computed(() => store.getters.getUserInfo?.walletAddress || '');
   const route = useRoute();
   const router = useRouter();
   const activeTab = ref(0);
@@ -97,7 +103,6 @@ const orderDetail = ref({
   status: route.query.status || '',
   type: route.query.type || '',
   createdAt: route.query.createdAt || '',
-  walletAddress: route.query.walletAddress || ''
 });
   
   // 倒计时相关
@@ -191,6 +196,8 @@ const handlePay = async () => {
   
   // 处理取消操作
   const handleCancel = async () => {
+    const purchaseId = orderDetail.value.orderId.split('-')[1]; // 获取求购ID
+    const instanceId = orderDetail.value.orderId.split('-')[1]; // 获取实例ID
     try {
       await showConfirmDialog({
         title: '确认取消',
@@ -199,8 +206,16 @@ const handlePay = async () => {
           : '确定要取消订单吗？'
       });
       
-      // await cancelOrder(orderDetail.value.orderId);
-      showToast(isRequesting.value ? '求购已取消' : '订单已取消');
+      // 根据当前是求购还是订单，执行相应的请求
+    if (isRequesting.value) {
+      // 如果是求购，调用求购取消的接口
+      await cancelPurchaseRequest(walletAddress.value,Number(purchaseId));
+      showToast('求购已取消');
+    } else {
+      // 如果是订单，调用订单取消的接口
+       await cancelOrder(Number(instanceId));
+      showToast('订单已取消');
+    }
       router.back();
     } catch (error) {
       if (error !== 'cancel') {

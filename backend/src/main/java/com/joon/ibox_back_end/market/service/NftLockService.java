@@ -1,6 +1,7 @@
 package com.joon.ibox_back_end.market.service;
 
 import com.joon.ibox_back_end.common.LockResponse;
+import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.LockRequestDto;
 
 public interface NftLockService {
@@ -16,7 +17,7 @@ public interface NftLockService {
      *
      * @param instanceId 实例ID
      */
-    void unlockNftInstance(Integer instanceId);
+    R unlockNftInstance(Integer instanceId);
 
     /**
      * 解锁过期的NFT实例

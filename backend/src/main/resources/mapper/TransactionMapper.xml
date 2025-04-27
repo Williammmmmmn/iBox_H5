@@ -17,20 +17,19 @@
     </resultMap>
 
     <select id="findByWalletAddress" resultMap="TransactionResultMap">
-        -- 1. 查询 transactions 表（原有逻辑）
         SELECT
             id, nft_id, from_address, to_address, transaction_hash,
             price, currency, transaction_date, purchase_request_id, instance_id,
             CASE
                 WHEN to_address = #{walletAddress} THEN 'PURCHASE'
                 WHEN from_address = #{walletAddress} THEN 'SALE'
-                END as type
+                END as type,
+            NULL AS updated_at  -- 添加一个统一的字段，确保查询列数一致
         FROM transactions
         WHERE from_address = #{walletAddress} OR to_address = #{walletAddress}
 
         UNION ALL
 
-        -- 2. 查询 purchase_requests 表（仅显示未完成的求购）
         SELECT
             pr.id,
             pr.nft_id,
@@ -45,12 +44,21 @@
             CASE
                 WHEN pr.status = 'requesting' THEN 'PURCHASE_REQUEST'  -- 求购中
                 WHEN pr.status = 'canceled' THEN 'PURCHASE_REFUND'     -- 求购取消
-            -- 不再处理 completed，避免重复
-                END as type
+                END as type,
+            pr.updated_at  -- 这里返回更新的时间字段
         FROM purchase_requests pr
         WHERE pr.buyer_address = #{walletAddress}
           AND (pr.status = 'requesting' OR pr.status = 'canceled')  -- 不查询 completed
 
-        ORDER BY transaction_date DESC
+        ORDER BY
+            CASE
+                WHEN type = 'PURCHASE_REFUND' THEN 1
+                WHEN type = 'PURCHASE_REQUEST' THEN 2
+                ELSE 3
+                END,
+            transaction_date DESC,
+            updated_at DESC;  -- 使用统一的排序字段
+
+
     </select>
 </mapper>

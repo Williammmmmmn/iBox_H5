@@ -354,6 +354,26 @@ public class NftServiceImpl implements MarketService {
 
     }
 
+    /**
+     * 取消求购
+     * @param walletAddress
+     * @param purchaseId
+     */
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelPurchaseRequest(String walletAddress, Integer purchaseId) {
+        // 1. 查询求购记录
+        PurchaseRequests purchaseRequest = purchaseMapper.getPurchaseRequestById(purchaseId);
+        if (purchaseRequest == null) {
+            throw new IllegalArgumentException("求购记录不存在");
+        }
+        // 3. 更新求购记录状态
+        purchaseMapper.updatePurchaseRequestStatus(purchaseId, "canceled", 0);
+        // 4. 更新求购者钱包余额（退款）
+        purchaseMapper.updateSellerWallet(walletAddress, purchaseRequest.getPrice());
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void doSellToPurchaseRequest(Integer instanceNumber, String sellerWalletAddress, BigDecimal price, Integer nftId) {
         // 1. 获取NFT实例信息（带锁）

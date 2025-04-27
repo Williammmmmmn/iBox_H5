@@ -101,4 +101,7 @@ public interface PurchaseMapper {
             @Param("purchaseRequestId") Integer purchaseRequestId,
             @Param("instanceId") Integer instanceId
     );
+
+    //根据求购Id查询求购记录
+    PurchaseRequests getPurchaseRequestById(@Param("id") Integer purchaseId);
 }

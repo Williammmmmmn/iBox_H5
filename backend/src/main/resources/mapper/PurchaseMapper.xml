@@ -134,6 +134,21 @@
           AND instance_id = #{instanceId}
           AND type = 'purchase_request'
     </select>
+<!--    根据求购id查询是否有记录-->
+    <select id="getPurchaseRequestById" resultType="com.joon.ibox_back_end.commonEntity.po.PurchaseRequests">
+        SELECT
+            id,
+            nft_id,
+            buyer_address,
+            price,
+            currency,
+            status,
+            created_at,
+            updated_at,
+            instance_id
+        FROM purchase_requests
+        WHERE id = #{id}
+    </select>
 
 
 </mapper>

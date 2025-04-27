@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/buyLock")
 public class NftLockController {
     @Autowired
-    private NftLockService  nftLockService;
+    private NftLockService nftLockService;
 
     @PostMapping("/lock")
     public R lockNft(@RequestBody LockRequestDto request) {
@@ -34,7 +34,12 @@ public class NftLockController {
     }
 
     @PostMapping("/unlock/{instanceId}")
-    public void unlockNft(@PathVariable Integer instanceId) {
-        nftLockService.unlockNftInstance(instanceId);
+    public R unlockNft(@PathVariable Integer instanceId) {
+        try {
+            nftLockService.unlockNftInstance(instanceId);
+            return R.success("取消成功");
+        } catch (BusinessException e) {
+            return R.error(e.getMessage());
+        }
     }
 }

@@ -13,7 +13,7 @@ public interface LockNftInstanceMapper {
 
     void unlockExpiredNfts();
 
-    void unlockNftInstance(Integer instanceId); // 确保这个方法存在
+    int unlockNftInstance(Integer instanceId); // 确保这个方法存在
 
     List<Instances> findLockedByUser(String walletAddress);
 }
