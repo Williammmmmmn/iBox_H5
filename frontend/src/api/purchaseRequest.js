@@ -13,7 +13,7 @@
       });
       return response.data;
     } catch (error) {
-      console.error('出售给求购者：查询用户拥有藏品信息失败:', error);
+      console.error('出售给求购者：查询用户拥有藏品信息失败:', error.message);
       throw error;
     }
   };
@@ -29,7 +29,7 @@ export const sellToPurchaseRequest = async (walletAddress, instanceNumber, price
     });
     return response; // 返回响应数据
   } catch (error) {
-    console.error('售出给求购失败:', error);
+    console.error('售出给求购失败:', error.message);
     throw error; // 抛出错误以便调用方处理
   }
 };
@@ -52,7 +52,7 @@ export const createPurchaseRequest = async (buyerAddress, nftId, price, quantity
    });
    return response;
  } catch (error) {
-   console.error('发起求购请求失败:', error);
+   console.error('发起求购请求失败:', error.message);
    throw error;
  }
 };
@@ -66,7 +66,22 @@ export const cancelPurchaseRequest = async (walletAddress, purchaseId) => {
     });
     return response; // 返回响应数据
   } catch (error) {
-    console.error('取消求购失败:', error);
+    console.error('取消求购失败:', error.message);
+    throw error; // 抛出错误以便调用方处理
+  }
+}
+
+//刷新最高求购价
+export const refreshPurchaseRequestPirce = async (nftId) => {
+  try {
+    const response = await request.get('/nfts/refreshPurchaseRequestPirce', {
+      params: {  // 将参数放在 params 对象中
+        nftId
+      }
+    });
+    return response; // 返回响应数据
+  } catch (error) {
+    console.error('刷新最高求购价失败:', error.message);
     throw error; // 抛出错误以便调用方处理
   }
 }

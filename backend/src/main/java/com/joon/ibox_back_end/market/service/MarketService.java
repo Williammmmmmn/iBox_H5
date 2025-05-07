@@ -1,5 +1,6 @@
 package com.joon.ibox_back_end.market.service;
 
+import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,4 +95,6 @@ public interface MarketService {
      * @param purchaseId
      */
     void cancelPurchaseRequest(String walletAddress, Integer purchaseId);
+
+    int refreshPurchaseRequestPrice(Integer nftId);
 }

@@ -79,7 +79,7 @@
                 
                 <!-- 寄售模式 -->
                 <template v-else-if="isSwitchOn === 'left'">
-                  <van-empty v-if="currentDataList.length === 0" description="暂无数据" />
+                  <van-empty v-if="currentDataList.length === 0||currentDataList===null" description="暂无数据" />
                   <template v-else>
                     <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)"
                       class="sale-item">
@@ -170,7 +170,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
 import { getAnnounceList } from '@/api/market';
 import dayjs from 'dayjs';
-import { Toast } from 'vant';
+import { showToast } from 'vant';
 import SortIndicator from '@/components/SortIndicator.vue';
 
 const currentSort = ref({ key: '', order: '' });
@@ -235,8 +235,7 @@ const fetchAnnounceList = async () => {
       announceList.value = [];
     }
   } catch (error) {
-    Toast.error('获取失败，请稍后再试');
-    console.error('公告数据格式错误:', error);
+    showToast.error(error.message || '获取公告列表失败');
   } finally {
     loading.value = false;
   }
@@ -264,7 +263,7 @@ const loadData = async () => {
       .sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
     isReachBottom.value = true;
   } catch (error) {
-    console.error('加载数据失败:', error);
+    showToast('加载数据失败:', error.message);
     saleList.value = [];
   } finally {
     loading.value = false;
@@ -285,11 +284,10 @@ const loadPurchaseData = async () => {
         .sort((a, b) => b.price - a.price);
 
     } else {
-      console.error('数据格式错误:', response);
       purchaseList.value = [];
     }
-  } catch (err) {
-    console.error('请求失败:', err);
+  } catch (error) {
+    showToast('请求失败:', error.message );
     purchaseList.value = [];
   } finally {
     loading.value = false;

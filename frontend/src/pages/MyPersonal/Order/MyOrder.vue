@@ -116,8 +116,7 @@ const handleScroll = () => {
 
 // 加载更多数据
 const loadMore = async () => {
-  // 防止重复请求
-  if (loadingMore.value || finished.value) return; 
+  if (loadingMore.value || finished.value) return;
   
   try {
     loadingMore.value = true;
@@ -125,11 +124,22 @@ const loadMore = async () => {
     const response = await getOrders(walletAddress.value, type, pageNum.value, pageSize);
     
     if (response.data.list.length > 0) {
-      // 追加数据而不是替换
-      orders.value = [...orders.value, ...response.data.list];
+      // 对新数据进行时间排序（最新的在前）
+      const sortedNewItems = response.data.list.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      
+      // 合并并保持整体排序
+      const mergedOrders = [...orders.value, ...sortedNewItems].sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      
+      // 使用 Set 去重（根据 orderId）
+      orders.value = [...new Map(mergedOrders.map(item => [item.orderId, item])).values()];
+      
       pageNum.value++;
       
-      // 根据总条数判断是否还有更多数据
+      // 判断是否还有更多数据
       const totalItems = response.data.total || 0;
       const loadedItems = orders.value.length;
       finished.value = loadedItems >= totalItems;
@@ -212,7 +222,9 @@ onUnmounted(() => {
 
 // 筛选订单
 const filteredOrders = computed(() => {
-  return orders.value;
+  return [...orders.value].sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 });
 // 跳转到订单详情页
 // 在订单列表页面的 goToOrderDetail 方法中

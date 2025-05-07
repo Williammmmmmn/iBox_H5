@@ -137,8 +137,7 @@ const loadOwnedInstances = async () => {
     quantity.value = response.quantity || 0;
     balance.value = response.balance || 0.00;
   } catch (error) {
-    showToast('加载藏品信息失败');
-    console.error('Error loading owned instances:', error);
+    showToast(error.message || '获取藏品信息失败，请稍后重试');
   }
 };
 
@@ -174,8 +173,7 @@ const handleSell = async () => {
       showToast(response.message || '出售失败，请稍后重试');
     }
   } catch (error) {
-    console.error('出售失败:', error);
-    showToast('出售失败，请稍后重试');
+    showToast(error.message || '出售失败，请稍后重试');
   }
 };
 onMounted(() => {

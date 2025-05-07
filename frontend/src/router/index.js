@@ -19,6 +19,10 @@ import FillConsignmentPrice from "@/pages/FillConsignmentPrice/FillConsignmentPr
 import BuyPage from "@/pages/BuyPage/BuyPage.vue";
 import SellPurchaseRequests from "@/pages/Market/SellPurchaseRequests/SellPurchaseRequests.vue";
 import LaunchPurchaseRequests from "@/pages/Market/LaunchPurchaseRequests/LaunchPurchaseRequests.vue";
+import MySettings from "@/pages/MyPersonal/Settings/MySettings.vue";
+import UserInfo from "@/pages/MyPersonal/Settings/UserInfo.vue";
+import EditNickname from "@/pages/MyPersonal/Settings/EditNickname.vue";
+import EditPhone from "@/pages/MyPersonal/Settings/EditPhone.vue";
 
 const routes = [
   {
@@ -93,6 +97,38 @@ const routes = [
     }
   },
   {
+    path: "/mySettings",
+    name:'MySettings',
+    component: MySettings,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
+    path: "/userInfo",
+    name:'UserInfo',
+    component: UserInfo,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
+    path:"/editNickname",
+    name:'EditNickname',
+    component: EditNickname,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }  
+  },
+  {
+    path:"/editPhone",
+    name:'EditPhone',
+    component: EditPhone,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
+  },
+  {
     path:"/orderDetail",
     name:'OrderDetail',
     component: OrderDetail,
@@ -143,7 +179,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
   const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests',
-    '/launchPurchaseRequests','/myOrder','/orderDetail'];
+    '/launchPurchaseRequests','/myOrder','/orderDetail','/mySettings'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

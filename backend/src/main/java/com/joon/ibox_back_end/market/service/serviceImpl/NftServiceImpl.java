@@ -1,5 +1,6 @@
 package com.joon.ibox_back_end.market.service.serviceImpl;
 
+import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.commonEntity.po.PurchaseRequests;
 import com.joon.ibox_back_end.market.entity.*;
@@ -77,6 +78,9 @@ public class NftServiceImpl implements MarketService {
     @Override
     public NftSaleDto getNFTSaleInfo(int nftId) {
         NftSaleDto nftSaleInfo = nftSaleInfoMapper.getNFTSaleInfo(nftId);
+        if (nftSaleInfo != null && nftSaleInfo.getInstances() == null) {
+            nftSaleInfo.setInstances(Collections.emptyList());
+        }
         return nftSaleInfo;
     }
 
@@ -372,6 +376,16 @@ public class NftServiceImpl implements MarketService {
         purchaseMapper.updatePurchaseRequestStatus(purchaseId, "canceled", 0);
         // 4. 更新求购者钱包余额（退款）
         purchaseMapper.updateSellerWallet(walletAddress, purchaseRequest.getPrice());
+    }
+
+    /**
+     * 刷新最高求购价
+     * @param nftId
+     */
+    @Override
+    public int refreshPurchaseRequestPrice(Integer nftId) {
+        int maxPrice = purchaseMapper.selectPurchaseRequestPrice(nftId);
+        return maxPrice;
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -32,7 +32,7 @@
         <van-image 
           v-if="detailData.imageUrl"
           class="announce-image"
-          :src="require(`@/${detailData.imageUrl}`)"
+          :src="require(`@/assets/images/jstp.jpg`)"
           fit="cover"
         />
         
@@ -94,8 +94,8 @@ const fetchDetail = async () => {
     } else {
       throw new Error(res?.message || '返回数据格式不正确');
     }
-  } catch (err) {
-    console.error('获取公告详情失败:', err);
+  } catch (error) {
+    console.error('获取公告详情失败:', error.message);
     error.value = true;
   } finally {
     loading.value = false;

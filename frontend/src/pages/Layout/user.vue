@@ -61,7 +61,7 @@
             </template>
           </div>
         </van-tab>
-        <van-tab title="出售资产"  @click="fetchSaleAssets">
+        <van-tab title="售出资产"  @click="fetchSaleAssets">
           <!-- 出售资产内容 -->
           <div class="asset-list bottom-padding">
             <!-- 1. 加载中状态 -->
@@ -191,7 +191,6 @@ const fetchAssets = async () => {
     }
   } catch (error) {
     showToast(error.message || '获取资产失败');
-    console.error('API错误:', error);
   } finally {
     loading.value = false;
   }

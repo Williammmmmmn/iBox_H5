@@ -89,6 +89,19 @@
         WHERE instance_id = #{instanceId}
           AND version = #{expectedVersion}
     </update>
+    <!--    刷新最高求购价-->
+    <select id="selectPurchaseRequestPrice" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        SELECT
+            MAX(price) AS max_purchase_price,
+            currency
+        FROM
+            purchase_requests
+        WHERE
+            nft_id = #{nftId}
+          AND status = 'requesting'
+        GROUP BY
+            currency;
+    </select>
 
     <!-- 查询寄售者地址 -->
     <select id="getSellerAddress" resultType="string">

@@ -38,7 +38,7 @@
             '' AS transaction_hash,
             pr.price,
             pr.currency,
-            pr.created_at AS transaction_date,
+            pr.updated_at AS transaction_date,
             NULL AS purchase_request_id,
             pr.instance_id,
             CASE

@@ -105,7 +105,7 @@ import { useRoute } from 'vue-router';
 import { showToast } from 'vant';
 import { useStore } from 'vuex';
 import {getUserWalletBalance} from '@/api/wallet'; //获取用户钱包余额
-import {createPurchaseRequest} from '@/api/purchaseRequest'; //发起求购请求
+import {createPurchaseRequest,refreshPurchaseRequestPirce} from '@/api/purchaseRequest'; //发起求购请求
 import { useRouter } from 'vue-router';
 
 // 获取路由参数
@@ -133,10 +133,18 @@ const quantity = ref(1); // 求购数量
 const balance = ref(0); // 默认余额
 
 // 刷新最高求购价
-const refreshHighestPrice = () => {
-  // 模拟刷新逻辑
-  highestPrice.value = Math.floor(Math.random() * 1000) + 100;
-  showToast('已刷新最高求购价');
+const refreshHighestPrice = async() => {
+  try {
+    const response = await refreshPurchaseRequestPirce(nftId.value);
+    if (response.code === 200) {
+      highestPrice.value = response.data;
+      showToast('刷新成功');
+    } else {
+      showToast('刷新失败');
+    }
+  } catch (error) {
+    showToast('刷新失败' + error.message);
+  }
 };
 
 // 减少求购数量
@@ -184,8 +192,7 @@ const handleLaunch = async () => {
       showToast(response.message || '求购失败');
     }
   } catch (error) {
-    console.error('发起求购请求失败:', error);
-    showToast(error.response?.data?.message || '求购请求发送失败');
+    showToast(error.message|| '求购请求发送失败');
   }
 };
 
@@ -199,8 +206,7 @@ onMounted(async () => {
       showToast('未获取到用户钱包地址');
     }
   } catch (error) {
-    console.error('获取钱包余额失败:', error);
-    showToast('获取钱包余额失败');
+    showToast('获取钱包余额失败'+error.message);
   } finally {
     loading.value = false; // 加载完成后设置为 false
   }

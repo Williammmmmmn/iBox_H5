@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.login.mapper;
 
-import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.commonEntity.po.UserPo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -12,11 +12,11 @@ public interface UserLoginMapper {
      * @return
      */
     @Select("select * from users where phone_number = #{phone} ")
-    PersonalPo findByPhone(String phone);
+    UserPo findByPhone(String phone);
 
     /**
      * 新增新用户
      * @param user
      */
-    void saveNewUser(PersonalPo user);
+    void saveNewUser(UserPo user);
 }

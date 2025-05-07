@@ -1,5 +1,4 @@
 <template>
-
   <div class="container">
     <div class="scroll-container">
       <!-- 背景图片容器 -->
@@ -73,7 +72,7 @@
       <div class="bottom-sheet-container">
         <div class="bottom-sheet">
           <div class="white-top"></div>
-          <van-tabs v-model="activeTab" class="tabs">
+          <van-tabs v-model="activeTab" class="tabs" @change="onTabChange">
             <van-tab :title="isPersonalView ? '管理' : '购买'">
               <div class="content">
                 <div class="price-section" :class="{ 'personal-view': isPersonalView }">
@@ -100,8 +99,26 @@
               </div>
             </van-tab>
             <van-tab title="相关公告">
-              <div class="content">
-                <!-- 公告内容 -->
+              <div class="announce-content">
+                <!-- 加载中提示 -->
+                <van-loading v-if="announceLoading" size="24px" vertical>加载中...</van-loading>
+                <!-- 无数据时 -->
+                <van-empty v-else-if="announceList.length === 0" description="暂无公告" />
+                <!-- 列表内容 -->
+                <template v-else>
+                  <div 
+                    v-for="(item, index) in announceList" 
+                    :key="index" 
+                    class="announce-item" 
+                    @click="goToAnnounceDetail(item.id)"
+                  >
+                    <div class="announce-info">
+                      <div class="announce-title">{{ item.title }}</div>
+                      <div class="announce-time">{{ item.formattedTime }}</div>
+                    </div>
+                    <div class="announce-divider"></div>
+                  </div>
+                </template>
               </div>
             </van-tab>
           </van-tabs>
@@ -116,7 +133,9 @@ export default {
   name: 'MySaleDetail',
   data() {
     return {
-      activeTab: 0
+      activeTab: 0,
+      announceList: [],
+      announceLoading: false
     }
   }
 }
@@ -124,13 +143,14 @@ export default {
 
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
-import { getSaleDetail } from '@/api/market';
+import { getSaleDetail,getAnnounceList } from '@/api/market';
 import { ref, onMounted, computed } from 'vue';
 import { showConfirmDialog } from 'vant';
 import { showToast } from 'vant';
 import { useStore } from 'vuex';
 import { cancelSale } from '@/api/personal';
 import { lockNFTInstance } from '@/api/buyLock';
+import dayjs from 'dayjs';
 
 const router = useRouter();
 const route = useRoute();
@@ -147,7 +167,8 @@ const instanceId = ref(0);
 const ownerAddress = ref('');
 const consignmentStatus = ref('');
 const isLocked = ref(false);
-
+const announceList = ref([]);
+const announceLoading = ref(false);
 
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -164,6 +185,46 @@ const isPersonalView = computed(() => {
 const isOwner = computed(() => {
   return walletAddress === ownerAddress.value;
 });
+
+// 新增方法：获取公告列表
+const fetchAnnounceList = async () => {
+  announceLoading.value = true;
+  try {
+    const response = await getAnnounceList(nftId);
+    if (response) {
+      announceList.value = response.map(item => ({
+        id: item.id,
+        title: item.title,
+        startTime: item.startTime,
+        formattedTime: formatTime(item.startTime)
+      }));
+    } else {
+      announceList.value = [];
+    }
+  } catch (error) {
+    showToast.error(error.message || '获取公告列表失败');
+  } finally {
+    announceLoading.value = false;
+  }
+};
+// 新增方法：标签切换
+const onTabChange = (index) => {
+  if (index === 1 && announceList.value.length === 0) {
+    fetchAnnounceList();
+  }
+};
+
+// 新增方法：跳转到公告详情
+const goToAnnounceDetail = (announceId) => {
+  router.push({
+    path: `/announceDetail/${nftId}/${announceId}`,
+  });
+};
+// 新增方法：格式化时间
+const formatTime = (time) => {
+  return dayjs(time).format('YYYY-MM-DD');
+};
+
 const loading = ref(false); // 加载状态
 const loadData = async () => {
   loading.value = true; // 开始加载
@@ -185,7 +246,7 @@ const loadData = async () => {
       new Date(response.lockExpiry) > new Date() &&
       response.lockedBy !== walletAddress;
   } catch (error) {
-    console.error('加载数据失败:', error);
+    showToast(error.message || '获取数据失败，请稍后重试');
   } finally {
     loading.value = false;
   }
@@ -199,7 +260,6 @@ const handleAction = async () => {
   try {
     // 调用锁定 API
     const response = await lockNFTInstance(walletAddress, instanceId.value);
-    console.log('锁定相应:', response);
     // 成功则跳转到购买页面
     if (response.success) {
       router.push({
@@ -216,7 +276,7 @@ const handleAction = async () => {
       });
     }
   } catch (error) {
-      showToast(error);
+      showToast(error.message || '锁定失败，请稍后重试');
   }
 };
 
@@ -240,8 +300,7 @@ const handleCancelSale = async () => {
     setTimeout(() => router.go(-1), 1000);
   } catch (error) {
     if (error !== 'cancel') {
-      showToast('取消寄售失败');
-      console.error('取消寄售失败:', error);
+      showToast(error.message || '取消寄售失败，请稍后重试');
     }
   }
 };
@@ -284,10 +343,70 @@ onMounted(() => {
   background-size: cover;
   background-position: center;
   z-index: 1;
-
-
+}
+/* 新增公告相关样式 */
+.announce-content {
+  padding: 16px;
+  min-height: 200px;
 }
 
+.announce-item {
+  margin-bottom: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.announce-item:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.announce-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.announce-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.announce-time {
+  font-size: 12px;
+  color: #999;
+  align-self: flex-end;
+}
+
+.announce-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #eee, transparent);
+  margin: 0 16px;
+}
+
+/* 适配暗色背景 */
+.dark-background .announce-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-background .announce-title {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark-background .announce-time {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark-background .announce-divider {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
 /* 添加深色叠加层 */
 .background-image::before {
   content: '';

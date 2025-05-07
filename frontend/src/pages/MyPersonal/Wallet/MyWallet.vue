@@ -28,28 +28,49 @@
       </van-button>
     </div>
 
-    <!-- 交易记录标题 -->
-    <div class="section-title">
-      <van-icon name="balance-list-o" /> 交易记录
-    </div>
-
     <!-- 交易记录列表 -->
-    <van-list
-      v-model:loading="loading"
-      :finished="finished"
-      finished-text="没有更多了"
-      @load="onLoad"
-      :immediate-check="false"
-    >
-    <van-cell
-      v-for="(item, index) in transactions"
-      :key="index"
-      :title="getTransactionType(item.type)"
-      :value="getFormattedAmount(item.type, item.price)"
-      :label=" item.transactionDate.replace('T', ' ')"
-      :class="getAmountClass(item.type, item.price)"
-    />
-    </van-list>
+  <div class="section-title">
+    <van-icon name="balance-list-o" /> 交易记录
+  </div>
+  
+  <!-- 添加标签页切换 -->
+  <van-tabs v-model:active="activeTab" swipeable>
+    <van-tab title="购买/出售">
+      <van-list
+        v-model:loading="loading.normal"
+        :finished="finished.normal"
+        finished-text="没有更多了"
+        @load="loadNormalTransactions"
+      >
+        <van-cell
+          v-for="(item, index) in normalTransactions"
+          :key="'normal-'+index"
+          :title="getTransactionType(item.type)"
+          :value="getFormattedAmount(item.type, item.price)"
+          :label="item.transactionDate.replace('T', ' ')"
+          :class="getAmountClass(item.type, item.price)"
+        />
+      </van-list>
+    </van-tab>
+    
+    <van-tab title="求购相关">
+      <van-list
+        v-model:loading="loading.purchase"
+        :finished="finished.purchase"
+        finished-text="没有更多了"
+        @load="loadPurchaseTransactions"
+      >
+        <van-cell
+          v-for="(item, index) in purchaseRequestTransactions"
+          :key="'purchase-'+index"
+          :title="getTransactionType(item.type)"
+          :value="getFormattedAmount(item.type, item.price)"
+          :label="item.transactionDate.replace('T', ' ')"
+          :class="getAmountClass(item.type, item.price)"
+        />
+      </van-list>
+    </van-tab>
+  </van-tabs>
 
     <!-- 充值弹窗 -->
     <van-popup v-model:show="showRecharge" round position="bottom">
@@ -91,9 +112,21 @@ const userProfile = computed(() => {
 // 钱包数据
 const balance = ref(0);
 const walletAddress = ref(userProfile.value.walletAddress);
-const transactions = ref([]);
-const loading = ref(false);
-const finished = ref(false);
+// const transactions = ref([]);
+// 加载状态（分开管理）
+const loading = ref({
+  normal: false,
+  purchase: false
+});
+const finished = ref({
+  normal: false,
+  purchase: false
+});
+// 当前激活的标签页（0: 购买/出售，1: 求购相关）
+const activeTab = ref(0);
+// 交易记录数据（分开存储）
+const normalTransactions = ref([]);
+const purchaseRequestTransactions = ref([]);
 
 // 弹窗控制
 const showRecharge = ref(false);
@@ -149,28 +182,61 @@ const loadWalletInfo = async () => {
 };
 
 // 加载交易记录
-const onLoad = async () => {
+// 加载普通交易记录
+const loadNormalTransactions = async () => {
+  if (finished.value.normal || loading.value.normal) return;
+  
+  loading.value.normal = true;
   try {
-    loading.value = true;
     const res = await getWalletTransactions(walletAddress.value);
+    const filtered = (res.data || []).filter(item => 
+      item.type === 'PURCHASE' || item.type === 'SALE'
+    );
     
-    // 转换数据结构
-    transactions.value = (res.data || []).map(item => ({
-      ...item,
-      amount: item.price,       // 将price映射为amount
-      time: item.transactionDate.replace('T', ' ') // 将transactionDate映射为time
-    }));
-    
-    finished.value = true;
-    
+    normalTransactions.value = [...normalTransactions.value, ...filtered];
+    finished.value.normal = filtered.length ; 
   } catch (error) {
-    console.error('获取交易记录失败:', error);
-    showToast('获取交易记录失败');
-    finished.value = true;
+    console.error('加载失败:', error);
   } finally {
-    loading.value = false;
+    loading.value.normal = false;
   }
 };
+
+// 加载求购相关记录
+const loadPurchaseTransactions = async () => {
+  if (finished.value.purchase || loading.value.purchase) return;
+  
+  loading.value.purchase = true;
+  try {
+    const res = await getWalletTransactions(walletAddress.value);
+    
+    // 1. 过滤出求购相关记录
+    const filtered = (res.data || []).filter(item => 
+      item.type === 'PURCHASE_REQUEST' || item.type === 'PURCHASE_REFUND'
+    );
+    
+    // 2. 按 transactionDate 降序排序（最新的在前）
+    const sorted = filtered.sort((a, b) => {
+      return new Date(b.transactionDate) - new Date(a.transactionDate);
+    });
+    
+    // 3. 更新数据（正确闭合Map语法）
+    purchaseRequestTransactions.value = [
+      ...new Map([
+        ...purchaseRequestTransactions.value, 
+        ...sorted
+      ].map(item => [item.id, item])).values()
+    ];
+    
+    finished.value.purchase = sorted.length === 0;
+  } catch (error) {
+    console.error('加载失败:', error);
+  } finally {
+    loading.value.purchase = false;
+  }
+};
+
+
 const getTransactionType= (type) => {
   if (type === 'SALE') {
     return '出售'; // 如果类型为 SALE，返回 "出售"
@@ -220,7 +286,8 @@ const handleWithdraw = async () => {
 // 初始化加载数据
 onMounted(() => {
   loadWalletInfo();
-  onLoad();
+  loadNormalTransactions();
+  loadPurchaseTransactions();
 });
 </script>
 

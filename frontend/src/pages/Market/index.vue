@@ -120,7 +120,7 @@ import { ref, onMounted, onUnmounted, computed, onActivated } from 'vue';
 import { getNFTList } from '@/api/market';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
-import { Toast } from 'vant';
+import { showToast } from 'vant';
 import SortIndicator from '@/components/SortIndicator.vue';
 const currentSort = ref({ key: '', order: '' });
 
@@ -215,7 +215,7 @@ const loadNFTData = async (tag = null) => {
     }));
     cachedData[cacheKey] = originalCollections.value;
   } catch (error) {
-    Toast({ type: 'danger', message: '加载数据失败，请稍后重试' });
+    showToast(error.message || '数据加载失败，请稍后重试');
   } finally {
     loading.value = false; // 结束加载
   }

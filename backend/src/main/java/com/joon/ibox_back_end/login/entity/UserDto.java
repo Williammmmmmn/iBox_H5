@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.login.entity;
 
-import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.commonEntity.po.UserPo;
 import lombok.Data;
 
 /**
@@ -10,6 +10,6 @@ import lombok.Data;
  * @create: 2025-03-1111:32
  **/
 @Data
-public class UserDto extends PersonalPo {
+public class UserDto extends UserPo {
     private String token;
 }

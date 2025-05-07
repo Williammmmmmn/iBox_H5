@@ -3,7 +3,7 @@ package com.joon.ibox_back_end.login.controller;
 import com.joon.ibox_back_end.common.CreateTokenForLogin;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.common.Valid;
-import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.commonEntity.po.UserPo;
 import com.joon.ibox_back_end.login.entity.LoginRequest;
 import com.joon.ibox_back_end.login.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,6 @@ public class UserLoginController {
     public R login(@RequestBody LoginRequest request) {
         String phone = request.getPhone();
         String verificationCode = request.getVerificationCode();
-        String invitationCode = request.getInvitationCode();
         // 1. 验证手机号和验证码
         if (!valid.isValidPhone(phone)) {
             return R.error("手机号格式错误");
@@ -49,7 +48,7 @@ public class UserLoginController {
             return R.error("验证码错误");
         }
         // 验证码正确，判断用户是否存在
-        PersonalPo user = userLoginService.findByPhone(phone);
+        UserPo user = userLoginService.findByPhone(phone);
         if (user == null) {
             // 用户不存在，创建新用户
             userLoginService.saveNewUser(phone);
@@ -63,7 +62,7 @@ public class UserLoginController {
         return R.success("登录成功", data);
     }
 
-    private Map<String, Object> createResponseData(PersonalPo user, String token) {
+    private Map<String, Object> createResponseData(UserPo user, String token) {
         Map<String, Object> data = new HashMap<>();
         data.put("user", user); // 用户信息
         data.put("token", token); // Token

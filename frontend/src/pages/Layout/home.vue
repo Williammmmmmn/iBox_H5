@@ -124,26 +124,6 @@
         <van-popup v-model:show="showStatusPicker" round position="top">
           <van-picker :columns="statusOptions" @cancel="showStatusPicker = false" @confirm="onStatusConfirm"/>
         </van-popup>
-
-        <!-- <div class="price-content-container" @click="handlePriceSortClick">
-          <div class="text-container">
-            <span class="text">价格排序</span>
-            <div class="triangle-container">
-              <span class="triangle triangle-up" :class="{ 'active': isAsc }"></span>
-              <span class="triangle triangle-down" :class="{ 'active': !isAsc }"></span>
-            </div>
-          </div>
-        </div>
-        <div class="time-content-container" @click="handleTimeSortClick">
-          <div class="text-container">
-            <span class="text">时间倒序</span>
-            <div class="triangle-container">
-              <span class="triangle triangle-up" :class="{ 'active': isDesc }"></span>
-              <span class="triangle triangle-down" :class="{ 'active': !isDesc }"></span>
-            </div>
-          </div>
-        </div> -->
-
          <!-- 修改排序部分 -->
           <div class="price-content-container">
             <SortIndicator 
@@ -234,11 +214,9 @@ const showStatusPicker = ref(false);
 const selectedCategory = ref('');
 const selectedStatus = ref('');
 const categoryOptions = [
-  {text: '杭州', value: '杭州'},
-  {text: '宁波', value: '宁波'},
-  {text: '温州', value: '温州'},
-  {text: '绍兴', value: '绍兴'},
-  {text: '湖州', value: '湖州'},
+  {text: '全部', value: '全部'},
+  {text: '藏品', value: '藏品'},
+  {text: '盲盒', value: '盲盒'}
 ];
 const statusOptions = [
   {text: '全部', value: '全部'},

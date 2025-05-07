@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.login.service.serviceImpl;
 
-import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.commonEntity.po.UserPo;
 import com.joon.ibox_back_end.commonEntity.po.Wallet;
 import com.joon.ibox_back_end.utils.RandomUsernameGenerator;
 import com.joon.ibox_back_end.login.mapper.UserLoginMapper;
@@ -32,8 +32,8 @@ public class UserLoginServiceImpl implements UserLoginService {
      * @return
      */
     @Override
-    public PersonalPo findByPhone(String phone) {
-        PersonalPo user = userLoginMapper.findByPhone(phone);
+    public UserPo findByPhone(String phone) {
+        UserPo user = userLoginMapper.findByPhone(phone);
         if(user != null){
             return user;
         }
@@ -48,7 +48,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public void saveNewUser(String phone) {
         // 1. 先插入用户（单独事务）
-        PersonalPo user = createAndSaveUser(phone);
+        UserPo user = createAndSaveUser(phone);
 
         // 2. 再插入钱包（当前事务）
         createWalletForUser(user);
@@ -56,8 +56,8 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     // 单独事务插入用户
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public PersonalPo createAndSaveUser(String phone) {
-        PersonalPo user = new PersonalPo();
+    public UserPo createAndSaveUser(String phone) {
+        UserPo user = new UserPo();
         user.setPhoneNumber(phone);
         user.setUsername(RandomUsernameGenerator.generateRandomUsername());
         user.setRole("user");
@@ -70,7 +70,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
     // 插入钱包
-    private void createWalletForUser(PersonalPo user) {
+    private void createWalletForUser(UserPo user) {
         Wallet wallet = new Wallet();
         wallet.setWalletAddress(user.getWalletAddress());
         wallet.setUserId(user.getUserId());

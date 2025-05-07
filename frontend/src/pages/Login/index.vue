@@ -335,14 +335,9 @@ const sendVerificationCode = async () => {
                     isCodeSent.value = false;
                 }
             }, 1000);
-        } else {
-            showToast(response.data.message || '验证码发送失败');
         }
     } catch (error) {
-        showToast({
-            message: '验证码发送失败，请重试',
-            duration: 2000 // 显示时间设置为 2 秒
-        });
+        showToast(error.message || '验证码发送失败，请重试');
     }
 };
 
@@ -353,7 +348,6 @@ const handleGetVerificationCode = () => {
             message: '请输入有效的手机号',
             duration: 2000 // 显示时间设置为 2 秒
         });
-
         return;
     }
 
@@ -390,7 +384,6 @@ const handleLogin = async () => {
             toast = showLoadingToast({
                 message: '登录中...',
                 forbidClick: true, // 禁止点击背景
-                duration: 0, // 持续显示，直到手动关闭
             });
             // 调用登录 API
             const response = await login(phone.value, verificationCode.value, invitationCode.value);

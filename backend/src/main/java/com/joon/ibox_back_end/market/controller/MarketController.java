@@ -10,6 +10,7 @@ import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -171,6 +172,21 @@ public class MarketController {
             return R.error(e.getMessage());
         } catch (Exception e) {
             return R.error("取消求购请求失败");
+        }
+    }
+    /**
+     * 刷新最高求购价
+     * @param nftId
+     */
+    @GetMapping("/refreshPurchaseRequestPirce")
+    public R refreshPurchaseRequestPirce(@RequestParam Integer nftId){
+        try {
+            int maxPrice = marketService.refreshPurchaseRequestPrice(nftId);
+            return R.success("刷新求购价格成功",maxPrice);
+        } catch (IllegalArgumentException e) {
+            return R.error(e.getMessage());
+        } catch (Exception e) {
+            return R.error("刷新求购价格失败");
         }
     }
 }

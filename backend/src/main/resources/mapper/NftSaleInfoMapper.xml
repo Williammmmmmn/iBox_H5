@@ -6,13 +6,13 @@
 <mapper namespace="com.joon.ibox_back_end.market.mapper.NftSaleInfoMapper">
 
     <resultMap id="NFTSaleInfoResultMap" type="com.joon.ibox_back_end.market.entity.NftSaleDto">
-        <result property="nftId" column="nftId" />
+        <id property="nftId" column="nftId" />
         <result property="name" column="nft_name" />
         <result property="imageUrl" column="nft_image_url" />
         <result property="issueCount" column="issue_count" />
         <result property="circulationCount" column="circulation_count" />
         <collection property="instances" ofType="com.joon.ibox_back_end.market.entity.NftInstanceDto">
-            <result property="id" column="instance_number" />
+            <id property="id" column="instance_number" />
             <result property="price" column="instance_price" />
             <result property="lockedBy" column="lockedBy" />
             <result property="lockedAt" column="lockedAt" />
@@ -36,10 +36,10 @@
             nfts
                 JOIN
             official_sales ON nfts.id = official_sales.nft_id
-                JOIN
-            nft_instances ON nfts.id = nft_instances.nft_id
+                LEFT JOIN
+            nft_instances ON nfts.id = nft_instances.nft_id AND nft_instances.is_consigning = 1
         WHERE
-            nfts.id = #{nftId} AND nft_instances.is_consigning = 1
+            nfts.id = #{nftId}
         ORDER BY
             nft_instances.instance_number ASC;
     </select>

@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.login.service;
 
-import com.joon.ibox_back_end.commonEntity.po.PersonalPo;
+import com.joon.ibox_back_end.commonEntity.po.UserPo;
 
 public interface UserLoginService {
     /**
@@ -8,7 +8,7 @@ public interface UserLoginService {
      * @param phone
      * @return
      */
-    PersonalPo findByPhone(String phone);
+    UserPo findByPhone(String phone);
 
     /**
      * 新增新用户

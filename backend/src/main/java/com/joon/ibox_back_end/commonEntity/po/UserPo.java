@@ -1,10 +1,7 @@
 package com.joon.ibox_back_end.commonEntity.po;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -14,7 +11,7 @@ import java.util.Date;
  * @create: 2025-04-0100:29
  **/
 @Data
-public class PersonalPo {
+public class UserPo {
     private Integer userId; // 用户ID，主键
     private String username; // 用户名，唯一
     private String password; // 密码，加密存储

@@ -30,40 +30,23 @@ request.interceptors.request.use(
 //响应拦截器
 request.interceptors.response.use(
   (response) => {
-    // 如果是二进制数据（如图片、文件），直接返回 response
     if (response.config.responseType === 'blob') {
       return response;
     }
-
-    // 对 JSON 数据统一处理响应格式
     if (response.data.code === 200) {
-      return response.data; // 返回实际数据
+      return response.data;
     } else {
-      return Promise.reject(response.data.message || '请求失败');
+      // 关键修改：直接抛出后端返回的完整响应数据
+      return Promise.reject(response.data);
     }
   },
   (error) => {
-    // 对响应错误
-    // 统一处理错误状态码
     if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          // 未授权，跳转到登录页
-          window.location.href = '/login';
-          break;
-        case 404:
-          console.error('请求的资源不存在');
-          break;
-        case 500:
-          console.error('服务器内部错误');
-          break;
-        default:
-          console.error('请求失败', error.response.status);
-      }
-    } else {
-      console.error('网络错误，请检查网络连接');
+      // 关键修改：直接传递 error.response.data
+      return Promise.reject(error.response.data);
     }
-    return Promise.reject(error);
+    console.error('网络错误，请检查网络连接');
+    return Promise.reject(new Error('网络错误'));
   }
 );
 

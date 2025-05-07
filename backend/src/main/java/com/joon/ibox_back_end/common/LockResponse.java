@@ -20,6 +20,4 @@ public class LockResponse  {
     private Boolean success;
     private String message;
     private LocalDateTime lockExpiry;
-
-
 }

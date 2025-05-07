@@ -104,4 +104,8 @@ public interface PurchaseMapper {
 
     //根据求购Id查询求购记录
     PurchaseRequests getPurchaseRequestById(@Param("id") Integer purchaseId);
+
+    //刷新最高求购价
+    int selectPurchaseRequestPrice(@Param("nftId") Integer nftId);
+
 }
