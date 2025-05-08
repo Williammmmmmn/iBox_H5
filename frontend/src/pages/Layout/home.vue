@@ -109,11 +109,14 @@
       <div class="dropdown-container">
         <!-- 类别下拉框 -->
         <div class="dropdown-button-category" @click="showCategoryPicker = true">
-          <span>{{ '类别' }}</span>
+          <span>{{selectedCategory || '类别' }}</span>
           <van-icon :name="showCategoryPicker ? 'arrow-up' : 'arrow-down'" size="8"/>
         </div>
         <van-popup v-model:show="showCategoryPicker" round position="top">
-          <van-picker :columns="categoryOptions" @cancel="showCategoryPicker = false" @confirm="onCategoryConfirm"/>
+          <van-picker 
+            :columns="categoryOptions" 
+            @cancel="showCategoryPicker = false"
+            @confirm="onCategoryConfirm"/>
         </van-popup>
 
         <!-- 售卖状态下拉框 -->
@@ -143,31 +146,23 @@
             />
           </div>
       </div>
-
       <!-- 发售记录内容 -->
       <div class="record-container">
-        <div class="card">
-          <img src="@/assets/images/saveMom.jpg" alt="沉香救母" class="card-image"/>
-          <div class="card-content">
-            <h3 class="card-title">沉香救母</h3>
-            <div class="edition-container"> <!-- 新增容器 -->
-              <p class="card-edition-sell">发行 50000</p>
-              <p class="card-edition-tans">流通 12139</p>
+        <div v-if="loading" class="loading">加载中...</div>
+        <template v-else>
+          <div v-for="record in salesRecords" :key="record.id" class="card">
+            <img 
+            :src="require(`@/${record.imageUrl}`)" :alt="record.name" class="card-image"/>
+            <div class="card-content">
+              <h3 class="card-title">{{ record.name }}</h3>
+              <div class="edition-container">
+                <p class="card-edition-sell">发行 {{ record.issueCount }}</p>
+                <p class="card-edition-tans">流通 {{ record.circulateCount }}</p>
+              </div>
+              <p class="card-price">¥{{ record.price }}</p>
             </div>
-            <p class="card-price">¥9.9</p>
           </div>
-        </div>
-        <div class="card">
-          <img :src="require('@/assets/images/greatChina.jpg')" alt="盛世华夏" class="card-image">
-          <div class="card-content">
-            <h3 class="card-title">盛世华夏</h3>
-            <div class="edition-container"> <!-- 新增容器 -->
-              <p class="card-edition-sell">发行 50000</p>
-              <p class="card-edition-tans">流通 10539</p>
-            </div>
-            <p class="card-price">¥1.99</p>
-          </div>
-        </div>
+        </template>
       </div>
       <!-- //增加一块空白 -->
       <div class="blank"></div>
@@ -185,6 +180,8 @@ export default {
 import {ref, onMounted, computed} from 'vue';
 import {useRouter} from 'vue-router';
 import SortIndicator from '@/components/SortIndicator.vue';
+import {getOfficialSales} from '@/api/officialSale.js'; 
+
 
 const currentSort = ref({ key: '', order: '' });
 const router = useRouter();
@@ -213,6 +210,9 @@ const showCategoryPicker = ref(false);
 const showStatusPicker = ref(false);
 const selectedCategory = ref('');
 const selectedStatus = ref('');
+const loading = ref(false); // 新增加载状态
+const salesRecords = ref([]); // 新增发售记录数据
+
 const categoryOptions = [
   {text: '全部', value: '全部'},
   {text: '藏品', value: '藏品'},
@@ -223,6 +223,25 @@ const statusOptions = [
   {text: '进行中', value: '进行中'},
   {text: '已结束', value: '已结束'},
 ];
+
+// 获取发售记录
+const fetchSalesRecords = async () => {
+  try {
+    loading.value = true;
+    const response = await getOfficialSales({
+      category: selectedCategory.value === '全部' ? '' : selectedCategory.value,
+      status: selectedStatus.value === '全部' ? '' : selectedStatus.value,
+      sort: currentSort.value.key,
+      order: currentSort.value.order
+    });
+    salesRecords.value = response;
+  } catch (error) {
+    console.error('获取发售记录失败:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
 const indicatorStyle = computed(() => {
   const scrollPercentage = scrollPosition.value / (contentWidth.value - containerWidth.value);
   return {
@@ -247,21 +266,18 @@ const startNoticeCarousel = () => {
 };
 const handleSortChange = (sort) => {
   currentSort.value = sort;
-  // 这里根据实际数据结构实现排序逻辑
-  if (sort.key === 'price') {
-    // 价格排序逻辑
-  } else if (sort.key === 'time') {
-    // 时间排序逻辑
-  }
+  fetchSalesRecords(); 
 };
-const onCategoryConfirm = (value) => {
-  selectedCategory.value = value;
+const onCategoryConfirm = (event) => {
+  selectedCategory.value = event.selectedValues[0];
   showCategoryPicker.value = false;
+  fetchSalesRecords(); 
 };
 
-const onStatusConfirm = (value) => {
-  selectedStatus.value = value;
+const onStatusConfirm = (event) => {
+  selectedStatus.value = event.selectedValues[0];
   showStatusPicker.value = false;
+  fetchSalesRecords(); 
 };
 
 
@@ -273,6 +289,7 @@ onMounted(() => {
   startNoticeCarousel();
   containerWidth.value = scrollContainer.value.offsetWidth;
   contentWidth.value = scrollContainer.value.scrollWidth;
+  fetchSalesRecords();
 });
 
 const gridItems = [
@@ -309,7 +326,20 @@ const gridItems = [
   overflow-y: auto; /* 允许垂直滚动 */
   height: 100vh; /* 设置高度为视口高度 */
 }
-
+.loading {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;    /* 垂直居中 */
+  height: 100vh;          /* 视窗高度 */
+  width: 100%;            /* 全宽 */
+  position: fixed;        /* 固定定位 */
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+  z-index: 9999;          /* 确保在最上层 */
+  font-size: 18px;        /* 字体大小 */
+  color: #333;            /* 字体颜色 */
+}
 .banner-notice-module {
   width: 100%;
   border-radius: 12px;
@@ -630,24 +660,17 @@ const gridItems = [
 .record-container {
   margin-top: 5%;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
+  padding: 0 4%;
 }
 
 .card {
-  width: 45%;
-  max-width: 300px;
+  width: calc(50% - 8px); /* 计算宽度，考虑gap */
+  max-width: none; /* 移除最大宽度限制 */
   border-radius: 8px;
-}
-
-.card:first-child {
-  margin-left: 4%;
-  /* 左边的卡片距离屏幕左边2% */
-}
-
-.card:last-child {
-  margin-right: 4%;
-  /* 右边的卡片距离屏幕右边2% */
+  margin: 0; /* 移除单独的margin设置 */
 }
 
 .card-image {

@@ -108,13 +108,22 @@
                 <template v-else>
                   <van-empty v-if="purchaseList.length === 0" description="暂无求购记录" class="empty-purchase" />
                   <template v-else>
-                    <div v-for="(item, index) in purchaseList" 
-                        :key="'purchase-' + index" 
-                        class="purchase-item"
-                        @click="goToSellPurchaseRequests(item)">
+                    <div 
+                      v-for="(item, index) in purchaseList" 
+                      :key="'purchase-' + index" 
+                      class="purchase-item"
+                      @click="goToSellPurchaseRequests(item)"
+                      :class="{ 'self-purchase': item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase() }"
+                    >
                       <div class="purchase-price">
                         <span class="price-symbol">￥</span>
                         <span class="price">{{ item.price }}</span>
+                        <span 
+                          v-if="item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase()" 
+                          class="self-tag"
+                        >
+                          我的求购
+                        </span>
                       </div>
                       <van-icon name="arrow" class="chevron-icon" />
                     </div>
@@ -167,6 +176,7 @@
 <script setup>
 import { ref, onMounted, computed,watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
 import { getAnnounceList } from '@/api/market';
 import dayjs from 'dayjs';
@@ -175,13 +185,14 @@ import SortIndicator from '@/components/SortIndicator.vue';
 
 const currentSort = ref({ key: '', order: '' });
 const route = useRoute();
+const store = useStore();
 const router = useRouter();
 const nftId = route.query.id;
 const activeTab = ref(0);
 const isSwitchOn = ref('left')//left代表寄售，right代表求购;
 
 const tab = route.query.tab;
-
+const walletAddress = computed(() => store.getters.getUserInfo?.walletAddress || '');
 const issueCount = ref(0);
 const circulationCount = ref(0);
 const saleList = ref([]);
@@ -279,7 +290,9 @@ const loadPurchaseData = async () => {
       purchaseList.value = response
         .filter(item => item.price > 0) // 新增过滤条件
         .map(item => ({
-          price: item.price
+          id: item.id,
+          price: item.price,
+          buyerAddress: item.buyerAddress 
         }))
         .sort((a, b) => b.price - a.price);
 
@@ -329,6 +342,10 @@ const goToAnnounceDetail = (announceId) => {
   });
 };
 const goToSellPurchaseRequests = (item) => {
+  if (item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.value.toLowerCase()) {
+    showToast('无法售出给自己');
+    return;
+  }
   router.push({
     path: '/sellPurchaseRequests',
     query: {
@@ -647,7 +664,28 @@ onMounted(() => {
   padding: 20px;
   color: #999;
 }
+/* 添加自定义样式 */
+.self-purchase {
+  opacity: 0.7;
+  background-color: #f5f5f5;
+}
 
+.self-tag {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #1989fa;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.purchase-item {
+  transition: all 0.3s;
+}
+
+.purchase-item:active:not(.self-purchase) {
+  transform: scale(0.98);
+}
 .price-and-id {
   display: flex;
   align-items: center;

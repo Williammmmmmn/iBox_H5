@@ -184,6 +184,7 @@ const goBackToConsignmentPage = () => {
     path: '/consignment',
     query: {
       id: nftId, // 当前的 NFT ID
+      walletAddress: walletAddress.value, // 钱包地址
       isSwitchOn: 'right',// 设置开关状态为右边
       tab: tab, // 当前的 tab
       from: 'sellPurchase' // 添加来源标识
@@ -198,6 +199,7 @@ const goBackToConsignmentPage = () => {
   min-height: 100vh;
   padding: 0 16px;
   padding-bottom: 80px;
+  user-select: none; /* 禁止选中 */
 }
 
 .full-width-nav-bar {
