@@ -1,5 +1,5 @@
 <template>
-  <p>这是社区</p>
+  <p></p>
 </template>
 
 <script>

@@ -26,6 +26,7 @@
         JOIN
         nfts n ON os.nft_id = n.id
         <where>
+            n.is_listed = 1
             <if test="category != null and category != ''">
                 AND CASE
                 WHEN n.level_id in (1,2,3) THEN '藏品'
@@ -36,8 +37,7 @@
                 AND CASE
                 WHEN os.end_time > NOW() THEN '进行中'
                 ELSE '已结束'
-                E
-                ND = #{status}
+                END = #{status}
             </if>
         </where>
         ORDER BY

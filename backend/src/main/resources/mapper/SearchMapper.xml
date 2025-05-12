@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.homeSearch.mapper.SearchMapper">
+
+
+    <select id="searchNFTs" resultType="com.joon.ibox_back_end.homeSearch.entity.SearchResultDTO"
+            parameterType="java.lang.String">
+        SELECT
+            n.id,
+            n.name,
+            n.image_url as imageUrl,
+            CASE
+                WHEN MIN(i.price) IS NULL OR MIN(i.price) = 0 THEN '--'
+                ELSE CONCAT('￥', MIN(i.price))
+                END as minPrice
+        FROM
+            nfts n
+                LEFT JOIN
+            nft_instances i ON n.id = i.nft_id AND i.is_consigning = 1
+        WHERE
+            n.name LIKE CONCAT('%', #{keyword}, '%')
+        GROUP BY
+            n.id, n.name, n.image_url
+    </select>
+</mapper>
