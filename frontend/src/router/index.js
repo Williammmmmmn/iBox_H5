@@ -71,7 +71,7 @@ const routes = [
     }
   },
   {
-    path: '/saleDetail/:nftId/:instanceNumber',
+    path: '/saleDetail',
     component:SaleDetail,
     props:true
   },

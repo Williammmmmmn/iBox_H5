@@ -198,7 +198,7 @@ const statusOptions = [
 ];
 
 // 加载 NFT 数据
-const loadNFTData = async (tag = null) => {
+const loadNFTData = async (tag) => {
   const cacheKey = tag || 'all';
   if (cachedData[cacheKey]) {
     originalCollections.value = cachedData[cacheKey];
@@ -287,7 +287,7 @@ const checkIfReachBottom = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', checkIfReachBottom);
-  loadNFTData(); // 初始加载数据
+  loadNFTData(activeTab.value); // 初始加载数据
 });
 
 onUnmounted(() => {

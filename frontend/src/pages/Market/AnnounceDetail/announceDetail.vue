@@ -104,13 +104,19 @@ const fetchDetail = async () => {
 
 // 返回上一页
 const goBack = () => {
-  router.push({
-    path:'/consignment',
-    query: {
-      id: nftId, // 传递 nftId
-      activeTab: 1 // 设置 activeTab 为 1，对应“相关公告”标签
-    }
-  });
+  const { from } = route.query;
+  
+  if (from === 'notice') {
+    router.push('/notice');
+  } else {
+    router.push({
+      path: '/consignment',
+      query: {
+        id: nftId,
+        activeTab: 1
+      }
+    });
+  }
 };
 
 // 组件挂载时获取数据

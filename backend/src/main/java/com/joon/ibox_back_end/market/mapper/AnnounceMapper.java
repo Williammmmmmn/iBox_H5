@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.market.mapper;
 
-import com.joon.ibox_back_end.market.entity.AnnounceDetailDto;
+import com.joon.ibox_back_end.market.entity.AnnounceWithDetailDto;
 import com.joon.ibox_back_end.market.entity.NftAnnounceDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,5 +23,5 @@ public interface AnnounceMapper {
      * @param announceId
      * @return
      */
-    AnnounceDetailDto selectAnnounceDetailById(@Param("id")Integer announceId);
+    AnnounceWithDetailDto selectAnnounceDetailById(@Param("id")Integer announceId);
 }

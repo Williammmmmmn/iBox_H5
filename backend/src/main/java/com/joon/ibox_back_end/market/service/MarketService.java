@@ -1,6 +1,5 @@
 package com.joon.ibox_back_end.market.service;
 
-import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.market.entity.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +49,7 @@ public interface MarketService {
      * @param announceId
      * @return
      */
-    AnnounceDetailDto selectAnnounceDetailById(Integer announceId);
+    AnnounceWithDetailDto selectAnnounceDetailById(Integer announceId);
 
     /**
      * 用户购买另一个用户寄售藏品

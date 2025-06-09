@@ -26,4 +26,8 @@ public class PageResult<T> {
         this.total = total;
         this.pages = (int) Math.ceil((double) total / pageSize);
     }
+
+    public PageResult() {
+
+    }
 }

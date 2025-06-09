@@ -32,7 +32,7 @@
           <div class="notice-item"
                :class="{ active: index === noticeIndex, leave: index === (noticeIndex - 1 + notices.length) % notices.length }"
                v-for="(notice, index) in notices" :key="index">
-            {{ notice }}
+            {{ truncateText(notice.title,20) }}
           </div>
         </div>
         <van-icon name="bars" size="16" @click="goToNoticeDetail" class="notice-icon"/>
@@ -150,7 +150,7 @@
       <div class="record-container">
         <div v-if="loading" class="loading">加载中...</div>
         <template v-else>
-          <div v-for="record in salesRecords" :key="record.id" class="card">
+          <div v-for="record in salesRecords" :key="record.id" class="card" @click="goToSaleDetail(record)">
             <img 
             :src="require(`@/${record.imageUrl}`)" :alt="record.name" class="card-image"/>
             <div class="card-content">
@@ -181,7 +181,7 @@ import {ref, onMounted, computed} from 'vue';
 import {useRouter} from 'vue-router';
 import SortIndicator from '@/components/SortIndicator.vue';
 import {getOfficialSales} from '@/api/officialSale.js'; 
-
+import {getAnnouncements} from '@/api/announcements.js'; // 引入公告API
 
 const currentSort = ref({ key: '', order: '' });
 const router = useRouter();
@@ -194,12 +194,7 @@ const snakeYearImages = ref([
   require('@/assets/images/snake-year-1.png'),
   require('@/assets/images/snake-year-2.png'),
 ]);
-const notices = ref([
-  '《身份识别码》功能操作手册',
-  '系统升级通知',
-  '新用户注册福利',
-  '春节活动预告',
-]);
+const notices = ref([]);
 const noticeIndex = ref(0);
 const communityImages = ref([
   require('@/assets/images/community.jpg'),
@@ -223,7 +218,26 @@ const statusOptions = [
   {text: '进行中', value: '进行中'},
   {text: '已结束', value: '已结束'},
 ];
+// 文本截断函数
+const truncateText = (text, length = 20) => {
+  return text.length > length ? text.substring(0, length) + '...' : text;
+};
+// 获取公告数据
+const fetchNotices = async () => {
 
+  try {
+    // 调用与MyNotice.vue相同的API，只获取前几条公告用于轮播
+    const res = await getAnnouncements('', 1, 5); // 假设取前5条公告
+    
+    if (res.code === 200 && res.data) {
+      notices.value = res.data.list || [];
+    }
+  } catch (error) {
+    console.error('获取公告数据失败:', error);
+  } finally {
+    console.error('获取公告数据失败');
+  }
+};
 // 获取发售记录
 const fetchSalesRecords = async () => {
   try {
@@ -240,6 +254,24 @@ const fetchSalesRecords = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// 跳转到发售详情页
+const goToSaleDetail = (record) => {
+  router.push({
+    path: '/saleDetail', 
+    query: {
+      nftId: record.id,
+      imageUrl: record.imageUrl,
+      name: record.name,
+      issueCount: record.issueCount || 0,
+      price: record.price || 0,
+      circulationCount: record.circulateCount || 0,
+      description: record.description,
+      status: record.status,
+      from: 'home' // 添加来源标识
+    }
+  });
 };
 
 const indicatorStyle = computed(() => {
@@ -289,6 +321,7 @@ onMounted(() => {
   startNoticeCarousel();
   containerWidth.value = scrollContainer.value.offsetWidth;
   contentWidth.value = scrollContainer.value.scrollWidth;
+  fetchNotices();
   fetchSalesRecords();
 });
 
