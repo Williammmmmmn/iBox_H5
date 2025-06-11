@@ -23,6 +23,8 @@ import MySettings from "@/pages/MyPersonal/Settings/MySettings.vue";
 import UserInfo from "@/pages/MyPersonal/Settings/UserInfo.vue";
 import EditNickname from "@/pages/MyPersonal/Settings/EditNickname.vue";
 import EditPhone from "@/pages/MyPersonal/Settings/EditPhone.vue";
+import OfficialPurchase from "@/pages/BuyPage/OfficialPurchase.vue";
+
 
 const routes = [
   {
@@ -166,6 +168,14 @@ const routes = [
     meta: {
       keepAlive: false // 不缓存详情页
     }
+  },
+  {
+    path: "/officialPurchase",
+    name: 'OfficialPurchase',
+    component: OfficialPurchase,
+    meta: {
+      keepAlive: false // 不缓存详情页
+    }
   }
 
 
@@ -179,7 +189,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = store.getters.getToken;
   const protectedRoutes = ['/search', '/notice', '/market','/consignment','/saleDetail','/announceDetail','/wallet','/fillConsignmentPrice','/buyPage','/sellPurchaseRequests',
-    '/launchPurchaseRequests','/myOrder','/orderDetail','/mySettings'];
+    '/launchPurchaseRequests','/myOrder','/orderDetail','/mySettings','/officialPurchase'];
 
   if (protectedRoutes.includes(to.path) && !token) {
     showConfirmDialog({

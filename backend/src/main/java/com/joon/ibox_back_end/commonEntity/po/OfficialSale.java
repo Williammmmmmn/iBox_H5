@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @create: 2025-03-2001:27
  **/
 @Data
-public class OfficeSale {
+public class OfficialSale {
     /**
      * 主键，唯一标识每个官方销售记录。
      */

@@ -269,7 +269,8 @@ const goToSaleDetail = (record) => {
       circulationCount: record.circulateCount || 0,
       description: record.description,
       status: record.status,
-      from: 'home' // 添加来源标识
+      from: 'home', // 添加来源标识
+      isOfficial: true 
     }
   });
 };

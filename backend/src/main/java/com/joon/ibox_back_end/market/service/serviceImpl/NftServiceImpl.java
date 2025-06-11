@@ -63,7 +63,13 @@ public class NftServiceImpl implements MarketService {
      */
     @Override
     public List<NftListDto> getNFTListByTag(String tag) {
-        return nftListMapper.getNFTListByTag(tag);
+        try{
+            return nftListMapper.getNFTListByTag(tag);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**

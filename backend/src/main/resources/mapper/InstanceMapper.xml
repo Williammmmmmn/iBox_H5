@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.officialPurchase.mapper.InstanceMapper">
+    <select id="getMaxInstanceNumber" resultType="java.lang.Integer">
+        SELECT MAX(instance_number) FROM nft_instances
+        WHERE nft_id = #{nftId}
+    </select>
+
+    <insert id="create" useGeneratedKeys="true" keyProperty="instanceId">
+        INSERT INTO nft_instances (
+            nft_id, owner_address, instance_number,
+            price, created_at, updated_at
+        ) VALUES (
+                     #{nftId}, #{ownerAddress}, #{instanceNumber},
+                     #{price}, #{createdAt}, #{updatedAt}
+                 )
+    </insert>
+
+    <insert id="batchCreate" useGeneratedKeys="true" keyProperty="instanceId">
+        INSERT INTO nft_instances (
+        nft_id, owner_address, instance_number,
+        price, created_at, updated_at
+        ) VALUES
+        <foreach collection="instances" item="item" separator=",">
+            (
+            #{item.nftId}, #{item.ownerAddress}, #{item.instanceNumber},
+            #{item.price}, #{item.createdAt}, #{item.updatedAt}
+            )
+        </foreach>
+    </insert>
+</mapper>

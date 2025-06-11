@@ -96,7 +96,10 @@
                       'locked-button': isLocked
                     }"
                   >
-                    {{ isLocked ? '已锁定' : (isPersonalView ? '取消寄售' : saleStatus === '已结束' ? '已结束' : '立即购买') }}
+                    {{ isLocked ? '已锁定' : 
+                    (isPersonalView ? '取消寄售' : 
+                    saleStatus === '已结束' ? '已结束' : 
+                    isOfficial ? '立即抢购' : '立即购买') }}
                   </van-button>
                 </div>
               </div>
@@ -192,7 +195,8 @@ const isPersonalView = computed(() => {
 const isOwner = computed(() => {
   return walletAddress === ownerAddress.value;
 });
-
+//判断是否来自主页
+const isOfficial = computed(() => route.query.isOfficial === 'true');
 // 新增方法：获取公告列表
 const fetchAnnounceList = async () => {
   announceLoading.value = true;
@@ -259,11 +263,25 @@ const loadData = async () => {
   }
 };
 const handleAction = async () => {
+  //来自个人中心
   if (isPersonalView.value) {
     await handleCancelSale();
     return;
   }
 
+  if (isOfficial.value) {
+    // 官方购买逻辑
+    router.push({
+      path: '/officialPurchase',
+      query: {
+        nftId: nftId,
+        price: price.value,
+        imageUrl: imageUrl.value,
+        name: name.value
+      }
+    });
+    return;
+  }
   try {
     // 调用锁定 API
     const response = await lockNFTInstance(walletAddress, instanceId.value);

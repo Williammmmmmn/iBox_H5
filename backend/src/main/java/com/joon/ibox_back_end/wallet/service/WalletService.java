@@ -1,6 +1,5 @@
 package com.joon.ibox_back_end.wallet.service;
 
-import com.joon.ibox_back_end.common.PageResult;
 import com.joon.ibox_back_end.commonEntity.po.Transactions;
 import com.joon.ibox_back_end.commonEntity.po.Wallet;
 
@@ -29,4 +28,7 @@ public interface WalletService {
     List<Transactions> getTransactions(String walletAddress);
 
 
+    boolean deductBalance(String userAddress, BigDecimal multiply);
+
+    boolean refundBalance(String userAddress, BigDecimal multiply);
 }
