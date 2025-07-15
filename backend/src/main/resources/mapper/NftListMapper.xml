@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.market.mapper.NftListMapper">
-    <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.entity.NftListDto">
+    <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.dto.NftListDto">
         SELECT
         nfts.id AS nftId,
         nfts.name,

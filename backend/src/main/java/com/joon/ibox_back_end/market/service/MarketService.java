@@ -1,6 +1,6 @@
 package com.joon.ibox_back_end.market.service;
 
-import com.joon.ibox_back_end.market.entity.*;
+import com.joon.ibox_back_end.market.dto.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;

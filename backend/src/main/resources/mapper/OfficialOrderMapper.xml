@@ -16,26 +16,19 @@
                  )
     </insert>
 
-    <update id="lockOrder">
-        UPDATE official_orders SET
-            status = 'locked',
-            lock_expiry = #{expiry}
-        WHERE order_id = #{orderId}
-          AND status = 'pending'
-    </update>
 
     <update id="completeOrder">
         UPDATE official_orders SET
             status = 'completed'
         WHERE order_id = #{orderId}
-          AND status = 'locked'
+          AND status = 'pending'
     </update>
 
     <update id="cancelOrder">
         UPDATE official_orders SET
             status = 'canceled'
         WHERE order_id = #{orderId}
-          AND status IN ('pending', 'locked')
+          AND status = 'pending'
     </update>
 
     <select id="getOrderById" resultType="com.joon.ibox_back_end.commonEntity.po.OfficialOrder">
@@ -45,7 +38,7 @@
 
     <select id="getExpiredOrders" resultType="com.joon.ibox_back_end.commonEntity.po.OfficialOrder">
         SELECT * FROM official_orders
-        WHERE status = 'locked'
+        WHERE status = 'pending'
           AND lock_expiry &lt; #{now}
     </select>
 </mapper>

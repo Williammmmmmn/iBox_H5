@@ -2,7 +2,7 @@ package com.joon.ibox_back_end.market.service.serviceImpl;
 
 import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.commonEntity.po.PurchaseRequests;
-import com.joon.ibox_back_end.market.entity.*;
+import com.joon.ibox_back_end.market.dto.*;
 import com.joon.ibox_back_end.market.mapper.*;
 import com.joon.ibox_back_end.market.service.AsyncPurchaseService;
 import com.joon.ibox_back_end.market.service.MarketService;

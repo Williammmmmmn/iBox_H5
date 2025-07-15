@@ -5,13 +5,13 @@
 
 <mapper namespace="com.joon.ibox_back_end.market.mapper.NftSaleInfoMapper">
 
-    <resultMap id="NFTSaleInfoResultMap" type="com.joon.ibox_back_end.market.entity.NftSaleDto">
+    <resultMap id="NFTSaleInfoResultMap" type="com.joon.ibox_back_end.market.dto.NftSaleDto">
         <id property="nftId" column="nftId" />
         <result property="name" column="nft_name" />
         <result property="imageUrl" column="nft_image_url" />
         <result property="issueCount" column="issue_count" />
         <result property="circulationCount" column="circulation_count" />
-        <collection property="instances" ofType="com.joon.ibox_back_end.market.entity.NftInstanceDto">
+        <collection property="instances" ofType="com.joon.ibox_back_end.market.dto.NftInstanceDto">
             <id property="id" column="instance_number" />
             <result property="price" column="instance_price" />
             <result property="lockedBy" column="lockedBy" />

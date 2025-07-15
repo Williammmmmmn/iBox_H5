@@ -1,4 +1,4 @@
-package com.joon.ibox_back_end.market.entity.BuyDto;
+package com.joon.ibox_back_end.market.dto.BuyDto;
 
 import lombok.Data;
 

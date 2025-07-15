@@ -1,11 +1,8 @@
 package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.R;
-import com.joon.ibox_back_end.market.entity.*;
-import com.joon.ibox_back_end.market.entity.BuyDto.BuyRequest;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.CancelPurchaseRequestDto;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.CreatePurchaseDto;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.SellToRequestDto;
+import com.joon.ibox_back_end.market.dto.*;
+import com.joon.ibox_back_end.market.dto.BuyDto.BuyRequest;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

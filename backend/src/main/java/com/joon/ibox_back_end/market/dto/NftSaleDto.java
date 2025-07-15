@@ -1,8 +1,7 @@
-package com.joon.ibox_back_end.market.entity;
+package com.joon.ibox_back_end.market.dto;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**

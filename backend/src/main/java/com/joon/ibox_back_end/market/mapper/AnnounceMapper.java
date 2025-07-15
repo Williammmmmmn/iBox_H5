@@ -1,7 +1,7 @@
 package com.joon.ibox_back_end.market.mapper;
 
-import com.joon.ibox_back_end.market.entity.AnnounceWithDetailDto;
-import com.joon.ibox_back_end.market.entity.NftAnnounceDto;
+import com.joon.ibox_back_end.market.dto.AnnounceWithDetailDto;
+import com.joon.ibox_back_end.market.dto.NftAnnounceDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

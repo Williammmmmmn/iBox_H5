@@ -10,7 +10,6 @@ import java.util.List;
 @Mapper
 public interface OfficialOrderMapper {
     int createOrder(OfficialOrder order);
-    int lockOrder(@Param("orderId") String orderId, @Param("expiry") Date expiry);
     int completeOrder(@Param("orderId") String orderId);
     int cancelOrder(@Param("orderId") String orderId);
     OfficialOrder getOrderById(@Param("orderId") String orderId);

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.joon.ibox_back_end.market.mapper.UserFavoriteMapper">
+    <insert id="toggleFavorite">
+        <if test="actionType == 1">
+            INSERT INTO user_favorites (user_id, nft_id, created_at)
+            VALUES (#{userId}, #{nftId}, NOW())
+            ON DUPLICATE KEY UPDATE created_at = NOW()
+        </if>
+        <if test="actionType == 0">
+            DELETE FROM user_favorites
+            WHERE user_id = #{userId} AND nft_id = #{nftId}
+        </if>
+    </insert>
+
+    <select id="getFavoriteNftIds" resultType="java.lang.Integer">
+        SELECT nft_id
+        FROM user_favorites
+        WHERE user_id = #{userId}
+    </select>
+
+
+</mapper>

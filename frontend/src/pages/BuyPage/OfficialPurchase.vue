@@ -76,14 +76,14 @@
 <script setup>
 import { ref,computed} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { showToast } from 'vant';
+import { showToast,showDialog } from 'vant';
 import { useStore } from 'vuex';
 import {createOrder,completeOrder } from '@/api/officialSale';
 
 const route = useRoute();
 const router = useRouter();
 const store = useStore();
-
+const orderId = ref(null);
 // 从路由参数获取数据
 const nftId = route.query.nftId || '';
 const price = Number(route.query.price) || '0.00';
@@ -115,34 +115,54 @@ const increaseQuantity = () => {
     quantity.value++;
   }
 };
-// 处理购买逻辑
+// 修改购买处理方法
 const handlePurchase = async () => {
     if (!walletAddress) {
         showToast('未获取到钱包地址，请登录后重试');
         return;
     }
+
     try {
-        isProcessing.value = true;
-        
-        // 1. 创建订单
-        const orderId = await createOrder(
+        // 先创建订单
+        orderId.value = await createOrder(
             walletAddress, 
             nftId, 
             price, 
             quantity.value
         );
-        
-        // 2. 完成订单
-        await completeOrder(orderId);
-        
-        showToast('购买成功');
-        setTimeout(() => {
-            router.push(-1);
-        }, 1000);
+
+        // 使用 showDialog 替代 Dialog.confirm
+        try {
+            await showDialog({
+                title: '确认购买',
+                message: `确认要以 ￥${totalAmount.value} 购买该藏品吗？`,
+                confirmButtonText: '确认购买',
+                cancelButtonText: '再想想',
+                showCancelButton: true,
+            });
+            
+            // 用户点击确认
+            isProcessing.value = true;
+            await completeOrder(orderId.value);
+            showToast('购买成功');
+            
+            // 跳转到详情页
+            setTimeout(() => {
+                router.push({
+                    path: '/home',
+                   
+                });
+            }, 1000);
+            
+        } catch (e) {
+            // 用户点击取消
+            orderId.value = null;
+        } finally {
+            isProcessing.value = false;
+        }
+
     } catch (error) {
-        showToast(error.message || '购买失败，请稍后重试');
-    } finally {
-        isProcessing.value = false;
+        showToast(error.message || '创建订单失败，请稍后重试');
     }
 };
 </script>

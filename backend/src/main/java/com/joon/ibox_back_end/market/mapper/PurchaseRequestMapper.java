@@ -1,7 +1,7 @@
 package com.joon.ibox_back_end.market.mapper;
 
 import com.joon.ibox_back_end.commonEntity.po.PurchaseRequests;
-import com.joon.ibox_back_end.market.entity.PurchaseRequestDto;
+import com.joon.ibox_back_end.market.dto.PurchaseRequestDto;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;

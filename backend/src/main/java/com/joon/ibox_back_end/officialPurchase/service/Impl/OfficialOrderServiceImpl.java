@@ -22,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -136,7 +135,7 @@ public class OfficialOrderServiceImpl implements OfficialOrderService {
                 tx.setInstanceId(instance.getInstanceId()); // 使用已保存实例的ID
                 tx.setTransactionDate(LocalDateTime.now());
                 tx.setTransactionHash("0x" + UUID.randomUUID().toString().replace("-", ""));
-                tx.setCurrency("ETH");
+                tx.setCurrency("CNY");
                 transactions.add(tx);
             }
 
