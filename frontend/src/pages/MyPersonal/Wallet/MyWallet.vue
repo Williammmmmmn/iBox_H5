@@ -223,7 +223,7 @@ const loadPurchaseTransactions = async () => {
     // 3. 更新数据
     purchaseRequestTransactions.value = sorted;
     
-    // 4. 标记为已完成（假设API一次性返回所有数据）
+    // 标记为已完成（假设API一次性返回所有数据）
     finished.value.purchase = true;
     
   } catch (error) {
@@ -232,7 +232,7 @@ const loadPurchaseTransactions = async () => {
     loading.value.purchase = false;
   }
 };
-
+// 13594402576
 
 const getTransactionType= (type) => {
   if (type === 'SALE') {
