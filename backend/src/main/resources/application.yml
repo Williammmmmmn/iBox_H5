@@ -23,5 +23,5 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 file:
-  upload-dir: G:/uploads/avatars      # Windows 示例路径
-  access-path: assets/images        # 访问路径
+  upload-dir: G:/uploads/avatars
+  access-path: assets/images    # 访问路径
