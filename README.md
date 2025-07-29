@@ -79,8 +79,54 @@
 
 ## 3.效果展示
 	
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <img src="./introduceImages/注册登录.png" width="200" alt="注册登录">
+  <img src="./introduceImages/首页.png" width="200" alt="首页">
+  <img src="./introduceImages/我的.png" width="200" alt="我的">
+</div>
 
-	
+</br>
+</br>
+</br>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <img src="./introduceImages/市场.png" width="200" alt="市场">
+  <img src="./introduceImages/首页搜索.png" width="200" alt="首页搜索">
+  <img src="./introduceImages/价格列表.png" width="200" alt="价格列表">	
+</div>
+
+</br>
+</br>
+</br>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <img src="./introduceImages/求购列表.png" width="200" alt="求购列表">
+  <img src="./introduceImages/藏品展示.png" width="200" alt="藏品展示">
+  <img src="./introduceImages/确认订单.png" width="200" alt="确认订单">
+</div>
+
+</br>
+</br>
+</br>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <img src="./introduceImages/公告列表.png" width="200" alt="公告列表">
+  <img src="./introduceImages/公告详情.png" width="200" alt="公告详情">
+  <img src="./introduceImages/确认订单.png" width="200" alt="发起求购">
+</div>
+
+
+</br>
+</br>
+</br>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+  <img src="./introduceImages/求购出售.png" width="200" alt="求购出售">
+  <img src="./introduceImages/资产藏品弹框.png" width="200" alt="资产藏品弹框">
+  <img src="./introduceImages/钱包.png" width="200" alt="钱包">
+</div>
+
+## 4.
 
 
 
