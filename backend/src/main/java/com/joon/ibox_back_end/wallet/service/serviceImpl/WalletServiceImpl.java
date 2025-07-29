@@ -2,12 +2,10 @@ package com.joon.ibox_back_end.wallet.service.serviceImpl;
 
 import com.joon.ibox_back_end.commonEntity.po.Transactions;
 import com.joon.ibox_back_end.commonEntity.po.Wallet;
-import com.joon.ibox_back_end.common.PageResult;
 import com.joon.ibox_back_end.wallet.exception.BusinessException;
 import com.joon.ibox_back_end.wallet.mapper.TransactionMapper;
 import com.joon.ibox_back_end.wallet.mapper.WalletMapper;
 import com.joon.ibox_back_end.wallet.service.WalletService;
-import org.apache.ibatis.transaction.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +81,22 @@ public class WalletServiceImpl implements WalletService {
         } catch (Exception e) {
             throw new BusinessException("查询交易记录失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean deductBalance(String userAddress, BigDecimal amount) {
+        try {
+            int updated = walletMapper.deductBalance(userAddress, amount);
+            return updated > 0;
+        } catch (Exception e) {
+            e.printStackTrace(); // 强制打印异常
+            return false;
+        }
+    }
+
+    @Override
+    public boolean refundBalance(String userAddress, BigDecimal multiply) {
+        return walletMapper.addBalance(userAddress, multiply) > 0;
     }
 
 

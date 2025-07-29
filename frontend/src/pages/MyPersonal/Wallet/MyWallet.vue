@@ -220,22 +220,19 @@ const loadPurchaseTransactions = async () => {
       return new Date(b.transactionDate) - new Date(a.transactionDate);
     });
     
-    // 3. 更新数据（正确闭合Map语法）
-    purchaseRequestTransactions.value = [
-      ...new Map([
-        ...purchaseRequestTransactions.value, 
-        ...sorted
-      ].map(item => [item.id, item])).values()
-    ];
+    // 3. 更新数据
+    purchaseRequestTransactions.value = sorted;
     
-    finished.value.purchase = sorted.length === 0;
+    // 标记为已完成（假设API一次性返回所有数据）
+    finished.value.purchase = true;
+    
   } catch (error) {
     console.error('加载失败:', error);
   } finally {
     loading.value.purchase = false;
   }
 };
-
+// 13594402576
 
 const getTransactionType= (type) => {
   if (type === 'SALE') {

@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * @program: backend
@@ -58,6 +59,8 @@ public class Transactions {
      */
     private String type;
 
+    private Integer OrderId;
+
     /**
      * 外键，指向求购记录（如果是求购交易）。
      */
@@ -68,4 +71,9 @@ public class Transactions {
      * 外键，指向的 nft实例ID。
      */
     private Integer instanceId;
+
+    public static String generateRandomHash() {
+        return "0x" + UUID.randomUUID().toString().replace("-", "");
+    }
+
 }

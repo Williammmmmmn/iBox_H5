@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.joon.ibox_back_end.officialPurchase.mapper.OfficialOrderMapper">
+    <insert id="createOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO official_orders (
+            order_id, nft_id, user_address,
+            quantity, price, status,
+            lock_expiry, created_at
+        ) VALUES (
+                     #{orderId}, #{nftId}, #{userAddress},
+                     #{quantity}, #{price}, #{status},
+                     #{lockExpiry}, #{createdAt}
+                 )
+    </insert>
+
+
+    <update id="completeOrder">
+        UPDATE official_orders SET
+            status = 'completed'
+        WHERE order_id = #{orderId}
+          AND status = 'pending'
+    </update>
+
+    <update id="cancelOrder">
+        UPDATE official_orders SET
+            status = 'canceled'
+        WHERE order_id = #{orderId}
+          AND status = 'pending'
+    </update>
+
+    <select id="getOrderById" resultType="com.joon.ibox_back_end.commonEntity.po.OfficialOrder">
+        SELECT * FROM official_orders
+        WHERE order_id = #{orderId}
+    </select>
+
+    <select id="getExpiredOrders" resultType="com.joon.ibox_back_end.commonEntity.po.OfficialOrder">
+        SELECT * FROM official_orders
+        WHERE status = 'pending'
+          AND lock_expiry &lt; #{now}
+    </select>
+</mapper>

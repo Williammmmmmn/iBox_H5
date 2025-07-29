@@ -17,4 +17,8 @@ public interface WalletMapper {
     int insertWallet(Wallet wallet);
 
     BigDecimal selectBalanceByAddress(@Param("walletAddress") String walletAddress);
+    @Options(useGeneratedKeys = false, keyProperty = "none")
+    int deductBalance(@Param("walletAddress")String userAddress, @Param("amount")BigDecimal amount);
+
+    int addBalance(String userAddress, BigDecimal multiply);
 }

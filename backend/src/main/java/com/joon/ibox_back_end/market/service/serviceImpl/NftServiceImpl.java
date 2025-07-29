@@ -1,9 +1,8 @@
 package com.joon.ibox_back_end.market.service.serviceImpl;
 
-import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.commonEntity.po.Instances;
 import com.joon.ibox_back_end.commonEntity.po.PurchaseRequests;
-import com.joon.ibox_back_end.market.entity.*;
+import com.joon.ibox_back_end.market.dto.*;
 import com.joon.ibox_back_end.market.mapper.*;
 import com.joon.ibox_back_end.market.service.AsyncPurchaseService;
 import com.joon.ibox_back_end.market.service.MarketService;
@@ -21,8 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 /**
  * @program: backend
@@ -66,7 +63,13 @@ public class NftServiceImpl implements MarketService {
      */
     @Override
     public List<NftListDto> getNFTListByTag(String tag) {
-        return nftListMapper.getNFTListByTag(tag);
+        try{
+            return nftListMapper.getNFTListByTag(tag);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -126,7 +129,7 @@ public class NftServiceImpl implements MarketService {
      * @return
      */
     @Override
-    public AnnounceDetailDto selectAnnounceDetailById(Integer announceId) {
+    public AnnounceWithDetailDto selectAnnounceDetailById(Integer announceId) {
         return announceMapper.selectAnnounceDetailById(announceId);
     }
 

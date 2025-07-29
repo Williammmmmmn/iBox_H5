@@ -50,23 +50,15 @@
                 <!-- 价格和编号 -->
                 <div class="price-and-id" v-if="isSwitchOn === 'left'">
                   <!-- 价格排序部分 -->
-                    <div class="price-content-container">
-                      <SortIndicator 
-                        label="价格" 
-                        sort-key="price"
-                        :current-sort="currentSort"
-                        @sort-change="handleSortChange"
-                      />
-                    </div>
+                  <div class="price-content-container">
+                    <SortIndicator label="价格" sort-key="price" :current-sort="currentSort"
+                      @sort-change="handleSortChange" />
+                  </div>
                   <!-- 编号排序部分 -->
-                    <div class="volume-content-container">
-                      <SortIndicator 
-                        label="编号" 
-                        sort-key="id"
-                        :current-sort="currentSort"
-                        @sort-change="handleSortChange"
-                      />
-                    </div>
+                  <div class="volume-content-container">
+                    <SortIndicator label="编号" sort-key="id" :current-sort="currentSort"
+                      @sort-change="handleSortChange" />
+                  </div>
                 </div>
               </div>
 
@@ -76,12 +68,12 @@
                 <div v-if="loading" class="loading">
                   数据加载中...
                 </div>
-                
+
                 <!-- 寄售模式 -->
                 <template v-else-if="isSwitchOn === 'left'">
-                  <van-empty v-if="currentDataList.length === 0||currentDataList===null" description="暂无数据" />
+                  <van-empty v-if="currentDataList.length === 0 || currentDataList === null" description="暂无数据" />
                   <template v-else>
-                    <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(item.id)"
+                    <div v-for="(item, index) in currentDataList" :key="index" @click="goToSaleDetail(nftId, item.id)"
                       class="sale-item">
                       <!-- 左边：名称和编号 -->
                       <div class="left-info">
@@ -103,45 +95,35 @@
                     </div>
                   </template>
                 </template>
-                
+
                 <!-- 求购模式 -->
                 <template v-else>
                   <van-empty v-if="purchaseList.length === 0" description="暂无求购记录" class="empty-purchase" />
                   <template v-else>
-                    <div 
-                      v-for="(item, index) in purchaseList" 
-                      :key="'purchase-' + index" 
-                      class="purchase-item"
+                    <div v-for="(item, index) in purchaseList" :key="'purchase-' + index" class="purchase-item"
                       @click="goToSellPurchaseRequests(item)"
-                      :class="{ 'self-purchase': item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase() }"
-                    >
+                      :class="{ 'self-purchase': item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase() }">
                       <div class="purchase-price">
                         <span class="price-symbol">￥</span>
                         <span class="price">{{ item.price }}</span>
-                        <span 
-                          v-if="item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase()" 
-                          class="self-tag"
-                        >
+                        <span
+                          v-if="item.buyerAddress && item.buyerAddress.toLowerCase() === walletAddress.toLowerCase()"
+                          class="self-tag">
                           我的求购
                         </span>
                       </div>
                       <van-icon name="arrow" class="chevron-icon" />
                     </div>
                   </template>
-                  
+
                   <!-- 始终显示的发起求购按钮 -->
                   <div class="purchase-button-container">
-                    <van-button
-                      type="primary"
-                      block
-                      class="purchase-button"
-                      @click="handleInitiatePurchase"
-                    >
+                    <van-button type="primary" block class="purchase-button" @click="handleInitiatePurchase">
                       发起求购
                     </van-button>
                   </div>
                 </template>
-                
+
                 <!-- 底部提示 -->
                 <div v-if="isReachBottom" class="no-more">
                   --没有更多--
@@ -158,7 +140,8 @@
               <van-empty v-else-if="announceList.length === 0" description="暂无公告" />
               <!-- 列表内容 -->
               <template v-else>
-                <div v-for="(item, index) in announceList" :key="index" class="sale-announce-item" @click="goToAnnounceDetail(item.id)">
+                <div v-for="(item, index) in announceList" :key="index" class="sale-announce-item"
+                  @click="goToAnnounceDetail(item.id)">
                   <div class="announce-info">
                     <div class="announce-title">{{ item.title }}</div>
                     <div class="announce-time">{{ item.formattedTime }}</div>
@@ -174,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed,watch } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { getNFTDetail, getPurchaseRequestsByNftId } from '@/api/market';
@@ -182,6 +165,7 @@ import { getAnnounceList } from '@/api/market';
 import dayjs from 'dayjs';
 import { showToast } from 'vant';
 import SortIndicator from '@/components/SortIndicator.vue';
+
 
 const currentSort = ref({ key: '', order: '' });
 const route = useRoute();
@@ -202,6 +186,10 @@ const imageUrl = ref('');
 const name = ref('');
 const loading = ref(false); // 加载状态
 const announceList = ref([]);
+
+//用于记录来源标识
+const fromWhere = ref('');
+fromWhere.value = route.query.from || '';
 // 监听标签切换
 const onTabChange = (index) => {
   // 0是市场价格，1是相关公告
@@ -234,7 +222,7 @@ const toggleSwitch = async (side) => {
 const fetchAnnounceList = async () => {
   loading.value = true;
   try {
-  const response = await getAnnounceList(nftId);
+    const response = await getAnnounceList(nftId);
     if (response) {
       announceList.value = response.map(item => ({
         id: item.id,
@@ -292,7 +280,7 @@ const loadPurchaseData = async () => {
         .map(item => ({
           id: item.id,
           price: item.price,
-          buyerAddress: item.buyerAddress 
+          buyerAddress: item.buyerAddress
         }))
         .sort((a, b) => b.price - a.price);
 
@@ -300,7 +288,7 @@ const loadPurchaseData = async () => {
       purchaseList.value = [];
     }
   } catch (error) {
-    showToast('请求失败:', error.message );
+    showToast('请求失败:', error.message);
     purchaseList.value = [];
   } finally {
     loading.value = false;
@@ -308,7 +296,7 @@ const loadPurchaseData = async () => {
 };
 const handleSortChange = (sort) => {
   currentSort.value = sort;
-  
+
   if (sort.key === 'price') {
     saleList.value.sort((a, b) => {
       const priceA = parseFloat(a.price);
@@ -324,16 +312,27 @@ const handleSortChange = (sort) => {
 
 
 const goBack = () => {
-  // 从当前路由中获取tab参数
-  router.push({
-    path: '/market',
-    query: { tab:tab|| 'all' }
-  });
+  if (fromWhere.value === 'search') {
+    router.push({
+      path: '/search',
+    })
+  }
+  else {
+    // 从当前路由中获取tab参数
+    router.push({
+      path: '/market',
+      query: { tab: tab || 'all' }
+    });
+  }
 };
-const goToSaleDetail = (instanceNumber) => {
+const goToSaleDetail = (nftId, instanceNumber) => {
   router.push({
-    path: `/saleDetail/${nftId}/${instanceNumber}`,
-    query: { from: 'market' }  // 添加来源标识
+    path: '/saleDetail',
+    query: {
+      nftId: nftId,
+      instanceNumber: instanceNumber,
+      from: 'market' // 添加来源标识
+    }
   });
 };
 const goToAnnounceDetail = (announceId) => {
@@ -664,6 +663,7 @@ onMounted(() => {
   padding: 20px;
   color: #999;
 }
+
 /* 添加自定义样式 */
 .self-purchase {
   opacity: 0.7;
@@ -686,6 +686,7 @@ onMounted(() => {
 .purchase-item:active:not(.self-purchase) {
   transform: scale(0.98);
 }
+
 .price-and-id {
   display: flex;
   align-items: center;
@@ -705,6 +706,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
+
 /* 数据展示区域 */
 .data-list {
   padding: 10px;
@@ -741,26 +743,38 @@ onMounted(() => {
   padding: 10px 0;
   border-bottom: 1px solid #eee;
 }
+
 .purchase-button-container {
-  position: fixed; /* 固定定位 */
-  bottom: 0; /* 距离屏幕底部 0 */
-  left: 0; /* 距离屏幕左侧 0 */
-  width: 90%; /* 按钮宽度占满屏幕 */
-  padding: 10px 16px; /* 内边距 */
-  background-color: #ffffff; /* 背景色，避免与内容混淆 */
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* 添加顶部阴影 */
-  z-index: 100; /* 确保按钮在最上层 */
+  position: fixed;
+  /* 固定定位 */
+  bottom: 0;
+  /* 距离屏幕底部 0 */
+  left: 0;
+  /* 距离屏幕左侧 0 */
+  width: 90%;
+  /* 按钮宽度占满屏幕 */
+  padding: 10px 16px;
+  /* 内边距 */
+  background-color: #ffffff;
+  /* 背景色，避免与内容混淆 */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  /* 添加顶部阴影 */
+  z-index: 100;
+  /* 确保按钮在最上层 */
 }
 
 .purchase-button {
-  background-color: #1989fa; /* 蓝色背景 */
-  color: #ffffff; /* 白色字体 */
+  background-color: #1989fa;
+  /* 蓝色背景 */
+  color: #ffffff;
+  /* 白色字体 */
   font-size: 16px;
   font-weight: bold;
   border-radius: 16px;
   height: 44px;
   line-height: 44px;
 }
+
 .announce-info {
   flex-direction: row;
   align-items: center;
@@ -862,14 +876,22 @@ onMounted(() => {
   padding: 20px 0;
   margin-top: 30px;
 }
+
 .locked-tag {
   display: inline-block;
-  margin-left: 8px; /* 与名称保持一定间距 */
-  padding: 2px 6px; /* 内边距 */
-  font-size: 12px; /* 字体大小 */
-  font-weight: bold; /* 加粗字体 */
-  color: #ffffff; /* 白色字体 */
-  background-color: #28a745; /* 绿色背景 */
-  border-radius: 4px; /* 圆角 */
+  margin-left: 8px;
+  /* 与名称保持一定间距 */
+  padding: 2px 6px;
+  /* 内边距 */
+  font-size: 12px;
+  /* 字体大小 */
+  font-weight: bold;
+  /* 加粗字体 */
+  color: #ffffff;
+  /* 白色字体 */
+  background-color: #28a745;
+  /* 绿色背景 */
+  border-radius: 4px;
+  /* 圆角 */
 }
 </style>

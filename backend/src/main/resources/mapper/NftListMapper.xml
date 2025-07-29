@@ -1,34 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.joon.ibox_back_end.market.mapper.NftListMapper">
-    <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.entity.NftListDto">
-            SELECT
-            nfts.id AS nftId,
-            nfts.name,
-            nfts.image_url AS imageUrl,
-            nft_levels.name AS levelName,
-            SUM(DISTINCT official_sales.circulate_count) AS totalCirculateCount,
-            SUM(DISTINCT official_sales.issue_count) AS totalIssueCount,
-            COALESCE(MIN(nft_instances.price), 0) AS lowestPrice,
-            COUNT(DISTINCT transactions.id) AS dailyTransactionCount
-            FROM
-            nfts
-            JOIN nft_tags ON nfts.id = nft_tags.nft_id
-            JOIN tags ON nft_tags.tag_id = tags.id
-            LEFT JOIN official_sales ON nfts.id = official_sales.nft_id
-            LEFT JOIN nft_instances ON nfts.id = nft_instances.nft_id
-            LEFT JOIN transactions ON nfts.id = transactions.nft_id
-            LEFT JOIN nft_levels ON nfts.level_id = nft_levels.id
-            WHERE
-            nfts.is_listed = 0
-
-            <if test="tag != null and tag != '全部'">
-                AND tags.name = #{tag} AND nft_instances.is_consigning = 1
-            </if>
-            <if test="tag == '全部'">
-                    AND nft_instances.is_consigning = 1
-            </if>
-            GROUP BY
-            nfts.id
+    <select id="getNFTListByTag" resultType="com.joon.ibox_back_end.market.dto.NftListDto">
+        SELECT
+        nfts.id AS nftId,
+        nfts.name,
+        nfts.image_url AS imageUrl,
+        nft_levels.name AS levelName,
+        SUM(DISTINCT official_sales.circulate_count) AS totalCirculateCount,
+        SUM(DISTINCT official_sales.issue_count) AS totalIssueCount,
+        COALESCE(MIN(nft_instances.price), 0) AS lowestPrice,
+        COUNT(DISTINCT transactions.id) AS dailyTransactionCount
+        FROM
+        nfts
+        JOIN nft_tags ON nfts.id = nft_tags.nft_id
+        JOIN tags ON nft_tags.tag_id = tags.id
+        LEFT JOIN official_sales ON nfts.id = official_sales.nft_id
+        LEFT JOIN nft_instances ON nfts.id = nft_instances.nft_id
+        LEFT JOIN transactions ON nfts.id = transactions.nft_id
+        LEFT JOIN nft_levels ON nfts.level_id = nft_levels.id
+        WHERE 1=1
+        <if test="tag != null and tag != '全部'">
+            AND tags.name = #{tag}
+        </if>
+        AND nft_instances.is_consigning = 1
+        GROUP BY
+        nfts.id
     </select>
 </mapper>

@@ -2,7 +2,7 @@ package com.joon.ibox_back_end.market.service;
 
 import com.joon.ibox_back_end.common.LockResponse;
 import com.joon.ibox_back_end.common.R;
-import com.joon.ibox_back_end.market.entity.LockRequestDto;
+import com.joon.ibox_back_end.market.dto.LockRequestDto;
 
 public interface NftLockService {
     /**

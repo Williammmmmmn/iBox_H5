@@ -122,10 +122,14 @@ import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { showToast } from 'vant';
 import SortIndicator from '@/components/SortIndicator.vue';
+import { toFavorite, getFavoriteList } from '@/api/favorite';
+import { useStore } from 'vuex';
+const store = useStore();
 const currentSort = ref({ key: '', order: '' });
 
 const router = useRouter();
 const route = useRoute();
+const userId = store.getters.getUserInfo?.userId || '';
 const activeTab = ref(route.query.tab || 'all');
 const currentView = ref('market');
 const tabs = [
@@ -196,30 +200,60 @@ const statusOptions = [
   { text: '5000以上', value: '5000以上' },
   { text: '9000以上', value: '9000以上' },
 ];
-
-// 加载 NFT 数据
-const loadNFTData = async (tag = null) => {
-  const cacheKey = tag || 'all';
-  if (cachedData[cacheKey]) {
-    originalCollections.value = cachedData[cacheKey];
-    return;
-  }
-  loading.value = true; // 开始加载
+// 加载收藏状态
+const loadFavorites = async () => {
+  if (!userId) return;
+  
   try {
-    const data = await getNFTList(tag);
-    originalCollections.value = data.map(item => ({
+    const response = await getFavoriteList(userId);
+    
+    const favoriteIds = response.data || [];
+    
+    const favoriteSet = new Set(favoriteIds.map(String)); // 统一转为字符串
+    
+    // 更新收藏状态
+    originalCollections.value = originalCollections.value.map(item => ({
       ...item,
-      isFavorite: false, // 默认未收藏
-      lowestPrice: item.lowestPrice > 0 ? item.lowestPrice : 0, // 确保0值处理
-      dailyTransactionCount: item.dailyTransactionCount > 0 ? item.dailyTransactionCount : 0
+      isFavorite: favoriteSet.has(String(item.nftId)) 
     }));
-    cachedData[cacheKey] = originalCollections.value;
+    
   } catch (error) {
-    showToast(error.message || '数据加载失败，请稍后重试');
-  } finally {
-    loading.value = false; // 结束加载
+    console.error('加载收藏失败:', error);
+    showToast('收藏状态加载失败');
   }
 };
+// 加载 NFT 数据
+const loadNFTData = async (tag) => {
+  const cacheKey = tag || 'all';
+  loading.value = true;
+
+  try {
+    const data = await getNFTList(tag);
+
+    // 初始化数据（保留可能的已有收藏状态）
+    originalCollections.value = data.map(item => {
+      // const cachedItem = cachedData[cacheKey]?.find(c => c.nftId === item.nftId);
+      return {
+        ...item,
+        isFavorite:  false, 
+        lowestPrice: item.lowestPrice || 0,
+        dailyTransactionCount: item.dailyTransactionCount || 0
+      };
+    });
+    await loadFavorites();
+    cachedData[cacheKey] = originalCollections.value;
+
+  } catch (error) {
+    console.error('数据加载异常:', {
+      tag,
+      error: error.message
+    });
+    showToast('加载失败，请重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 监听选项卡变化
 const handleTabChange = (name) => {
   activeTab.value = name;
@@ -268,8 +302,28 @@ const handleSortChange = (sort) => {
   }
 };
 
-const toggleFavorite = (item) => {
-  item.isFavorite = !item.isFavorite; // 切换收藏状态
+// 切换收藏状态
+const toggleFavorite = async (item) => {
+  if (!userId) {
+    showToast('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    await toFavorite({ 
+      userId: userId, 
+      nftId: item.nftId,
+      actionType: item.isFavorite ? 0 : 1 // 1:收藏, 0:取消
+    });
+    
+    // 更新本地状态
+    item.isFavorite = !item.isFavorite;
+    showToast(item.isFavorite ? '收藏成功' : '已取消收藏');
+  } catch (error) {
+    showToast('操作失败: ' + (error.message || '请重试'));
+    console.error('收藏操作失败:', error);
+  }
 };
 // 在setup中添加
 const checkIfReachBottom = () => {
@@ -287,7 +341,7 @@ const checkIfReachBottom = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', checkIfReachBottom);
-  loadNFTData(); // 初始加载数据
+  loadNFTData(activeTab.value); // 初始加载数据
 });
 
 onUnmounted(() => {

@@ -3,7 +3,7 @@ package com.joon.ibox_back_end.market.service.serviceImpl;
 import com.joon.ibox_back_end.common.LockResponse;
 import com.joon.ibox_back_end.common.R;
 import com.joon.ibox_back_end.commonEntity.po.Instances;
-import com.joon.ibox_back_end.market.entity.LockRequestDto;
+import com.joon.ibox_back_end.market.dto.LockRequestDto;
 import com.joon.ibox_back_end.market.mapper.LockNftInstanceMapper;
 import com.joon.ibox_back_end.market.service.NftLockService;
 import com.joon.ibox_back_end.wallet.exception.BusinessException;

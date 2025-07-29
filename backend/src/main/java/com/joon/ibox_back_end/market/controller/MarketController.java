@@ -1,16 +1,12 @@
 package com.joon.ibox_back_end.market.controller;
 
 import com.joon.ibox_back_end.common.R;
-import com.joon.ibox_back_end.market.entity.*;
-import com.joon.ibox_back_end.market.entity.BuyDto.BuyRequest;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.CancelPurchaseRequestDto;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.CreatePurchaseDto;
-import com.joon.ibox_back_end.market.entity.PurchaseRequest.SellToRequestDto;
+import com.joon.ibox_back_end.market.dto.*;
+import com.joon.ibox_back_end.market.dto.BuyDto.BuyRequest;
 import com.joon.ibox_back_end.market.service.MarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -90,7 +86,7 @@ public class MarketController {
      */
     @GetMapping("/announceDetail/{announceId}")
     public R getAnnounceDetail(@PathVariable Integer announceId) {
-        AnnounceDetailDto announceDetail = marketService.selectAnnounceDetailById(announceId);
+        AnnounceWithDetailDto announceDetail = marketService.selectAnnounceDetailById(announceId);
         return R.success("查询藏品公告详情成功",announceDetail);
     }
 

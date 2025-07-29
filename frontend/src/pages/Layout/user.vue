@@ -214,8 +214,10 @@ const handleConsign = async (item) => {
     if (item.isConsigning) {
       // 如果是已寄售的藏品，跳转到详情页
       router.push({
-        path: `/saleDetail/${item.nftId}/${item.instanceNumber}`,
+        path: '/saleDetail',
         query: {
+          nftId: item.nftId,
+          instanceNumber: item.instanceNumber,
           from: 'personal',
           instanceId: item.instanceId
         }  // 添加来源标识

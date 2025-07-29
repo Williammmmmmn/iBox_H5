@@ -16,3 +16,32 @@ export const getOfficialSales = (params = {}) => {
 }
 
 
+export const createOrder = async (walletAddress, nftId, price, quantity) => {
+  try {
+    const response = await request.post('/api/orders/create', {
+      userAddress: walletAddress,
+      nftId,
+      price,
+      quantity
+    });
+    return response.data;
+  } catch (error) {
+    console.error('创建订单失败:', error);
+    throw error;
+  }
+};
+
+export const completeOrder = async (orderId) => {
+  try {
+    const response = await request.post('/api/orders/complete', null, {
+      params: { orderId }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('完成订单失败:', error);
+    throw error;
+  }
+};
+
+
+

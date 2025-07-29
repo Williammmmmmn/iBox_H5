@@ -61,4 +61,41 @@
 
 
     </select>
+
+    <insert id="create" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (
+            nft_id, to_address, price,
+            type, order_id, instance_id,
+            transaction_date, transaction_hash, currency
+        ) VALUES (
+                     #{nftId}, #{toAddress}, #{price},
+                     #{type}, #{orderId}, #{instanceId},
+                     #{transactionDate},
+                     #{transactionHash, jdbcType=VARCHAR},
+                     #{currency, jdbcType=VARCHAR}
+                 )
+    </insert>
+
+    <insert id="batchCreate" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (
+        nft_id, to_address, price,
+        type, order_id, instance_id,
+        transaction_date, transaction_hash, currency
+        ) VALUES
+        <foreach collection="transactions" item="item" separator=",">
+            (
+            #{item.nftId}, #{item.toAddress}, #{item.price},
+            #{item.type}, #{item.orderId}, #{item.instanceId},
+            #{item.transactionDate},
+            #{item.transactionHash, jdbcType=VARCHAR},
+            #{item.currency, jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+
+    <select id="existsByTxHash" resultType="boolean">
+        SELECT COUNT(1) > 0 FROM transactions
+        WHERE transaction_hash = #{txHash}
+    </select>
+
 </mapper>

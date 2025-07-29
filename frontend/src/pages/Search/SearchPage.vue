@@ -85,7 +85,13 @@ const handleSearch = async () => {
 };
 
 const handleItemClick = (item) => {
-  router.push(`/detail/${item.id}`);
+  router.push({
+    path: `/consignment`, // 使用路径格式
+    query: {
+      id: item.id,
+      from: 'search', // 传递来源参数
+    }, // 使用 query 传递参数
+  });
 };
 </script>
 

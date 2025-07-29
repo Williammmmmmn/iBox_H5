@@ -42,7 +42,9 @@
       <!-- 修改后的深色背景区域 -->
       <div class="dark-background">
         <!-- 图片名称 -->
-        <div class="image-name">{{ name }}#{{ instanceNumber }}</div>
+        <div class="image-name">
+          {{ instanceNumber? `${name}#${instanceNumber}` : name }}
+        </div>
 
         <!-- 发行和流通信息 -->
         <div class="info-container">
@@ -76,7 +78,7 @@
             <van-tab :title="isPersonalView ? '管理' : '购买'">
               <div class="content">
                 <div class="price-section" :class="{ 'personal-view': isPersonalView }">
-                  <div class="left" v-if="!isPersonalView">
+                  <div class="left" v-if="!isPersonalView && instanceNumber">
                     <div class="price">￥{{ price }}</div>
                     <div class="market-list" @click="goBack">
                       市场列表
@@ -86,14 +88,18 @@
                   <van-button 
                     type="primary" 
                     class="buy-button" 
+                    :style="{ width: !instanceNumber ? '100%' : '208px' }" 
                     @click="handleAction"
-                    :disabled="!isPersonalView && (isOwner || consignmentStatus === 'completed' || isLocked)"
+                    :disabled="!isPersonalView && (isOwner || consignmentStatus === 'completed' || isLocked || saleStatus === '已结束')"
                     :class="{ 
-                      'disabled-button': consignmentStatus === 'completed' || isLocked,
+                      'disabled-button': consignmentStatus === 'completed' || isLocked || saleStatus === '已结束',
                       'locked-button': isLocked
                     }"
                   >
-                    {{ isLocked ? '已锁定' : (isPersonalView ? '取消寄售' : '立即购买') }}
+                    {{ isLocked ? '已锁定' : 
+                    (isPersonalView ? '取消寄售' : 
+                    saleStatus === '已结束' ? '已结束' : 
+                    isOfficial ? '立即抢购' : '立即购买') }}
                   </van-button>
                 </div>
               </div>
@@ -155,8 +161,8 @@ import dayjs from 'dayjs';
 const router = useRouter();
 const route = useRoute();
 const store = useStore();
-const nftId = route.params.nftId;
-const instanceNumber = route.params.instanceNumber;
+const nftId = route.query.nftId;
+const instanceNumber = route.query.instanceNumber;
 const imageUrl = ref('');
 const name = ref('');
 const issueCount = ref(0);
@@ -169,6 +175,8 @@ const consignmentStatus = ref('');
 const isLocked = ref(false);
 const announceList = ref([]);
 const announceLoading = ref(false);
+const saleStatus = ref(''); // 寄售状态(home)
+
 
 const userProfile = computed(() => {
   const user = store.getters.getUserInfo || {};
@@ -176,6 +184,8 @@ const userProfile = computed(() => {
     wallet_Address: user.walletAddress || ''
   };
 });
+
+
 const walletAddress = userProfile.value.wallet_Address;
 // 计算属性判断是否来自个人中心
 const isPersonalView = computed(() => {
@@ -185,7 +195,8 @@ const isPersonalView = computed(() => {
 const isOwner = computed(() => {
   return walletAddress === ownerAddress.value;
 });
-
+//判断是否来自主页
+const isOfficial = computed(() => route.query.isOfficial === 'true');
 // 新增方法：获取公告列表
 const fetchAnnounceList = async () => {
   announceLoading.value = true;
@@ -252,11 +263,25 @@ const loadData = async () => {
   }
 };
 const handleAction = async () => {
+  //来自个人中心
   if (isPersonalView.value) {
     await handleCancelSale();
     return;
   }
 
+  if (isOfficial.value) {
+    // 官方购买逻辑
+    router.push({
+      path: '/officialPurchase',
+      query: {
+        nftId: nftId,
+        price: price.value,
+        imageUrl: imageUrl.value,
+        name: name.value
+      }
+    });
+    return;
+  }
   try {
     // 调用锁定 API
     const response = await lockNFTInstance(walletAddress, instanceId.value);
@@ -308,8 +333,22 @@ const handleCancelSale = async () => {
 const goBack = () => {
   router.go(-1);
 };
-onMounted(() => {
-  loadData();
+
+ onMounted(() => {
+  const from = route.query.from;
+  if (from === 'home') {
+    
+    imageUrl.value =   require(`@/${route.query.imageUrl}`);
+    name.value = route.query.name;
+    issueCount.value = Number(route.query.issueCount) || 0;
+    circulationCount.value = Number(route.query.circulationCount) || 0;
+    price.value = Number(route.query.price) || 0;
+    storyInfo.value = route.query.description;
+    saleStatus.value = route.query.status;
+    // 其他数据项同理进行赋值
+  } else {
+    loadData();
+  }
 });
 </script>
 
@@ -906,7 +945,11 @@ onMounted(() => {
   flex-shrink: 0;
   /* 防止按钮被压缩 */
 }
-
+/* 提高选择器优先级 */
+.buy-button.full-width {
+  width: 96% !important;
+  margin: 0 auto;
+}
 /* 个人中心视图下的按钮样式 */
 .price-section.personal-view .buy-button {
   width: 80%;
